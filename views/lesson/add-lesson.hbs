@@ -1148,7 +1148,7 @@ License: For each use you must have a valid license purchased only from above li
             <strong>{{message.intro}}</strong>{{message.message}}
         </div>
         {{/if}}
-												<form id="kt_ecommerce_settings_general_form" class="form" method="post" action="/records/lesson" enctype="multipart/form-data">
+												<form id="kt_ecommerce_settings_general_form" class="form" method="post" action="/records/lesson" >
 													<!--begin::Input group-->
 													<div class="mb-7">
 														<!--begin::Label-->
@@ -1170,7 +1170,7 @@ License: For each use you must have a valid license purchased only from above li
 																</label>
 																<!--end::Label-->
 																<!--begin::Input-->
-																<input type="text" class="form-control form-control-solid" name="teacherName" id="teacherName" value="" />
+																<input type="text" class="form-control form-control-solid" name="teacherName" id="teacherName" value="{{fullname}}" readonly />
 																<!--end::Input-->
 															</div>
 															<!--end::Input group-->
@@ -1187,7 +1187,7 @@ License: For each use you must have a valid license purchased only from above li
 																</label>
 																<!--end::Label-->
 																<!--begin::Input-->
-																<input type="text" class="form-control form-control-solid" name="teacherId" id="teacherId" value="" readonly />
+																<input type="text" class="form-control form-control-solid" name="teacherId" id="teacherId" value="{{teacherId}}" readonly />
 																<!--end::Input-->
 															</div>
 															<!--end::Input group-->
@@ -1448,7 +1448,7 @@ License: For each use you must have a valid license purchased only from above li
                     
                 },
                 type: 'POST',
-                url: "./autoLBX",
+                url: "/records/autoLBX",
                 success: function(data,nocs) {
                
                 

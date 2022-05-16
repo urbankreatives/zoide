@@ -1165,7 +1165,7 @@ License: For each use you must have a valid license purchased only from above li
             <strong>{{message.intro}}</strong>{{message.message}}
         </div>
         {{/if}}
-												<form id="kt_ecommerce_settings_general_form" class="form" method="post" action="/records/teacherSubject" enctype="multipart/form-data">
+												<form id="kt_ecommerce_settings_general_form" class="form" method="post" action="/records/teacherSubject">
 													<!--begin::Input group-->
 													<div class="mb-7">
 														<!--begin::Label-->
@@ -1242,7 +1242,7 @@ License: For each use you must have a valid license purchased only from above li
 																</label>
 																<!--end::Label-->
 																<!--begin::Input-->
-																<input type="text" class="form-control form-control-solid" name="subject" id="subject" value="" readonly />
+																<input type="text" class="form-control form-control-solid" name="subjectName" id="subjectName" value="" readonly />
 																<!--end::Input-->
 															</div>
 															<!--end::Input group-->
@@ -1371,7 +1371,7 @@ License: For each use you must have a valid license purchased only from above li
                     
                 },
                 type: 'POST',
-                url: "./autoTS",
+                url: "/records/autoTS",
                 success: function(data) {
                
                 
@@ -1435,7 +1435,7 @@ License: For each use you must have a valid license purchased only from above li
                     
                 },
                 type: 'POST',
-                url: "./autoXM",
+                url: "/records/autoXM",
                 success: function(data) {
                
                 

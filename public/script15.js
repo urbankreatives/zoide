@@ -20,7 +20,7 @@ $.ajax({
    
     dataType: 'json',
     type: 'POST',
-    url: "/incomeChart",
+    url: "/clerk/incomeChart",
     success: function(data) {
     console.log(data)
      for (var i = 0;i<data.length;i++){
@@ -187,7 +187,7 @@ $.ajax({
    
     dataType: 'json',
     type: 'POST',
-    url: "/expenseChart",
+    url: "/clerk/expenseChart",
     success: function(data) {
     console.log(data)
      for (var i = 0;i<data.length;i++){
@@ -353,7 +353,7 @@ $.ajax({
    
     dataType: 'json',
     type: 'POST',
-    url: "/feesChart",
+    url: "/clerk/feesChart",
     success: function(data) {
     console.log(data)
      for (var i = 0;i<data.length;i++){

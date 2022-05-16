@@ -1787,11 +1787,11 @@ else
   
   
     router.get('/teacherSubList',isLoggedIn, (req, res) => {
- 
+       var pro = req.user
       TeacherSub.find({},(err, docs) => {
           if (!err) {
               res.render("records/teacherSubList", {
-                 list:docs
+                 list:docs, pro:pro
                 
               });
           }
@@ -1854,7 +1854,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
   router.get('/lessonX',isLoggedIn,records,function(req,res){
     var pro = req.user
-    res.redirect('/records/lesson',{pro:pro})
+    res.redirect('/records/lesson')
   })
   
   router.get('/lesson',isLoggedIn,records,  function(req,res){
@@ -2283,7 +2283,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
       });
     
     
-      router.get('/addClassRoom',isLoggedIn, (req,res)=>{
+      router.get('/addRoom',isLoggedIn, (req,res)=>{
         var pro = req.user
         res.render('lesson/room',{pro:pro})
       })

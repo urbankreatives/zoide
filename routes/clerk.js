@@ -245,12 +245,25 @@ res.redirect('/clerk/stats')
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 router.get('/stats',isLoggedIn, function(req,res){
     var students, teachers, paid, unpaid, depts, class1
     var m = moment()
     var year = m.format('YYYY')
-  User.find({role:'student'},function(err,docs){
-    students = docs.length
+  User.find({role:'student'},function(err,focs){
+    students = focs.length
     
   User.find({role:'teacher'},function(err,nocs){
     teachers = nocs.length;
@@ -260,11 +273,11 @@ router.get('/stats',isLoggedIn, function(req,res){
    User.find({role:'student',status:'owing'},function(err,klocs){
      unpaid = klocs.length
 
-     Dept.find({},function(err,jocs){
-      depts = jocs.length;
+     Dept.find({},function(err,pocs){
+      depts = pocs.length;
      
-      Class1.find({},function(err,klocs){
-        class1 = klocs.length
+      Class1.find({},function(err,locs){
+        class1 = locs.length
 
   
      Stats.find({year:year},function(err,docs){
@@ -285,19 +298,23 @@ router.get('/stats',isLoggedIn, function(req,res){
   stat.save()
   .then(sta =>{
   
-    res.redirect('/clerk/dash')
+    res.redirect('/clerk/dashInc')
   
   })
   }
   else
-  Stats.find({},function(err,docs){
+ 
   var id = docs[0]._id
   
-  Stats.findByIdAndUpdate(id,{$set:{students:students, teachers:teachers,paid:paid, unpaid:unpaid, class1:class1, depts:depts}})
-  
-  res.redirect('/clerk/dash')
+  Stats.findByIdAndUpdate(id,{$set:{students:students, teachers:teachers,paid:paid, unpaid:unpaid, class1:class1, depts:depts}},function(err,sox){
+    
+
 
   })
+  
+  res.redirect('/clerk/dashInc')
+
+  
   
   })
   
@@ -316,12 +333,378 @@ router.get('/stats',isLoggedIn, function(req,res){
     
   })
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+  router.get('/dashInc',isLoggedIn,function(req,res){
+    var term = req.user.term
+    var m = moment()
+    var year = m.format('YYYY')
+    var fees
+    var arr1=[]
+    var number1
+    var totalStudents, students, passRate
   
-  router.get('/dash',isLoggedIn,function(req,res){
+  
+    Income.find({year:year},function(err,docs){
+  
+      Fees.find({term:term,year:year},function(err,hods){
+  
+  
+      
+  
+      if(docs.length == 0 ){
+  
+        
+  
+        var inc = Income();
+              inc.firstTermIncome = 0;
+              inc.firstTermExpense = 0;
+              inc.secondTermIncome = 0;
+              inc.secondTermExpense = 0
+              inc.thirdTermIncome = 0
+              inc.thirdTermExpense = 0
+              inc.year = year
+  
+              inc.save()
+      .then(incX =>{
+  
+        res.redirect('/clerk/dashExp')
+  
+      })
+  
+      }
+      else
+      Income.find({year:year},function(err,docs){
+  
+        var id3 = docs[0]._id
+      Fees.find({term:term,year:year},function(err,hods){
+  
+        for(var q = 0;q<hods.length; q++){
+            
+          arr1.push(hods[q].amount)
+            }
+            //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
+             number1=0;
+            for(var z in arr1) { number1 += arr1[z]; }
+  
+  
+            
+        if(term == 1){
+  
+    
+          Income.findByIdAndUpdate(id3,{$set:{firstTermIncome:number1}},function(err,kocs){
+       
+          
+          })
+        }else if(term == 2){
+        
+          Income.findByIdAndUpdate(id3,{$set:{secondTermIncome:number1}},function(err,kocs){
+        
+              
+              })
+            }else{
+              Income.findByIdAndUpdate(id3,{$set:{thirdTermIncome:number1}},function(err,kocs){
+              
+                  
+                  })
+            }
+  
+  
+  
+            res.redirect('/clerk/dashExp')
+  
+  
+      })
+    })
+  
+  
+  
+  
+  
+    })
+  
+  
+  })
+  
+  
+  
+  })
+  
+  
+  
+  
+  router.get('/dashExp',isLoggedIn,function(req,res){
+  
+    let arrX = []
+    let totalX
+    var term = req.user.term
+    var m = moment()
+    var year = m.format('YYYY')
+    var fees
+    var arr1=[]
+    var number1
+  
+    Expenses.find({term:term,year:year},function(err,hods){
+  
+      if(hods.length == 0){
+  
+        res.redirect('/clerk/dash')
+      }
+  else
+  Income.find({year:year},function(err,docs){
+    var incX = docs[0]._id
+    Expenses.find({term:term,year:year},function(err,pods){
+    
+    
+  for(var q = 0;q<pods.length; q++){
+            
+    arrX.push(pods[q].amount)
+    }
+    //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
+     totalX=0;
+    for(var z in arrX) { totalX += arrX[z]; }
+    
+    
+    if(term == 1){
+    
+    
+    Income.findByIdAndUpdate(incX,{$set:{firstTermExpense:totalX}},function(err,kocs){
+  
+    
+    })
+    }else if(term == 2){
+    
+    Income.findByIdAndUpdate(incX,{$set:{secondTermExpense:totalX}},function(err,kocs){
+  
+      
+      })
+    }else{
+      Income.findByIdAndUpdate(incX,{$set:{thirdTermExpense:totalX}},function(err,kocs){
+        
+          
+          })
+        
+    }
+    res.redirect('/clerk/adminMonthInc')
+  })
+  })
+    })
+  
+  
+  })
+  
+  
+
+
+
+
+
+//Monthly Income Stats
+
+router.get('/adminMonthInc', isLoggedIn,  function(req,res){
+  var term = req.user.term
+  var m = moment()
+  var year = m.format('YYYY')
+  var month = m.format('MMMM')
+  var fees
+  var arr1=[]
+  var number1
+  var totalStudents, students, passRate
+
+
+  MonthIncome.find({year:year,month:month},function(err,docs){
+
+    Fees.find({year:year,month:month},function(err,hods){
+
+
+    
+
+    if(docs.length == 0  && hods.length == 0){
+
+      
+
+      var inc = MonthIncome();
+            inc.amount = 0;
+            inc.month = month;
+            inc.year = year
+
+            inc.save()
+    .then(incX =>{
+
+      res.redirect('/clerk/adminMonthExp')
+
+    })
+
+    }
+    else
+    MonthIncome.find({year:year,month:month},function(err,docs){
+
+      var id3 = docs[0]._id
+    Fees.find({year:year,month:month},function(err,hods){
+
+      for(var q = 0;q<hods.length; q++){
+          
+        arr1.push(hods[q].amount)
+          }
+          //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
+           number1=0;
+          for(var z in arr1) { number1 += arr1[z]; }
+
+
+
+          MonthIncome.findByIdAndUpdate(id3,{$set:{amount:number1}},function(err,kocs){
+
+          })
+          
+      
+
+
+
+          res.redirect('/clerk/adminMonthExp')
+
+
+    })
+  })
+
+
+
+
+
+  })
+
+
+})
+
+
+
+})
+
+
+
+
+
+router.get('/adminMonthExp', isLoggedIn,  function(req,res){
+  var term = req.user.term
+  var m = moment()
+  var year = m.format('YYYY')
+  var month = m.format('MMMM')
+  var fees
+  var arr1=[]
+  var number1
+  var totalStudents, students, passRate
+
+
+  MonthExpense.find({year:year,month:month},function(err,docs){
+
+    Expenses.find({year:year,month:month},function(err,hods){
+
+
+    
+
+    if(docs.length == 0  && hods.length == 0){
+
+      
+
+      var exp = MonthExpense();
+            exp.amount = 0;
+            exp.month = month;
+            exp.year = year
+
+            exp.save()
+    .then(incX =>{
+
+      res.redirect('/clerk/dash')
+
+    })
+
+    }
+    else
+    MonthExpense.find({year:year,month:month},function(err,docs){
+
+      var id3 = docs[0]._id
+    Expenses.find({year:year,month:month},function(err,hods){
+
+      for(var q = 0;q<hods.length; q++){
+          
+        arr1.push(hods[q].amount)
+          }
+          //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
+           number1=0;
+          for(var z in arr1) { number1 += arr1[z]; }
+
+
+
+          MonthExpense.findByIdAndUpdate(id3,{$set:{amount:number1}},function(err,kocs){
+
+          })
+          
+      
+
+
+
+          res.redirect('/clerk/dashX')
+
+
+    })
+  })
+
+
+
+
+
+  })
+
+
+})
+
+
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  router.get('/dashX',isLoggedIn,function(req,res){
     var pro = req.user
       res.render('dashboard/clerk',{pro:pro})
   })
   
+
+
+  router.get('/dash',isLoggedIn, function(req,res){
+    res.redirect('/clerk/stats')
+    })
+
+
+
   
      router.post('/statChart',isLoggedIn,function(req,res){
   var m = moment()
@@ -352,7 +735,95 @@ router.get('/stats',isLoggedIn, function(req,res){
           
            })
       
-      })
+      
+        })
+
+
+
+
+
+
+
+        
+
+        router.post('/statChart',isLoggedIn,function(req,res){
+          var m = moment()
+          var year = m.format('YYYY')
+        
+                Stats.find({year:year},function(err,docs){
+                  if(docs == undefined){
+                    res.redirect('/dash')
+                  }else
+              
+                     res.send(docs)
+                 
+                  
+                   })
+              
+              })
+
+
+
+
+
+//Income Chart for School terms
+
+        router.post('/incomeChart',isLoggedIn, function(req,res){
+          var m = moment()
+          var year = m.format('YYYY')
+      
+                Income.find({year:year},function(err,docs){
+                  if(docs == undefined){
+                    res.redirect('/dash')
+                  }else
+              
+                     res.send(docs)
+                 
+                  
+                   })
+              
+              })
+      
+      
+ //feesMonthIncomeChart             
+      router.post('/feesChart',isLoggedIn, function(req,res){
+          var m = moment()
+          var year = m.format('YYYY')
+      
+                MonthIncome.find({year:year},function(err,docs){
+                  if(docs == undefined){
+                    res.redirect('/dash')
+                  }else
+              
+                     res.send(docs)
+                 
+                  
+                   })
+              
+              })
+
+
+                   
+ //expenseMonthIncomeChart             
+      router.post('/expenseChart',isLoggedIn, function(req,res){
+        var m = moment()
+        var year = m.format('YYYY')
+    
+              MonthExpense.find({year:year},function(err,docs){
+                if(docs == undefined){
+                  res.redirect('/dash')
+                }else
+            
+                   res.send(docs)
+               
+                
+                 })
+            
+            })
+
+
+
+
 
   //profile
   router.get('/profile',isLoggedIn ,function(req,res){
