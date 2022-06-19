@@ -9,7 +9,8 @@ studentId:{type:String, required:true},
 subjectCode:{type:String, required:true},
 subjectName:{type:String, required:true},
 dept:{type:String, required:true},
-studentClass:{type:String, required:true}
+studentClass:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 

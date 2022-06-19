@@ -7,7 +7,7 @@ var button = document.getElementById('pay').addEventListener('click', function()
     $.ajax({
    
         dataType: 'json',
-        type: 'POST',
+        type: 'GET',
         data: {
             fees: 100,
             
@@ -33,7 +33,7 @@ var buttonX = document.getElementById('pay2').addEventListener('click', function
     $.ajax({
    
         dataType: 'json',
-        type: 'POST',
+        type: 'GET',
         data: {
             fees: 100,
             

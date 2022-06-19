@@ -11,6 +11,7 @@ secondTermExpense:{type:Number, required:true},
 thirdTermIncome:{type:Number, required:true},
 thirdTermExpense:{type:Number, required:true},
 year:{type:Number, required:true},
+companyId:{type:String, required:true},
 
 
 

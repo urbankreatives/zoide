@@ -150,7 +150,7 @@ var options = {
         y: {
             formatter: function (val) {
                 
-                return val
+                return val + "%"
             }
         }
     },
@@ -321,7 +321,7 @@ var buttonX = document.getElementById('myChartX2tab').addEventListener('click', 
             },
             y: {
                 formatter: function (val) {
-                    return  val 
+                    return  val + "%"
                 }
             }
         },
@@ -495,7 +495,7 @@ var buttonX = document.getElementById('myChartX2tab').addEventListener('click', 
                 },
                 y: {
                     formatter: function (val) {
-                        return  val 
+                        return  val + "%"
                     }
                 }
             },
@@ -680,7 +680,7 @@ var buttonX = document.getElementById('myChartX2tab').addEventListener('click', 
             },
             y: {
                 formatter: function (val) {
-                    return  val 
+                    return  val + "%"
                 }
             }
         },
@@ -865,7 +865,7 @@ var buttonXC2 = document.getElementById('myChartC2tab').addEventListener('click'
             },
             y: {
                 formatter: function (val) {
-                    return  val 
+                    return  val + "%"
                 }
             }
         },
@@ -1050,7 +1050,7 @@ var buttonXC2 = document.getElementById('myChartC3tab').addEventListener('click'
             },
             y: {
                 formatter: function (val) {
-                    return  val 
+                    return  val + "%"
                 }
             }
         },

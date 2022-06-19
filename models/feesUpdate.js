@@ -11,7 +11,8 @@ term:{type:Number, required:true},
 year:{type:Number, required:true},
 fees:{type:Number, required:true},
 annual:{type:Number, required:true},
-person:{type:String, required:true}
+person:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 

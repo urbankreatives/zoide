@@ -23,6 +23,7 @@ var indexRoute= require('./routes/index')
  var studentRoute= require('./routes/student')
  var teacherRoute= require('./routes/teacher')
  var clerkRoute = require('./routes/clerk')
+ var packageRoute = require('./routes/payment')
 
 
 
@@ -68,6 +69,7 @@ app.use(function(req, res, next) {
     req.session.message = null;
     next();
 });
+app.use('/package',packageRoute)
  app.use('/records',recordsRoute)
  app.use('/clerk',clerkRoute)
  app.use('/student',studentRoute)

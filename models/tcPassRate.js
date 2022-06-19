@@ -17,7 +17,8 @@ subject:{type:String, required:true},
 subjectCode:{type:String, required:true},
 type:{type:String, required:true},
 term:{type:Number, required:true},
-year:{type:Number, required:true}
+year:{type:Number, required:true},
+companyId:{type:String, required:true},
 
 
 

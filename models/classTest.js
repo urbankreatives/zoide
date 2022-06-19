@@ -18,6 +18,7 @@ term:{type:Number, required:true},
 passRate:{type:Number, required:true},
 subject:{type:String, required:true},
 subjectCode:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 

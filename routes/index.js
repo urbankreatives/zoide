@@ -1,12 +1,18 @@
 require('dotenv').config();
-
+require("../config5/keys")
 var express = require('express');
 var router = express.Router();
 const User =require('../models/user')
+const Setup =require('../models/setup')
 const Class1 =require('../models/class');
 const Subject =require('../models/subject');
+const Student =require('../models/studentStats');
 const Fees =require('../models/fees');
+const Num =require('../models/num');
+const Poll2 =require('../models/poll2');
 const Grade =require('../models/grade');
+const { Paynow } = require("paynow");
+const Subscriptions =require('../models/subscriptions');
 const Dept =require('../models/dept');
 const Test =require('../models/classTest');
 const Lesson =require('../models/lesson');
@@ -30,7 +36,12 @@ var Quiz = require('../models/quiz');
 const stripe = require('stripe')('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');
 const keys = require('../config1/keys')
 var mongoose = require('mongoose')
-
+const { google } = require("googleapis");
+const OAuth2 = google.auth.OAuth2;
+const jwt = require('jsonwebtoken');
+const JWT_KEY = "jwtactive987";
+const JWT_RESET_KEY = "jwtreset987";
+var nodemailer = require('nodemailer');
 var passport = require('passport')
 var xlsx = require('xlsx')
 var multer = require('multer')
@@ -40,6 +51,7 @@ var bcrypt = require('bcrypt-nodejs');
 var passport = require('passport')
 var moment = require('moment')
 var bcrypt = require('bcrypt-nodejs');
+const { countReset } = require('console');
 
 
 var storage = multer.diskStorage({
@@ -69,11 +81,11 @@ router.get('/', function (req, res, next) {
     failureFlash: true
   }), function (req, res, next) {
     if(req.user.role == "admin"){
-      res.redirect("/adminMonthInc");
+      res.redirect("/idUp");
     }else if(req.user.role == 'teacher')
     res.redirect('/teacher/passRate')
     else if(req.user.role == 'clerk')
-    res.redirect('/clerk/stats')
+    res.redirect('/clerk/pollCheck')
   
     else if(req.user.role == 'records')
     res.redirect('/records/stats')
@@ -94,7 +106,583 @@ router.get('/', function (req, res, next) {
   });
 
 
+  
+//adding departments
+
+router.get('/addNum', function(req,res){
+  
+  res.render('admin/numX')
+})
+
+router.post('/addNum',  function(req,res){
+
+  var accountNumber = req.body.accountNumber;
+  var idNumber = req.body.idNumber;
+  
+ 
+      req.check('accountNumber','Enter Account Number').notEmpty().isNumeric();
+      req.check('idNumber','Enter ID Number').notEmpty().isNumeric();
+
+    
+      
+      var errors = req.validationErrors();
+           
+      if (errors) {
+      
+        req.session.errors = errors;
+        req.session.success = false;
+        res.render('admin/numX',{ errors:req.session.errors,})
+      
+    }
+    else{
+      
+        Num.findOne({'idNumber':idNumber})
+        .then(dept =>{
+            if(dept){ 
+  
+           req.session.message = {
+            type:'errors',
+             message:'Number already exists'
+           }     
+              res.render('admin/numX', {
+                 message:req.session.message ,
+              })
+            }else
+    
+      var num = new Num();
+    
+      num.accountNumber = accountNumber;
+      num.idNumber = idNumber;
      
+   
+    
+    
+      num.save()
+        .then(dep =>{
+         
+          req.session.message = {
+            type:'success',
+            message:'Number added'
+          }  
+          res.render('admin/numX',{message:req.session.message,});
+      
+    
+      })
+    
+        .catch(err => console.log(err))
+      
+      
+      })
+    }
+    
+    
+})
+
+
+
+
+
+
+
+
+//multi steps
+router.get('/multi',function(req,res){
+ 
+
+res.render('users/steps')
+
+})
+
+
+router.post('/multi', function(req,res){
+  var accountType = req.body.account_type;
+  var size = req.body.account_team_size;
+  var accountName = req.body.account_name;
+  var schoolName = req.body.school_name;
+  var schoolType = req.body.school_type;
+  var businessEmail = req.body.business_email
+  var prefix = req.body.prefix;
+  var suffix = req.body.suffix;
+  var adminName = req.body.admin_name;
+  var adminSurname = req.body.admin_surname;
+  var fullname = adminName +" "+ adminSurname
+  var role = 'admin'
+  var email = req.body.business_email
+  var accountNumber,idNumber ;
+
+  var id //= req.body._id
+
+  var password = req.body.password
+var uid
+  
+  
+  Num.find(function(err,docs){
+accountNumber = docs[0].accountNumber
+idNumber=docs[0].idNumber
+id = docs[0]._id
+ uid = prefix + idNumber 
+  })
+  
+
+ 
+
+  
+  
+    Setup.findOne({'schoolName':schoolName})
+    .then(user =>{
+        if(user){ 
+      // req.session.errors = errors
+        //req.success.user = false;
+        
+       req.session.message = {
+         type:'errors',
+         message:'school already in the system'
+       }     
+       
+          res.render('users/steps', {
+              user:req.body, message:req.session.message 
+          }) 
+        
+  }
+  
+                else  {   
+             
+  
+                   var companyId = accountNumber
+                      const token = jwt.sign({adminName,adminSurname,email,schoolName, fullname,prefix,suffix,uid,companyId,role,id, password,accountNumber,idNumber }, JWT_KEY, { expiresIn: '100000m' });
+                      const CLIENT_URL = 'http://' + req.headers.host;
+                
+                      const output = `
+                      <h2>Please click on below link to activate your account</h2>
+                      <a href="${CLIENT_URL}/activate/${token}">click here</a>
+                      <h1> User credentials</h1>
+                      <p>userId:${uid}</p>
+                      <p>password:${password}</p>
+                      <p><b>NOTE: </b> The above activation link expires in 1 week.</p>
+                      `;
+                
+                      const transporter = nodemailer.createTransport({
+                        service: 'gmail',
+                        auth: {
+                            user: "cashreq00@gmail.com",
+                            pass: "itzgkkqtmchvciik",
+                        },
+                        port:465,
+                        host:'smtp.gmail.com'
+                      });
+                      
+                
+                      // send mail with defined transport object
+                      const mailOptions = {
+                          from: '"Admin" <cashreq00@gmail.com>', // sender address
+                          to: email, // list of receivers
+                          subject: "Account Verification ✔", // Subject line
+                          html: output, // html body
+                      };
+                
+                      transporter.sendMail(mailOptions, (error, info) => {
+                          if (error) {
+                            console.log(error)
+                       req.session.message = {
+                         type:'errors',
+                         message:'confirmation email not sent'
+                       }
+                       
+                       res.render('users/steps',{message:req.session.message,
+                       
+                    })
+                    
+                          }
+                          else {
+                              console.log('Mail sent : %s', info.response);
+
+                              
+                  var set = new Setup();
+                  set.accountType = accountType;
+                  set.size = size;
+                  set.accountName = accountName;
+                  set.accountNumber = accountNumber;
+                  set.schoolName = schoolName;
+                  set.schoolType = schoolType;
+                  set.business_email = businessEmail;
+                  set.prefix = prefix;
+                  set.suffix = suffix;
+                  set.name = adminName;
+             
+                  set.surname = adminSurname;
+                  set.password = set.encryptPassword(password)
+
+                
+  
+                  
+                   
+              
+                   
+          
+                  set.save()
+                    .then(user =>{
+                              accountNumber++
+                             
+                              Num.findByIdAndUpdate(id,{$set:{accountNumber:accountNumber}},function(err,locs){
+                              req.session.message = {
+                                type:'success',
+                                message:'confirmation email sent'
+                              }     
+                              
+                                 res.render('users/steps', {
+                                      message:req.session.message 
+                                  
+                                 })
+                                }) 
+                              })
+                          }
+                      })
+                     // res.redirect('/multi')
+                 
+                                
+                  }
+                  
+                    })
+                   
+  })
+  
+  
+  
+
+//admin account activation route
+
+router.get('/activate/:token',(req,res)=>{
+  const token = req.params.token;
+  var a = moment();
+  var year = a.format('YYYY')
+  let errors = [];
+  if (token) {
+      jwt.verify(token, JWT_KEY, (err, decodedToken) => {
+          if (err) {
+              
+              req.session.message = {
+                  type:'errors',
+                  message:'Incorrect or expired link! Please register again'
+                } 
+                res.render('users/login',{message:req.session.message});
+          }
+          else {
+            const { adminName,adminSurname,fullname,prefix,email,accountNumber, suffix,companyId,role,uid, password,schoolName,idNumber } = decodedToken;
+              User.findOne({ uid: uid }).then(user => {
+                  if (user) {
+                      //------------ User already exists ------------//
+                  
+                      req.session.message = {
+                          type:'errors',
+                          message:'User  already registered! Please log in.'
+                        }  
+                        res.render('users/login',{message:req.session.message});
+               
+                      
+                  }
+                  else  {      
+
+                    var user = new User();
+                    user.uid = uid;
+                    user.name = adminName;
+                    user.surname = adminSurname;
+                    user.fullname = fullname;
+                    user.email = email;
+                    user.role = role;
+                    user.prefix = prefix;
+                    user.suffix = suffix;
+                    user.companyId = companyId;
+                    user.schoolName = schoolName;
+                    user.recNumber = 0
+                    user.gender = 'null';
+                    user.dob = 'null';
+                    user.studentId = 'null'
+                    user.teacherName='null'
+                    user.teacherId = 'null'
+                    user.grade = 0;
+                    user.class1 = 'null';
+                    user.mobile = 'null';
+                    user.classLength = 0;
+                    user.classNo = 0
+                    user.studentNum = 0;
+                    user.uidNum = 309;
+                    user.number = accountNumber;
+                    user.idNumber = idNumber;
+                    user.idNumX = idNumber;
+                    user.examDate = 'null';
+                    user.feeStatus = 'null';
+                    user.feesUpdate = 'null';
+                    user.term = 1;
+                    user.amount = 0;
+                    user.receiptNumber = 0;
+                    user.year = year;
+                    user.balance = 0;
+                    user.balanceCarriedOver = 0;
+                    user.status = 'null';
+                    user.paymentId = 'null';
+                  
+                    user.photo = 'propic.jpg';
+                    user.level = 'null';
+                    user.pollUrl='null'
+                    user.annual =0
+                    user.fees = 0
+                    user.paynow = 0
+                    user.type = 'null';
+                    user.address = 'null';
+                    user.dept = 'null';
+                    user.subject = 0;
+                    user.subjectCode = 'null'
+                    user.subjects = 'null'
+                    user.dept = 'null';
+                    user.expdate=a.valueOf();
+                    user.expStr = a.toString();
+                    user.duration = 0;
+               
+                    user.status3 = "null"
+                    user.status4 = "null"
+                    user.levelX = "null"
+                    user.pollUrl2 = "null"
+                    user.count=0
+                    user.pollCount = 0
+                    user.actualCount = 0   
+                    user.startYear = year
+                    user.currentYearCount = 0
+                    user.stdYearCount = 0
+                    user.admissionYear = 0  
+                    user.password = user.encryptPassword(password)
+                    user.save()
+                      .then(user =>{
+                
+                          
+                          
+                        req.session.message = {
+                          type:'success',
+                          message:'Account Registered'
+                        }  
+                        res.render('users/login',{message:req.session.message});
+                    
+
+
+                  })
+                      .catch(err => console.log(err))
+                    }
+                    
+                      })
+                     }
+              });
+            }
+  });
+
+
+
+
+
+
+
+  
+router.get('/forgot', function (req, res, next) {
+  var messages = req.flash('error');
+  res.render('users/forgot', { messages: messages, hasErrors: messages.length > 0});
+});
+
+router.post('/forgot',function(req,res){
+  const { email } = req.body;
+
+  let errors = [];
+
+  //------------ Checking required fields ------------//
+  if (!email) {
+      errors.push({ msg: 'Please enter an email ID' });
+  }
+
+  if (errors.length > 0) {
+      res.render('users/forgot', {
+          errors,
+          email
+      });
+  } else {
+      User.findOne({ email: email }).then(user => {
+          if (!user) {
+              //------------ User already exists ------------//
+              errors.push({ msg: 'User with Email ID does not exist!' });
+              res.render('users/forgot', {
+                  errors,
+                  email
+              });
+          } else {
+
+              const oauth2Client = new OAuth2(
+                  "173872994719-pvsnau5mbj47h0c6ea6ojrl7gjqq1908.apps.googleusercontent.com", // ClientID
+                  "OKXIYR14wBB_zumf30EC__iJ", // Client Secret
+                  "https://developers.google.com/oauthplayground" // Redirect URL
+              );
+
+              oauth2Client.setCredentials({
+                  refresh_token: "1//04T_nqlj9UVrVCgYIARAAGAQSNwF-L9IrGm-NOdEKBOakzMn1cbbCHgg2ivkad3Q_hMyBkSQen0b5ABfR8kPR18aOoqhRrSlPm9w"
+              });
+              const accessToken = oauth2Client.getAccessToken()
+
+              const token = jwt.sign({ _id: user._id }, JWT_RESET_KEY, { expiresIn: '30m' });
+              const CLIENT_URL = 'http://' + req.headers.host;
+              const output = `
+              <h2>Please click on below link to reset your account password</h2>
+              
+              <a href="${CLIENT_URL}/forgot/${token}">click here</a>
+              <p><b>NOTE: </b> The activation link expires in 30 minutes.</p>
+              `;
+
+              User.updateOne({ resetLink: token }, (err, success) => {
+                  if (err) {
+                      errors.push({ msg: 'Error resetting password!' });
+                      res.render('users/forgot', {
+                          errors,
+                          email
+                      });
+                  }
+                  else {
+                      const transporter = nodemailer.createTransport({
+                         
+                          service: 'gmail',
+                          auth: {
+                              user: "cashreq00@gmail.com",
+                              pass: "itzgkkqtmchvciik",
+                          },
+                      });
+
+                      // send mail with defined transport object
+                      const mailOptions = {
+                          from: '"Auth Admin" <cashreq00@gmail.com>', // sender address
+                          to: email, // list of receivers
+                          subject: "Account Password Reset: NodeJS Auth ✔", // Subject line
+                          html: output, // html body
+                      };
+
+                      transporter.sendMail(mailOptions, (error, info) => {
+                          if (error) {
+                              console.log(error);
+                              req.flash(
+                                  'error_msg',
+                                  'Something went wrong on our end. Please try again later.'
+                              );
+                              res.redirect('/forgot');
+                          }
+                          else {
+                              console.log('Mail sent : %s', info.response);
+                              req.flash(
+                                  'success_msg',
+                                  'Password reset link sent to email ID. Please follow the instructions.'
+                              );
+                              res.redirect('/');
+                          }
+                      })
+                  }
+              })
+
+          }
+      });
+  }
+})
+
+
+
+//------------ Reset Password Route ------------//
+router.get('/reset/:id', (req, res) => {
+  // console.log(id)
+  res.render('users/reset', { id: req.params.id })
+});
+
+router.post('/reset/:id',(req,res)=>{
+  var { password, confirmPassword } = req.body;
+    const id = req.body.id
+    console.log('id',id)
+    let errors = [];
+
+    //------------ Checking required fields ------------//
+    if (!password || !confirmPassword) {
+        req.flash(
+            'error_msg',
+            'Please enter all fields.'
+        );
+        res.redirect(`/reset/${id}`);
+    }
+
+    //------------ Checking password length ------------//
+    else if (password.length < 8) {
+        req.flash(
+            'error_msg',
+            'Password must be at least 8 characters.'
+        );
+        res.redirect(`/reset/${id}`);
+    }
+
+    //------------ Checking password mismatch ------------//
+    else if (password != confirmPassword) {
+        req.flash(
+            'error_msg',
+            'Passwords do not match.'
+        );
+        res.redirect(`/reset/${id}`);
+    }
+
+    else {
+       var user = User();
+       password=req.body.password=encryptPassword(req.body.password)
+
+console.log(password)
+       User.findByIdAndUpdate(id,{$set:{password:password}},function(err,toc){
+
+       })
+
+       res.redirect('/');
+             
+            
+    }
+});
+
+
+router.get('/forgot/:token', (req,res)=>{
+  const { token } = req.params;
+
+  if (token) {
+      jwt.verify(token, JWT_RESET_KEY, (err, decodedToken) => {
+          if (err) {
+              req.flash(
+                  'error_msg',
+                  'Incorrect or expired link! Please try again.'
+              );
+              res.redirect('/');
+          }
+          else {
+              const { _id } = decodedToken;
+              User.findById(_id, (err, user) => {
+                  if (err) {
+                      req.flash(
+                          'error_msg',
+                          'User with email ID does not exist! Please try again.'
+                      );
+                      res.redirect('/');
+                  }
+                  else {
+                      res.redirect(`/reset/${_id}`)
+                  }
+              })
+          }
+      })
+  }
+  else {
+      console.log("Password reset error!")
+  }
+
+});
+
+
+
+
+
+
+
+
+
 // change password
 router.get('/pass',isLoggedIn, (req, res) => {
  var pro = req.user
@@ -108,6 +696,329 @@ router.get('/pass',isLoggedIn, (req, res) => {
       }
   });
 });
+
+
+router.get('/idUp',isLoggedIn,function(req,res){
+  var id = req.user._id
+  var companyId = req.user.companyId
+  var total, total2
+  var num
+  var idNumX = req.user.idNumX
+  
+  
+  User.find({companyId:companyId},function(err,docs){
+  num = docs.length
+  total = idNumX + docs.length;
+  
+  
+  
+  User.findByIdAndUpdate(id,{$set:{actualCount:num }},function(err,locs){
+  
+  })
+  
+  res.redirect('/pollCheck')
+  
+  })
+  
+  
+  })
+
+
+
+router.get('/pollCheck',isLoggedIn,function(req,res){
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var m = moment()
+  var a = moment()
+  var curr = a.valueOf()
+  var sett = new Date()
+  var expdate = req.user.expdate
+  var currdate = sett.getTime()
+  var set =moment(); 
+  var stt = req.user.expStr;
+  var set2 = moment(stt)
+  var year = m.format('YYYY')
+  var month = m.format('MMMM')
+  var companyId = req.user.companyId
+ var id = req.user._id
+var pollUrl = req.user.pollUrl2
+var duration = req.user.duration
+var count = req.user.pollCount
+var pollCount = req.user.pollCount
+
+if(pollUrl == 'null'){
+  res.redirect('/classCheck')
+}
+else
+
+paynow.pollTransaction(pollUrl).then(transaction => {
+  if(transaction.status === 'awaiting delivery') {
+
+    if(pollCount <= count){
+
+   
+    if(expdate>curr){
+      set2.add(duration,"months")
+      User.find({companyId:companyId}, function(err,docs){
+        // console.log(docs)
+        
+       for(var i =0;i<docs.length;i++){
+         User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set2.valueOf(), expStr:set2.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:count}},function(err,locs){
+        
+          
+         })
+       }
+    
+   
+           
+      res.redirect('/classCheck')
+     })
+     
+    }
+    else if(expdate<curr){
+      set.add(duration,"months")
+      
+      User.find({companyId:companyId}, function(err,docs){
+         // console.log(docs)
+        for(var i =0;i<docs.length;i++){
+          User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set.valueOf(), expStr:set.toString(),status3:'activate', status4:'deactivate',  pollUrl2:'null',count:count}},function(err,locs){
+           // console.log(locs)
+            
+              
+           
+          })
+        }
+       
+            
+        res.redirect('/classCheck')
+      })
+      }
+
+    }
+  }else
+  if(expdate>curr){
+    set2.add(duration,"months")
+    User.find({companyId:companyId}, function(err,docs){
+      // console.log(docs)
+      
+     for(var i =0;i<count;i++){
+       User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set2.valueOf(), expStr:set2.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:count}},function(err,locs){
+      
+        
+       })
+     }
+
+         
+    res.redirect('/classCheck')
+   })
+   
+  }
+  else if(expdate<curr){
+    set.add(duration,"months")
+    
+    User.find({companyId:companyId}, function(err,docs){
+       // console.log(docs)
+      for(var i =0;i<count;i++){
+        User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set.valueOf(), expStr:set.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:count}},function(err,locs){
+         // console.log(locs)
+          
+            
+         
+        })
+      }
+    
+          
+    res.redirect('/classCheck')
+    })
+    }
+
+  })
+
+
+})
+
+
+router.get('/classcheck',isLoggedIn,function(req,res){
+  var companyId = req.user.companyId
+  Class1.find({companyId:companyId},function(err,docs){
+
+
+    for(var i= 0;i<docs.length;i++){
+      let classX = docs[i].class1
+      let id = docs[i]._id
+      User.find({companyId:companyId,class1:docs[i].class1},function(err,gocs){
+let students = gocs.length;
+User.find({companyId:companyId, class1:classX, status:'paid'},function(err,yocs){
+  let paid = yocs.length;
+
+  User.find({companyId:companyId,class1:classX,status:'owing'},function(err,locs){
+    let unpaid= locs.length
+
+    User.find({companyId:companyId, class1:classX,gender:'male'},function(err,xocs){
+      let male= xocs.length
+
+      User.find({companyId:companyId,  class1:classX,gender:'female'},function(err,zocs){
+        let female= zocs.length
+
+    Class1.findByIdAndUpdate(id,{$set:{numberOfStudents:students, paid:paid,unpaid:unpaid,male:male,female:female}},function(err,vocs){
+
+    })
+  })
+  })
+})
+})
+      })
+    }
+    res.redirect('/std')
+  })
+  
+})
+
+
+
+router.get('/upCheck',function(req,res){
+ User.find(function(err,focs){
+for(var i = 0;i<focs.length; i++){
+
+let id = focs[i]._id
+
+  User.findByIdAndUpdate(id,{$set:{admissionYear:2021,startYear:2021, stdYearCount:1,currentYearCount:1}},{multi:true},function(err,docs){
+
+  })
+}
+})
+})
+
+router.get('/std',isLoggedIn,function(req,res){
+  var companyId = req.user.companyId
+  var m = moment()
+  var year = m.format('YYYY')
+  var currCount = req.user.currentYearCount
+  var startYear = req.user.startYear
+  Student.find({companyId:companyId}, function(err,locs){
+    if(locs.length == 0){
+var std = Student();
+std.year1 = 0;
+std.year2 = 0;
+std.year3 = 0;
+std.year4 = 0;
+std.year5 = 0;
+std.year6 = 0;
+std.year7 = 0;
+std.year8 = 0;
+std.year9 = 0;
+std.year10 = 0;
+std.count = 0;
+std.startYear = 0;
+std.companyId = companyId
+
+std.save()
+.then(std=>{
+
+  User.find({companyId:companyId,  role:'student',stdYearCount:currCount},function(err,docs){
+    let total = docs.length;
+   if(currCount == 0){
+     Student.findByIdAndUpdate(std._id,{$set:{year1:total,count:currCount,startYear:startYear}},function(err,locs){
+
+     })
+   } else if(currCount == 1){
+    Student.findByIdAndUpdate(std._id,{$set:{year2:total,count:currCount,startYear:startYear}},function(err,locs){
+
+    })
+   }else if(currCount == 2){
+    Student.findByIdAndUpdate(std._id,{$set:{year3:total,count:currCount,startYear:startYear}},function(err,locs){
+
+    })
+
+   }
+   res.redirect('/adminMonthInc')
+    
+      })
+
+
+})
+
+    }else{
+Student.find({companyId:companyId},function(err,docs){
+  
+  User.find({companyId:companyId,  role:'student',stdYearCount:currCount},function(err,nocs){
+    if(nocs){
+
+   
+    let total = nocs.length;
+
+  
+let id = docs[0]._id;
+
+
+if(currCount == 0){
+  Student.findByIdAndUpdate(id,{$set:{year1:total,count:currCount,startYear:startYear}},function(err,locs){
+
+  })
+} 
+
+     else if(currCount == 1){
+        Student.findByIdAndUpdate(id,{$set:{year2:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+      else if (currCount == 2){
+        Student.findByIdAndUpdate(id,{$set:{year3:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+
+       else if (currCount == 3){
+        Student.findByIdAndUpdate(id,{$set:{year4:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+
+      else if (currCount == 4){
+        Student.findByIdAndUpdate(id,{$set:{year5:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+
+      else if (currCount == 5){
+        Student.findByIdAndUpdate(id,{$set:{year6:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+
+      else if (currCount == 6){
+        Student.findByIdAndUpdate(id,{$set:{year7:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+
+      else if (currCount == 7){
+        Student.findByIdAndUpdate(id,{$set:{year8:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+      else if (currCount == 8){
+        Student.findByIdAndUpdate(id,{$set:{year9:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+      else if (currCount == 9){
+        Student.findByIdAndUpdate(id,{$set:{year10:total,count:currCount,startYear:startYear}},function(err,locs){
+   
+        })
+      } 
+    }else{
+      console.log('flint')
+    }
+    })
+    res.redirect('/adminMonthInc')
+    })
+    }
+  })
+  
+
+})
 
 
 
@@ -208,7 +1119,7 @@ var errors = req.validationErrors();
 
     req.session.errors = errors;
     req.session.success = false;
-    res.render('admin/change',{ title: 'User Update', user:req.body, errors:req.session.errors, pro:pro 
+    res.render('admin/change',{  errors:req.session.errors, pro:pro 
    })
 
   
@@ -270,11 +1181,12 @@ router.get('/adminMonthInc', isLoggedIn,  function(req,res){
   var arr1=[]
   var number1
   var totalStudents, students, passRate
+  var companyId = req.user.companyId
 
 
-  MonthIncome.find({year:year,month:month},function(err,docs){
+  MonthIncome.find({companyId:companyId,year:year,month:month},function(err,docs){
 
-    Fees.find({year:year,month:month},function(err,hods){
+    Fees.find({companyId:companyId,year:year,month:month},function(err,hods){
 
 
     
@@ -287,6 +1199,7 @@ router.get('/adminMonthInc', isLoggedIn,  function(req,res){
             inc.amount = 0;
             inc.month = month;
             inc.year = year
+            inc.companyId = companyId
 
             inc.save()
     .then(incX =>{
@@ -300,7 +1213,7 @@ router.get('/adminMonthInc', isLoggedIn,  function(req,res){
     MonthIncome.find({year:year,month:month},function(err,docs){
 
       var id3 = docs[0]._id
-    Fees.find({year:year,month:month},function(err,hods){
+    Fees.find({ companyId:companyId ,year:year,month:month},function(err,hods){
 
       for(var q = 0;q<hods.length; q++){
           
@@ -352,11 +1265,12 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
   var arr1=[]
   var number1
   var totalStudents, students, passRate
+  var companyId = req.user.companyId
 
 
-  MonthExpense.find({year:year,month:month},function(err,docs){
+  MonthExpense.find({ companyId:companyId, year:year,month:month},function(err,docs){
 
-    Expenses.find({year:year,month:month},function(err,hods){
+    Expenses.find({ companyId:companyId,year:year,month:month},function(err,hods){
 
 
     
@@ -369,6 +1283,7 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
             exp.amount = 0;
             exp.month = month;
             exp.year = year
+            exp.companyId = companyId
 
             exp.save()
     .then(incX =>{
@@ -379,10 +1294,10 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
 
     }
     else
-    MonthExpense.find({year:year,month:month},function(err,docs){
+    MonthExpense.find({ companyId:companyId,year:year,month:month},function(err,docs){
 
       var id3 = docs[0]._id
-    Expenses.find({year:year,month:month},function(err,hods){
+    Expenses.find({  companyId:companyId,year:year,month:month},function(err,hods){
 
       for(var q = 0;q<hods.length; q++){
           
@@ -433,11 +1348,12 @@ router.get('/adminDashInc',isLoggedIn,function(req,res){
   var arr1=[]
   var number1
   var totalStudents, students, passRate
+  var companyId = req.user.companyId
 
 
-  Income.find({year:year},function(err,docs){
+  Income.find({ companyId:companyId,year:year},function(err,docs){
 
-    Fees.find({term:term,year:year},function(err,hods){
+    Fees.find({  companyId:companyId,term:term,year:year},function(err,hods){
 
 
     
@@ -454,6 +1370,7 @@ router.get('/adminDashInc',isLoggedIn,function(req,res){
             inc.thirdTermIncome = 0
             inc.thirdTermExpense = 0
             inc.year = year
+            inc.companyId = companyId
 
             inc.save()
     .then(incX =>{
@@ -464,10 +1381,10 @@ router.get('/adminDashInc',isLoggedIn,function(req,res){
 
     }
     else
-    Income.find({year:year},function(err,docs){
+    Income.find({companyId:companyId,year:year},function(err,docs){
 
       var id3 = docs[0]._id
-    Fees.find({term:term,year:year},function(err,hods){
+    Fees.find({ companyId:companyId, term:term,year:year},function(err,hods){
 
       for(var q = 0;q<hods.length; q++){
           
@@ -533,15 +1450,16 @@ router.get('/adminDashExp',isLoggedIn,function(req,res){
   var fees
   var arr1=[]
   var number1
+  var companyId = req.user.companyId
 
-  Expenses.find({term:term,year:year},function(err,hods){
+  Expenses.find({ companyId:companyId,term:term,year:year},function(err,hods){
 
     if(hods.length == 0){
 
       res.redirect('/passRate')
     }
 else
-Income.find({year:year},function(err,docs){
+Income.find({  companyId:companyId,year:year},function(err,docs){
    var incX = docs[0]._id
 for(var q = 0;q<hods.length; q++){
           
@@ -591,11 +1509,12 @@ router.get('/passRate',isLoggedIn, function(req,res){
   var m = moment()
   var year = m.format('YYYY')
   var term = req.user.term
+  var companyId = req.user.companyId
 
 
-  Pass.find({year:year},function(err,docs){
+  Pass.find({ companyId:companyId,year:year},function(err,docs){
 
-    TestX.find({term:term,year:year,type:'Final Exam'},function(err,hods){
+    TestX.find({ companyId:companyId,term:term,year:year,type:'Final Exam'},function(err,hods){
 
   
     if(docs.length == 0 && hods.length == 0){
@@ -605,6 +1524,7 @@ router.get('/passRate',isLoggedIn, function(req,res){
       pass.secondTerm= 0;
       pass.thirdTerm = 0
       pass.year = year
+      pass.companyId = companyId
 
       pass.save()
       .then(pas =>{
@@ -616,11 +1536,11 @@ router.get('/passRate',isLoggedIn, function(req,res){
     else
 
     
-  Pass.find({year:year},function(err,docs){
+  Pass.find({ companyId:companyId,year:year},function(err,docs){
  var idX = docs[0]._id;
-    TestX.find({term:term,year:year},function(err,hods){
+    TestX.find({companyId:companyId,term:term,year:year},function(err,hods){
 
-      TestX.find({term:term,year:year, result:'pass', type:'Final Exam'},function(err,lods){
+      TestX.find({companyId:companyId,term:term,year:year, result:'pass', type:'Final Exam'},function(err,lods){
 
       totalStudents = hods.length;
       students = lods.length
@@ -667,11 +1587,11 @@ router.get('/passRateX',isLoggedIn, function(req,res){
   var m = moment()
   var year = m.format('YYYY')
   var term = req.user.term
+  var companyId = req.user.companyId
 
+  PassX.find({companyId:companyId,year:year},function(err,docs){
 
-  PassX.find({year:year},function(err,docs){
-
-    TestX.find({term:term,year:year,type:'Class Test'},function(err,hods){
+    TestX.find({companyId:companyId,term:term,year:year,type:'Class Test'},function(err,hods){
 
   
     if(docs.length == 0 && hods.length == 0){
@@ -681,6 +1601,7 @@ router.get('/passRateX',isLoggedIn, function(req,res){
       pass.secondTerm= 0;
       pass.thirdTerm = 0
       pass.year = year
+      pass.companyId = companyId
 
       pass.save()
       .then(pas =>{
@@ -692,12 +1613,12 @@ router.get('/passRateX',isLoggedIn, function(req,res){
     else
 
     
-  PassX.find({year:year},function(err,docs){
+  PassX.find({companyId:companyId,year:year},function(err,docs){
  var idX = docs[0]._id;
  console.log('class testX',idX)
-    TestX.find({term:term,year:year},function(err,hods){
+    TestX.find({companyId:companyId,term:term,year:year},function(err,hods){
 
-      TestX.find({term:term,year:year, result:'pass', type:'Class Test'},function(err,lods){
+      TestX.find({companyId:companyId,term:term,year:year, result:'pass', type:'Class Test'},function(err,lods){
 
       totalStudents = hods.length;
       students = lods.length
@@ -760,11 +1681,12 @@ router.get('/adminGender',isLoggedIn,function(req,res){
   var arr1=[]
   var number1
   var totalStudents, students, passRate
+  var companyId = req.user.companyId
 
 
-  Gender.find({},function(err,docs){
+  Gender.find({companyId:companyId},function(err,docs){
 
-    User.find({role:'student'},function(err,hods){
+    User.find({companyId:companyId,role:'student'},function(err,hods){
 
 
     
@@ -776,7 +1698,7 @@ router.get('/adminGender',isLoggedIn,function(req,res){
       var gen = Gender();
             gen.male = 0;
             gen.female = 0;
-           
+            gen.companyId = companyId
             gen.save()
     .then(genX =>{
 
@@ -790,9 +1712,9 @@ router.get('/adminGender',isLoggedIn,function(req,res){
 
       var id3 = docs[0]._id
       console.log('id3',id3)
-      User.find({role:'student',gender:'male'},function(err,hods){
+      User.find({companyId:companyId,role:'student',gender:'male'},function(err,hods){
 
-      User.find({role:'student', gender:'female'},function(err,pods){
+      User.find({companyId:companyId,role:'student', gender:'female'},function(err,pods){
 
        male = hods.length;
        female = pods.length
@@ -855,7 +1777,8 @@ router.post('/passChart',isLoggedIn,function(req,res){
   var m = moment()
   var year = m.format('YYYY')
   var term = req.user.term
-        Pass.find({year:year, term:term},function(err,docs){
+  var companyId = req.user.companyId
+        Pass.find({companyId:companyId,year:year, term:term},function(err,docs){
           if(docs == undefined){
             res.redirect('/dash')
           }else
@@ -872,7 +1795,8 @@ router.post('/passChart',isLoggedIn,function(req,res){
         var m = moment()
         var year = m.format('YYYY')
         var term = req.user.term
-              PassX.find({year:year, term:term},function(err,docs){
+        var companyId = req.user.companyId
+              PassX.find({companyId:companyId,year:year, term:term},function(err,docs){
                 if(docs == undefined){
                   res.redirect('/dash')
                 }else
@@ -886,8 +1810,8 @@ router.post('/passChart',isLoggedIn,function(req,res){
 
 //genderChart
       router.post('/genChart',isLoggedIn,function(req,res){
-       
-              Gender.find({},function(err,docs){
+       var companyId = req.user.companyId
+              Gender.find({companyId:companyId},function(err,docs){
                 if(docs == undefined){
                   res.redirect('/dash')
                 }else
@@ -910,8 +1834,9 @@ router.post('/passChart',isLoggedIn,function(req,res){
             router.post('/statChart',isLoggedIn,function(req,res){
               var m = moment()
               var year = m.format('YYYY')
+              var companyId = req.user.companyId
             
-                    Stats.find({year:year},function(err,docs){
+                    Stats.find({companyId:companyId,year:year},function(err,docs){
                       if(docs == undefined){
                         res.redirect('/dash')
                       }else
@@ -932,8 +1857,8 @@ router.post('/passChart',isLoggedIn,function(req,res){
             router.post('/incomeChart',isLoggedIn, function(req,res){
               var m = moment()
               var year = m.format('YYYY')
-          
-                    Income.find({year:year},function(err,docs){
+              var companyId = req.user.companyId
+                    Income.find({companyId:companyId,year:year},function(err,docs){
                       if(docs == undefined){
                         res.redirect('/dash')
                       }else
@@ -944,14 +1869,36 @@ router.post('/passChart',isLoggedIn,function(req,res){
                        })
                   
                   })
+
+
+
+                  router.post('/incomeChart99',isLoggedIn, function(req,res){
+                    var m = moment()
+                    var year = m.format('YYYY')
+                    var count = req.user.currentYearCount
+                    var companyId = req.user.companyId
+                
+                          Student.find({companyId:companyId},function(err,docs){
+                            if(docs == undefined){
+                              res.redirect('/dash')
+                            }else
+                        
+                               res.send(docs)
+                           
+                            
+                             })
+                        
+                        })
+                
           
           
      //feesMonthIncomeChart             
           router.post('/feesChart',isLoggedIn, function(req,res){
               var m = moment()
               var year = m.format('YYYY')
+              var companyId = req.user.companyId
           
-                    MonthIncome.find({year:year},function(err,docs){
+                    MonthIncome.find({companyId:companyId,year:year},function(err,docs){
                       if(docs == undefined){
                         res.redirect('/dash')
                       }else
@@ -969,8 +1916,9 @@ router.post('/passChart',isLoggedIn,function(req,res){
           router.post('/expenseChart',isLoggedIn, function(req,res){
             var m = moment()
             var year = m.format('YYYY')
+            var companyId = req.user.companyId
         
-                  MonthExpense.find({year:year},function(err,docs){
+                  MonthExpense.find({companyId:companyId,year:year},function(err,docs){
                     if(docs == undefined){
                       res.redirect('/dash')
                     }else
@@ -985,155 +1933,330 @@ router.post('/passChart',isLoggedIn,function(req,res){
 
 
 
+//landing page
+router.get('/land',function(req,res){
+  var pro = req.user
+  Subscriptions.find({},(err, docs) => {
+    console.log(docs,'docs')
+  res.render('landing/land2',{doc:docs[0],pro:pro})
 
+  })
+  
+})
 
 
  
 //adding staff
-router.get('/addStaff',isLoggedIn,adminX,  function(req,res){
-    
- var pro = req.user
-  res.render('admin/staff',{pro:pro})
+router.get('/addStaff',isLoggedIn, function(req,res){
+    var actualCount = req.user.actualCount
+    var count = req.user.count
+    var pro = req.user
+    var prefix = req.user.prefix
+    var idNum = req.user.idNumber
+  idNum++
+    var uid = prefix + idNum
+    var title
+    var readonly 
+    if(actualCount < count){
+      title = "Add Staff"
+      readonly = ""
+      res.render('admin/staff',{pro:pro,uid1:uid, title:title,readonly})
+    }
+else
+title = "You've Reached Maximum Users Limit"
+readonly = 'readonly'
+res.render('admin/staff',{pro:pro,uid1:uid, title:title,readonly})
+ 
   
 })
 
 
 
-router.post('/addStaff',isLoggedIn,adminX,function(req, res, next) {
-var pro = req.user
-  var uid = req.body.uid;
-  var name = req.body.name;
-  var surname = req.body.surname;
-  var mobile = req.body.mobile;
-  var gender = req.body.gender;
-  var dob = req.body.dob;
-  var role = req.body.role;
-  var password = req.body.password;
-  var term = req.user.term
-  var year = req.user.year
-  var email = req.body.email
-
- 
-  req.check('name','Enter Name').notEmpty();
-  req.check('surname','Enter Surname').notEmpty();
-  req.check('email','Enter email').notEmpty().isEmail();
-  req.check('dob','Enter Date Of Birth').notEmpty();
-  req.check('uid','Enter Student ID').notEmpty();
-  req.check('gender','Enter Gender').notEmpty();
-  req.check('role', 'Enter Role').notEmpty();
-  req.check('mobile', 'Enter Phone Number').notEmpty();
-  req.check('password', 'Password do not match').isLength({min: 4}).equals(req.body.confirmPassword);
-      
-    
- 
-     
-  var errors = req.validationErrors();
-      if (errors) {
-
-        req.session.errors = errors;
-        req.session.success = false;
-        res.render('admin/staff',{user:req.body, errors:req.session.errors,pro:pro
-    
-  })
-      
-    }
-    else
-  
-   {
-      User.findOne({'uid':uid})
-      .then(user =>{
-          if(user){ 
-        // req.session.errors = errors
-          //req.success.user = false;
-         
-         req.session.message = {
-           type:'errors',
-           message:'user already in the system'
-         }     
-         
-            res.render('admin/staff', {
-                user:req.body, message:req.session.message,pro:pro 
-            }) 
-        
-    }
-    
-                  else  {   
-                 
-
-                    var user = new User();
-                    user.uid = uid;
-                    user.name = name;
-                    user.fullname = name + " " + surname;
-                    user.surname = surname;
-                    user.role = role;
-                    user.email = email
-                    user.role1 = 'staff';
-                    user.gender = gender;
-                    user.dob = dob;
-                    user.studentId = 'null'
-                    user.teacherName='null'
-                    user.teacherId = 'null'
-                    user.grade = 0;
-                    user.class1 = 'null';
-                    user.mobile = mobile;
-                    user.classLength = 0;
-                    user.classNo = 0
-                    user.studentNum = 0;
-                    user.uidNum = 309;
-                    user.examDate = 'null';
-                    user.feeStatus = 'null';
-                    user.feesUpdate = 'null';
-                    user.term = term;
-                    user.amount = 0;
-                    user.receiptNumber = 0;
-                    user.year = year;
-                    user.balance = 0;
-                    user.balanceCarriedOver = 0;
-                    user.status = 'null';
-                    user.paymentId = 'null';
-                    user.prefix = 'null';
-                    user.photo = 'propic.jpg';
-                    user.level = 'null';
-                    user.pollUrl='null'
-                    user.annual =0
-                    user.fees = 0
-                    user.type = 'null';
-                    user.address = 'null';
-                    user.dept = 'null';
-                    user.subject = 0;
-                    user.subjectCode = 'null'
-                    user.subjects = 'null'
-                    user.dept = 'null';
-                    user.password = user.encryptPassword(password)
-                    user.save()
+              router.post('/addStaff',isLoggedIn, function(req, res, next) {
+                var pro = req.user
+                var uid = req.body.uid;
+                var name = req.body.name;
+                var surname = req.body.surname;
+                var fullname = name +" "+ surname
+                var mobile = req.body.mobile;
+                var gender = req.body.gender;
+                var dob = req.body.dob;
+                var role = req.body.role;
+                var password = req.body.password;
+                var term = req.user.term
+                var year = req.user.year
+                var email = req.body.email
+                var prefix = req.user.prefix
+                var suffix = req.user.suffix
+               var expdate = req.user.expdate
+               var expStr = req.user.expStr
+               var companyId= req.user.companyId
+            var id =   req.user._id
+            var schoolName = req.user.schoolName
+            var count = req.user.count
+            var actualCount = req.user.actualCount
+            var duration = req.user.duration
+           
+            var idNumber = req.user.idNumber
+            var prefix1 = req.user.prefix
+ var idNum1 = req.user.idNumber
+ var idNumX = req.user.idNumX
+ var uid1 = prefix1 + idNum1
+               
+                req.check('name','Enter Name').notEmpty();
+                req.check('surname','Enter Surname').notEmpty();
+                req.check('email','Enter email').notEmpty().isEmail();
+                req.check('dob','Enter Date Of Birth').notEmpty();
+                req.check('uid','Enter Student ID').notEmpty();
+                req.check('gender','Enter Gender').notEmpty();
+                req.check('role', 'Enter Role').notEmpty();
+                req.check('mobile', 'Enter Phone Number').notEmpty();
+                req.check('password', 'Password do not match').isLength({min: 4}).equals(req.body.confirmPassword);
+                    
+                  
+               
+                   
+                var errors = req.validationErrors();
+                    if (errors) {
+                      
+                      req.session.errors = errors;
+                      req.session.success = false;
+                      res.render('admin/staff',{user:req.body, errors:req.session.errors,pro:pro,uid1:uid1
+                  
+                })
+              }
+                   {
+                      User.findOne({'uid':uid})
                       .then(user =>{
+                          if(user){ 
+                        // req.session.errors = errors
+                          //req.success.user = false;
+                         req.session.message = {
+                           type:'errors',
+                           message:'User ID already in use'
+                         }     
                        
-                      
-                          
-                        req.session.message = {
-                          type:'success',
-                          message:'Account Registered'
-                        }  
-                       
-                        res.render('admin/staff',{message:req.session.message,pro:pro});
-                      
-                    })
-                      .catch(err => console.log(err))
+                            res.render('admin/staff', {
+                                user:req.body, message:req.session.message,uid1:uid1 
+                            }) 
                     }
                     
+                  
+                      else  {
+                        
+                        const token = jwt.sign({uid, name,surname,fullname,mobile,gender, idNumber,idNumX, dob,role,term,year,expdate,expStr,count,actualCount,duration, companyId,schoolName, email,prefix,suffix, password, }, JWT_KEY, { expiresIn: '100000m' });
+                        const CLIENT_URL = 'http://' + req.headers.host;
+                  
+                        const output = `
+                        <h2>Please click on below link to activate your account</h2>
+                        <a href="${CLIENT_URL}/activate1/${token}">click here</a>
+                        <h1> User credentials</h1>
+                        <p>usrId:${uid}</p>
+                        <p>password:${password}</p>
+                        <p><b>NOTE: </b> The above activation link expires in 1 week.</p>
+                        `;
+                  
+                        const transporter = nodemailer.createTransport({
+                          service: 'gmail',
+                          auth: {
+                              user: "cashreq00@gmail.com",
+                              pass: "itzgkkqtmchvciik",
+                          },
+                        });
+                        
+                  
+                        // send mail with defined transport object
+                        const mailOptions = {
+                            from: '"Admin" <cashreq00@gmail.com>', // sender address
+                            to: email, // list of receivers
+                            subject: "Account Verification ✔", // Subject line
+                            html: output, // html body
+                        };
+                  
+                        transporter.sendMail(mailOptions, (error, info) => {
+                            if (error) {
+                              console.log(error)
+                            
+                         req.session.message = {
+                           type:'errors',
+                           message:'confirmation email not sent'
+                         }
+                       
+                         res.render('admin/staff',{message:req.session.message,uid1:uid1,pro:pro
+                         })
+                      
+                      
+                            }
+                            else {
+                        
+                              
+                              actualCount++
+                              idNumber++ 
+                              actualCount + 1
+                              let idNumQ = idNumber + 1
+                              let uid9 = prefix + idNumQ
+                              User.findByIdAndUpdate(id,{$set:{idNumber:idNumber,actualCount:actualCount}},function(err,ocs){
+                                console.log('Mail sent : %s', info.response);
+                                req.session.message = {
+                                  type:'success',
+                                  message:'confirmation email sent'
+                                }     
+                               
+                                res.render('admin/staff',{message:req.session.message,uid1:uid9,pro:pro
+                                })
+                              })
+                               
+                                 
+                            }
+                        })
+                  
+                    }
+                          
+                    
+                  })
+                  
+                  
+                     
+                  }
+                    
+                    
+                  
+                      
+                  
+                      
                       })
-                     }
-              });
-
-
-
-
+              
+              
+              
+                  
+              
+              //user account activation route  (teachers & librarian users)
+              router.get('/activate1/:token',(req,res)=>{
+                  const token = req.params.token;
+                  var m = moment()
+                  var year = m.format('YYYY')
+                  let errors = [];
+                  if (token) {
+                      jwt.verify(token, JWT_KEY, (err, decodedToken) => {
+                          if (err) {
+                              
+                              req.session.message = {
+                                  type:'errors',
+                                  message:'Incorrect or expired link! Please register again'
+                                } 
+                                res.render('user/login',{message:req.session.message});
+                          }
+                          else {
+                              const {uid, name,surname,fullname,mobile,gender,dob,role,term,year,expdate,expStr,idNumX, count,actualCount,duration, companyId, email,prefix,suffix,idNumber,schoolName, password,} = decodedToken;
+                              User.findOne({ uid: uid }).then(user => {
+                                  if (user) {
+                                      //------------ User already exists ------------//
+                                  
+                                      req.session.message = {
+                                          type:'errors',
+                                          message:'User already registered! Please log in.'
+                                        }  
+                                        res.render('users/login',{message:req.session.message});
+                               
+                                      
+                                  }
+                                  else  {      
+                
+                                    var user = new User();
+                                    user.uid = uid;
+                                    user.name = name;
+                                    user.surname = surname;
+                                    user.fullname = fullname;
+                                    user.email = email;
+                                    user.role = role;
+                                    user.prefix = prefix;
+                                    user.suffix = suffix;
+                                    user.companyId = companyId;
+                                    user.gender = gender;
+                                    user.dob = dob;
+                                    user.mobile= mobile;
+                                    user.studentId = 'null'
+                                    user.teacherName='null'
+                                    user.teacherId = 'null'
+                                    user.grade = 0;
+                                    user.idNumber= idNumber;
+                                    user.idNumX = idNumX;
+                                    user.class1 = 'null';
+                                    user.mobile = mobile;
+                                    user.classLength = 0;
+                                    user.classNo = 0
+                                    user.studentNum = 0;
+                                    user.uidNum = 309;
+                                    user.number = 0;
+                                    user.schoolName=schoolName
+                                    user.examDate = 'null';
+                                    user.feeStatus = 'null';
+                                    user.feesUpdate = 'null';
+                                    user.term = term;
+                                    user.amount = 0;
+                                    user.receiptNumber = 0;
+                                    user.year = year;
+                                    user.recNumber = 0;
+                                    user.balance = 0;
+                                    user.balanceCarriedOver = 0;
+                                    user.status = 'null';
+                                    user.paymentId = 'null';
+                                    user.role1 = 'staff'
+                                    user.photo = 'propic.jpg';
+                                    user.level = 'null';
+                                    user.pollUrl='null'
+                                    user.annual =0
+                                    user.fees = 0
+                                    user.paynow = 0
+                                    user.type = 'null';
+                                    user.address = 'null';
+                                    user.dept = 'null';
+                                    user.subject = 0;
+                                    user.subjectCode = 'null'
+                                    user.subjects = 'null'
+                                    user.dept = 'null';
+                                    user.expdate=expdate;
+                                    user.expStr = expStr; 
+                                    user.duration = duration;   
+                                    user.levelX = 'null';
+                                    user.status4 = 'null';
+                                    user.status3 = "null"
+                                    user.pollUrl2 = "null"
+                                    user.count= count
+                                    user.pollCount = 0
+                                    user.actualCount = actualCount   
+                                    user.startYear = year
+                                    user.currentYearCount = 0
+                                    user.stdYearCount = 0
+                                    user.admissionYear = 0  
+                                    user.password = user.encryptPassword(password)
+                                    user.save()
+                                      .then(user =>{
+                                       
+                                      
+                                          
+                                        req.session.message = {
+                                          type:'success',
+                                          message:'Account Registered'
+                                        }  
+                                        res.render('users/login',{message:req.session.message});
+                                      })
+                                      .catch(err => console.log(err))
+                                    }
+                                    
+                                      })
+                                     }
+                              });
+                            }
+                  });
+              
 
 //staff List
 
 router.get('/staffList',isLoggedIn,adminX,(req, res) => {
 var pro = req.user
-User.find({role1:"staff"},(err, docs) => {
+var companyId = req.user.companyId
+User.find({companyId:companyId,role1:"staff"},(err, docs) => {
     if (!err) {
         res.render("admin/slist", {
             list: docs, pro:pro
@@ -1147,14 +2270,17 @@ User.find({role1:"staff"},(err, docs) => {
 });
 
 
-
+router.get('/landX',isLoggedIn,function(req,res){
+  res.render('landing/land2')
+})
 
 //student List
 
 
 router.get('/studentList',isLoggedIn,adminX,(req, res) => {
 var pro = req.user
-User.find({role:"student"},(err, docs) => {
+var companyId = req.user.companyId
+User.find({companyId:companyId,role:"student"},(err, docs) => {
     if (!err) {
         res.render("admin/stdlist", {
             list: docs,pro:pro 
@@ -1221,7 +2347,8 @@ res.redirect('/profile')
 
 router.get('/teacherList',isLoggedIn,adminX,(req, res) => {
 var pro = req.user
-User.find({role:"teacher"},(err, docs) => {
+var companyId = req.user.companyId
+User.find({companyId:companyId,role:"teacher"},(err, docs) => {
     if (!err) {
         res.render("admin/tList", {
             list: docs, pro:pro
@@ -1241,8 +2368,9 @@ router.get('/tstats',isLoggedIn,function(req,res){
 var m = moment()
 var year = m.format('YYYY')
 var uid = req.user.uid
+var companyId = req.user.companyId
 var term = req.user.term
-TeacherExamRate.find({year:year,  type:"Final Exam"},function(err,docs){
+TeacherExamRate.find({companyId:companyId,year:year,  type:"Final Exam"},function(err,docs){
   if (!err) {
       res.render('admin/statX', {
          list:docs,pro:pro
@@ -1263,7 +2391,8 @@ var m = moment()
 var year = m.format('YYYY')
 var uid = req.user.uid
 var term = req.user.term
-TeacherExamRate.find({year:year,   type:"Class Test"},function(err,docs){
+var companyId = req.user.companyId
+TeacherExamRate.find({companyId:companyId,year:year,   type:"Class Test"},function(err,docs){
   if (!err) {
       res.render('admin/statc', {
          list:docs, pro:pro
@@ -1281,7 +2410,8 @@ TeacherExamRate.find({year:year,   type:"Class Test"},function(err,docs){
 router.get('/results',isLoggedIn, (req, res) => {
   var pro = req.user
   var uid= req.user.uid
-  TestX.find({ type:'Class Test'},(err, docs) => {
+  var companyId = req.user.companyId
+  TestX.find({companyId:companyId, type:'Class Test'},(err, docs) => {
   if (!err) {
      res.render("admin/result", {
         list:docs, pro:pro
@@ -1296,7 +2426,8 @@ router.get('/results',isLoggedIn, (req, res) => {
   router.get('/examResults',isLoggedIn, (req, res) => {
     var pro = req.user
   var uid= req.user.uid
-  TestX.find({ type:'Final Exam'},(err, docs) => {
+  var companyId = req.user.companyId
+  TestX.find({companyId:companyId, type:'Final Exam'},(err, docs) => {
   if (!err) {
      res.render("admin/resultX", {
         list:docs, pro:pro
@@ -1308,153 +2439,651 @@ router.get('/results',isLoggedIn, (req, res) => {
   
 
 
+router.get('/subscriptions',isLoggedIn,function(req,res){
+  var pro = req.user
+
+  Subscriptions.find({},(err, docs) => {
+    console.log(docs,'docs')
+  res.render('accounts/subscriptions1',{doc:docs[0],pro:pro})
+
+  })
+})
+//subscription packages
+router.get('/subX1',isLoggedIn, function(req,res){
+  res.render('accounts/subscriptions1')
+})
+
+router.get('/addSub',function(req,res){
+  var pro = req.user
+  res.render('accounts/subs',{pro:pro})
+})
+//startup Q
+router.get('/startup',isLoggedIn,function(req,res){
+
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var m = moment()
+  var id  = req.user._id
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+     
+      console.log(amount,'money')
+ /*
+  Subscriptions.find({},function(err,docs){
+amount = docs[0].startup
+  })*/
+  
+  let payment = paynow.createPayment("Subscription");
+
+  
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Startup Quartely Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.date = date;
+        poll.package = "Startup Quarterly Package"
+        poll.amount = amount
+        poll.count = pollCount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount, duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/subscriptions')
+    }
+  })
+})
+})
+
+//startup A
+router.get('/startupA',isLoggedIn,function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
+  
+  let payment = paynow.createPayment("Subscription");
+
+  
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Startup Annual Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.date = date;
+        poll.package = "Startup Annual Package"
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount,duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/subscriptions')
+    }
+  })
+})
+
+
+//advanced Q
+router.get('/advanced',isLoggedIn, function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+
+  var count = 100
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
+  
+  let payment = paynow.createPayment("Subscription");
+
+  
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Advanced Quartely Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.package = "Advanced Quartely Package"
+        poll.date = date;
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount, duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/subscriptions')
+    }
+  })
+})
+
+//advanced A
+router.get('/advancedA',isLoggedIn, function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+ 
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
+  
+  let payment = paynow.createPayment("Subscription");
+
+  
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Advanced Annual Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.package = "Advanced Quartely Package"
+        poll.date = date;
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount, duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/subscriptions')
+    }
+  })
+})
+
+//enterprise Q
+router.get('/enterprise',isLoggedIn, function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+ 
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
+  
+  let payment = paynow.createPayment("Subscription");
+
+  
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Enterprise Quartely Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.package = "Enterprise Quartely Package"
+        poll.date = date;
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount,duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/subscriptions')
+    }
+  })
+})
+
+//enterprise A
+router.get('/enterpriseA',isLoggedIn, function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
+  
+  let payment = paynow.createPayment("Subscription");
+
+  
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Enterprise Annual Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.package = "Enterprise Annual Package"
+        poll.date = date;
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount, duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/subscriptions')
+    }
+  })
+})
+
+router.post('/addSub', (req,res)=>{
+  var startup = req.body.startup;
+  var startupCount = req.body.startupCount;
+  var startupDuration = req.body.startupDuration
+  var advanced = req.body.advanced;
+  var advancedDuration = req.body.advancedDuration;
+  var advancedCount = req.body.advancedCount;
+  var enterprise = req.body.enterprise;
+  var enterpriseDuration = req.body.enterpriseDuration;
+  var enterpriseCount = req.body.enterpriseCount;
+  var startupA = req.body.startupA;
+  var startupAduration = req.body.startupAduration;
+  var advancedA = req.body.advancedA;
+  var advancedAduration = req.body.advancedAduration;
+  var enterpriseA = req.body.enterpriseA;
+  var enterpriseAduration = req.body.enterpriseAduration;
+  var pro = req.user
+
+ 
+  req.check('startup','Enter Startup Amount').notEmpty().isNumeric();
+  req.check('startupCount','Enter Startup Amount').notEmpty().isNumeric();
+  req.check('advanced','Enter Advanced').notEmpty().isNumeric();
+  req.check('advancedCount','Enter Advanced').notEmpty().isNumeric();
+  req.check('enterprise', 'Enter Enterprise').notEmpty().isNumeric();
+  req.check('enterpriseCount', 'Enter Enterprise').notEmpty().isNumeric();
+  req.check('startupA','Enter Annual Startup Amount ').notEmpty().isNumeric();
+  req.check('advancedA','Enter Annual Advanced').notEmpty().isNumeric();
+  req.check('enterpriseA', 'Enter Annual Enterprise').notEmpty().isNumeric(); 
+  req.check('startupDuration', 'Enter Startup Duration').notEmpty().isNumeric(); 
+  req.check('advancedDuration', 'Enter Advanced Duration').notEmpty().isNumeric(); 
+  req.check('enterpriseDuration', 'Enter Enterprise Duration').notEmpty().isNumeric(); 
+  req.check('startupAduration', 'Enter Startup Annual Duration').notEmpty().isNumeric(); 
+  req.check('advancedAduration', 'Enter Advanced Annual Duration').notEmpty().isNumeric(); 
+  req.check('enterpriseAduration', 'Enter Enterprise Annual Duration').notEmpty().isNumeric(); 
+
+ 
+ 
+    
+  var errors = req.validationErrors();
+  
+  
+  
+   if (errors) {
+  
+     
+        req.session.errors = errors;
+        req.session.success = false;
+        res.render('accounts/subs',{ errors:req.session.errors,pro:pro})
+     
+    
+    }
+else{
+  
+    Subscriptions.findOne({'startup':startup})
+    .then(clax =>{
+        if(clax){ 
+
+       req.session.message = {
+        type:'errors',
+         message:'Subscription already exists'
+       }     
+          res.render('accounts/subs', {
+             message:req.session.message ,pro:pro
+          })
+        }else
+
+  var sub = new Subscriptions();
+
+  sub.startup = startup;
+  sub.startupDuration = startupDuration
+  sub.startupCount = startupCount;
+  sub.advanced = advanced;
+  sub.advancedDuration = advancedDuration;
+  sub.advancedCount = advancedCount;
+  sub.enterprise = enterprise;
+  sub.enterpriseDuration = enterpriseDuration
+  sub.enterpriseCount = enterpriseCount;
+  sub.startupA = startupA;
+  sub.startupAduration = startupAduration
+  sub.advancedA = advancedA;
+  sub.advancedAduration = advancedAduration
+  sub.enterpriseA = enterpriseA;
+  sub.enterpriseAduration = enterpriseAduration
+  
+ 
+
+
+  sub.save()
+    .then(romm =>{
+     
+      req.session.message = {
+        type:'success',
+        message:'Subscription added'
+      }  
+      res.render('accounts/subs',{message:req.session.message,pro:pro});
+  
+
+  })
+
+    .catch(err => console.log(err))
+  
+  
+  })
+}
+
+
+
+
+
+
+
+})
+  
+
+
+
+
+
+
+
+
+
+
+
+router.get('/listSub',isLoggedIn, (req, res) => {
+  var pro = req.user  
+  Subscriptions.find( (err, doc) => {
+      if (!err) {
+      
+          res.render("accounts/subList", {
+             
+              list: doc, pro:pro
+            
+              
+          });
+        
+      }
+  });
+  });
+
+
+
+  router.get('/subsPoll',isLoggedIn, (req, res) => {
+    var pro = req.user 
+    var companyId = req.user.companyId 
+    var set = moment()
+    var m2 = moment(req.user.expStr)
+    
+    var msg ="Package Expired"
+    var days=m2.diff(set,"days");
+    console.log(days)
+    var les = days<=0;
+    console.log(les)
+    var mor = days>0;
+    Poll2.find({companyId:companyId}, (err, doc) => {
+        if (!err) {
+        
+            res.render("accounts/subPoll", {
+               
+                list: doc, pro:pro, msg:msg, days:days, les:les, mor:mor
+              
+                
+            });
+          
+        }
+    });
+    });
+  
+
 
 
 
 
 //role admin
-//add admin
-router.get('/addAdmin',   function(req,res){
-
-res.render('admin/admit-form');
-
-
-
-})
-
-router.post('/addAdmin',   function(req,res){
-var uid = req.body.uid;
-var name = req.body.name;
-var surname = req.body.surname;
-var mobile = req.body.mobile;
-var gender = req.body.gender;
-var dob = req.body.dob;
-var class1 = 'null';
-var fullname = name +" "+ surname 
-var grade = 'null'
-var password = req.body.password;
-var term = 1;
-var year = 2022;
-var admin = 'admin'
-
-
-
-
-
-req.check('name','Enter Name').notEmpty();
-req.check('surname','Enter Surname').notEmpty();
-req.check('dob','Enter Date Of Birth').notEmpty();
-
-req.check('uid','Enter Admin ID').notEmpty();
-
-req.check('gender','Enter Gender').notEmpty();
-req.check('mobile', 'Enter Phone Number').notEmpty();
-req.check('password', 'Password do not match').isLength({min: 4}).equals(req.body.confirmPassword);
-  
-
-    
- 
-var errors = req.validationErrors();
-  if (errors) {
-  
-    req.session.errors = errors;
-    req.session.success = false;
-    res.render('admin/admit-form',{user:req.body, errors:req.session.errors,
-
-})
-  
-}
-
-{
-  User.findOne({'uid':uid, 'role':admin})
-  .then(user =>{
-      if(user){ 
-    // req.session.errors = errors
-      //req.success.user = false;
+//updating user
+router.get('/sub/:id', (req, res) => {
+  var pro = req.user  
+  User.findById(req.params.id, (err, doc) => {
+      if (!err) {
       
-     req.session.message = {
-       type:'errors',
-       message:'admin already in the system'
-     }     
-     
-        res.render('admin/admit-form', {
-            user:req.body, message:req.session.message 
-        }) 
-      
-}
-
-              else  {   
-           
-
-                var user = new User();
-                user.uid = uid;
-                user.name = name;
-                user.fullname = name + " " + surname;
-                user.surname = surname;
-                user.role = 'admin';
-                user.dob = dob;
-                user.gender = gender;
-                user.grade = 0;
-                user.class1 = class1;
-                user.classLength = 0
-                user.mobile = mobile;
-                user.role = 'admin';
-                user.classLength = 0;
-                user.studentNum = 0;
-                user.uidNum = 22000;
-                user.examDate = 'null';
-                user.feeStatus = 'null';
-                user.feesUpdate = 'null';
-                user.term = term;
-                user.year = year;
-                user.balance = 0;
-                user.balanceCarriedOver = 0;
-                user.amount = 0;
-                user.receiptNumber = 0;
-                user.status = 'null';
-                user.paymentId = 'null';
-                user.studentId = 'null';
-                user.prefix = 'null';
-                user.photo = 'propic.jpg';
-                user.level = 'null';
-                user.annual = 0
-                user.pollUrl = 'null'
-                user.fees = 0
-                user.type = 'null';
-                user.address = 'null';
-                user.dept = 'null';
-                user.subject = 0;
-                user.subjectCode = 'null'
-                user.subjects = 'null';
-                user.teacherId = 'null';
-                user.teacherName = 'null';
-                user.classNo = 0
-                user.password = user.encryptPassword(password)
-
-                
-                 
+          res.render("accounts/update", {
+             
+              user: doc, pro:pro
             
-                 
+              
+          });
         
-                user.save()
-                  .then(user =>{
-                   
-                  
-                    res.redirect('/addAdmin')
-               
-                })
-                  .catch(err => console.log(err))
-                }
-                
-                  })
-                 }
-})
+      }
+  });
+  });
+  
+  router.post('/sub/:id',  (req, res) => {
+  var sub = new Subscriptions();
+  var id = req.body._id;
+  var startup = req.body.startup;
+  var advanced = req.body.advanced;
+  var enterprise = req.body.enterprise;
 
-
+  var pro = req.user
+  
+  req.check('startup','Enter Startup Amount').notEmpty().isNumeric();
+  req.check('advanced','Enter Advanced').notEmpty().isNumeric();
+  
+  req.check('enterprise', 'Enter Enterprise').notEmpty().isNumeric();
+  
+ 
+    
+  var errors = req.validationErrors();
+  
+  
+  
+   if (errors) {
+  
+     
+        req.session.errors = errors;
+        req.session.success = false;
+        res.render('accounts/subList',{ errors:req.session.errors,pro:pro})
+     
+    
+    }
+  
+  else
+  {
+  
+        Subscriptions.findOneAndUpdate({_id:id},req.body,
+          { new: true }, (err, doc) => {
+             if (!err) {
+             
+                res.redirect('/listSub'); }
+             else {
+               console.log('error'+err)
+       
+             }
+           
+         })
+  
+  
+    
+  }
+  
+  });
+  
 
 
 router.get('/rem',function(req,res){
-  User.find({role:'student'},function(err,docs){
+  User.find({role1:'staff'},function(err,docs){
     for(var i = 0; i<docs.length;i++){
       User.findByIdAndRemove(docs[i]._id,function(err,locs){
 
@@ -1464,6 +3093,18 @@ router.get('/rem',function(req,res){
 })
 
 
+
+router.get('/remX3',function(req,res){
+  User.find({},function(err,docs){
+    for(var i = 0; i<docs.length;i++){
+      User.findByIdAndUpdate(docs[i]._id,{$set:{balance:-30000,balanceCarriedOver:0,}},function(err,locs){
+
+      })
+    }
+  })
+})
+
+/*
 router.get('/remX',function(req,res){
   User.find({role:'teacher'},function(err,docs){
     for(var i = 0; i<docs.length;i++){
@@ -1474,12 +3115,13 @@ router.get('/remX',function(req,res){
   })
 })
 
-
+*/
 
 
 router.get('/deptList',isLoggedIn, (req, res) => {
 var pro = req.user
-Dept.find({},(err, docs) => {
+var companyId = req.user.companyId
+Dept.find({companyId:companyId},(err, docs) => {
     if (!err) {
         res.render("admin/deptlist", {
            list:docs, pro:pro
@@ -1491,7 +3133,8 @@ Dept.find({},(err, docs) => {
 
 router.get('/cList',isLoggedIn, (req, res) => {
 var pro = req.user
-Class1.find({},(err, docs) => {
+var companyId = req.user.companyId
+Class1.find({companyId:companyId},(err, docs) => {
     if (!err) {
         res.render("admin/clist", {
            list:docs, pro:pro
@@ -1510,7 +3153,8 @@ Class1.find({},(err, docs) => {
 //student registering subjects
 router.get('/studentSub',isLoggedIn,adminX,function(req,res){
 var pro = req.user
-User.find({role:'student'},function(err,docs){
+var companyId = req.user.companyId
+User.find({companyId:companyId,role:'student'},function(err,docs){
 
 
 
@@ -1520,14 +3164,14 @@ let studentId = docs[i].uid;
 let studentClass = docs[i].class1;
 let grade = docs[i].grade;
 
-Subject.find({grade:grade},function(err,nocs){
+Subject.find({companyId:companyId,grade:grade},function(err,nocs){
 for(var x = 0; x < nocs.length; x++){
 let subjectName = nocs[x].name;
 let subjectCode = nocs[x].code
 let dept = nocs[x].dept
  
  
-StudentSub.findOne({'studentName':studentName, 'subjectCode':subjectCode})
+StudentSub.findOne({'companyId':companyId,'studentName':studentName, 'subjectCode':subjectCode})
 .then(clax =>{
     if(clax){ 
  
@@ -1563,13 +3207,14 @@ res.redirect('/subTotal')
 
 //update student subject number
 router.get('/subTotal',isLoggedIn,function(req,res){
-User.find({role:'student'},function(err,docs){
+  var companyId = req.user.companyId
+User.find({companyId:companyId,role:'student'},function(err,docs){
 
 for(var i = 0; i<docs.length; i++){
   let id = docs[i]._id;
   let studentId = docs[i].uid;
 
-StudentSub.find({studentId:studentId},function(err,nocs){
+StudentSub.find({companyId:companyId,studentId:studentId},function(err,nocs){
 let total = nocs.length;
 
 User.findByIdAndUpdate(id,{$set:{subject:total}},function(err,tocs){
@@ -1598,8 +3243,9 @@ res.redirect('/adminDash')
 
 router.get('/teacherSubject',isLoggedIn, function(req,res){
   var pro = req.user
-Class1.find({},function(err,docs){
-  Subject.find({},function(err,locs){
+  var companyId = req.user.companyId
+Class1.find({companyId:companyId},function(err,docs){
+  Subject.find({companyId:companyId},function(err,locs){
   var arr1 = docs;
   var arr = locs
 res.render('teachers/subjects',{arr1:arr1, arr:arr, pro:pro})
@@ -1618,6 +3264,7 @@ var subjectName = req.body.subjectName;
 var arr, arr1
 console.log(teacherName)
 var pro = req.user
+var companyId= req.user.companyId
 
 
 req.check('teacherName','Enter Name Of Teacher').notEmpty();
@@ -1645,13 +3292,13 @@ if (errors) {
 
 }
 else
-TeacherSub.findOne({'teacherName':teacherName, 'class1':class1, 'subjectName':subjectName})
+TeacherSub.findOne({'companyId':companyId, 'teacherName':teacherName, 'class1':class1, 'subjectName':subjectName})
 .then(clax =>{
   if(clax){ 
  
     
-    Class1.find({},function(err,docs){
-      Subject.find({},function(err,locs){
+    Class1.find({companyId:companyId},function(err,docs){
+      Subject.find({companyId:companyId},function(err,locs){
       arr1 = docs;
       arr = locs
     
@@ -1679,7 +3326,7 @@ teacher.save()
                    
 id = teach._id;
 
-Subject.find({name:subjectName, class1:class1},function(err,docs){
+Subject.find({companyId:companyId,name:subjectName, class1:class1},function(err,docs){
 subjectCode=docs[0].code;
 grade = docs[0].grade;
 dept = docs[0].dept;
@@ -1692,8 +3339,8 @@ TeacherSub.findByIdAndUpdate(id,{$set:{subjectCode:subjectCode, grade:grade, dep
 
 })
 
-Class1.find({},function(err,docs){
-Subject.find({},function(err,locs){
+Class1.find({companyId:companyId},function(err,docs){
+Subject.find({companyId:companyId},function(err,locs){
 arr1 = docs;
 arr = locs
 
@@ -1731,10 +3378,10 @@ res.render('teachers/subjects',{message:req.session.message, arr:arr, arr1:arr1,
 
 router.get('/autocompleteTS/',isLoggedIn, function(req, res, next) {
 
-
+var companyId = req.user.companyId
 var regex= new RegExp(req.query["term"],'i');
 
-var uidFilter =User.find({fullname:regex, role:"teacher"},{'fullname':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+var uidFilter =User.find({companyId:companyId,fullname:regex, role:"teacher"},{'fullname':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
 
 
 uidFilter.exec(function(err,data){
@@ -1787,9 +3434,10 @@ if(!err){
 //this routes autopopulates teachers info from the id selected from automplet1
 router.post('/autoTS',isLoggedIn,function(req,res){
 var fullname = req.body.code
+var companyId = req.user.companyId
 
 
-User.find({fullname:fullname},function(err,docs){
+User.find({companyId:companyId,fullname:fullname},function(err,docs){
 if(docs == undefined){
  res.redirect('/autoTS')
 }else
@@ -1810,11 +3458,11 @@ if(docs == undefined){
 //autocomplete teacherName & uid
 
 router.get('/autocompleteSub/',isLoggedIn, function(req, res, next) {
-
+var companyId = req.user.companyId
 
 var regex= new RegExp(req.query["term"],'i');
 
-var uidFilter =Subject.find({name:regex},{'name':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+var uidFilter =Subject.find({companyId:companyId,name:regex},{'name':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
 
 
 uidFilter.exec(function(err,data){
@@ -1867,9 +3515,9 @@ if(!err){
 //this routes autopopulates teachers info from the id selected from automplet1
 router.post('/autoSub',isLoggedIn,function(req,res){
 var name = req.body.code
+var companyId = req.user.companyId
 
-
-  Subject.find({name:name},function(err,docs){
+  Subject.find({companyId:companyId,name:name},function(err,docs){
 if(docs == undefined){
  res.redirect('/autoSub')
 }else
@@ -1902,13 +3550,14 @@ if(docs == undefined){
 //update teacher subjectNumber
 //update student subject number
 router.get('/subTotalX',isLoggedIn,function(req,res){
-User.find({role:'teacher'},function(err,docs){
+  var companyId = req.user.companyId
+User.find({companyId:companyId,role:'teacher'},function(err,docs){
 
   for(var i = 0; i<docs.length; i++){
     let id = docs[i]._id;
     let teacherId = docs[i].uid;
 
-TeacherSub.find({teacherId:teacherId},function(err,nocs){
+TeacherSub.find({companyId:companyId,teacherId:teacherId},function(err,nocs){
  let total = nocs.length;
 
  User.findByIdAndUpdate(id,{$set:{subject:total}},function(err,tocs){
@@ -1956,9 +3605,9 @@ router.get('/termInfo',isLoggedIn,adminX, function(req,res){
   var pro = req.user
   var year = m.format('YYYY')
   var term = req.user.term
-  
+   var companyId = req.user.companyId
 
-FeesUpdate.find({term:term, year:year},(err, docs) => {
+FeesUpdate.find({companyId:companyId,term:term, year:year},(err, docs) => {
     if (!err) {
         res.render("admin/newTerm", {
            list:docs, pro:pro
@@ -1979,6 +3628,7 @@ FeesUpdate.find({term:term, year:year},(err, docs) => {
     term = req.body.term
     year = m.format('YYYY')
     var feeX = req.body.fees
+    var companyId = req.user.companyId
     
    
     
@@ -2017,6 +3667,7 @@ FeesUpdate.find({term:term, year:year},(err, docs) => {
     fees.fees= req.body.fees;
     fees.term = term;
     fees.year = year
+    fees.companyId = companyId
   
     fees.person = req.user.fullname
   
@@ -2075,7 +3726,8 @@ router.get('/timetable',isLoggedIn, (req, res) => {
   var term = req.user.term
   var arr= []
   var pro = req.user
-  Lesson.find({term:term},(err, docs) => {
+  var companyId = req.user.companyId
+  Lesson.find({companyId:companyId,term:term},(err, docs) => {
     for(var i = 0; i<docs.length; i++){
       arr.push(docs[i].start)
     }
@@ -2101,7 +3753,8 @@ router.get('/timetable',isLoggedIn, (req, res) => {
 //exam timetable
 router.get('/examList',isLoggedIn, (req, res) => {
 var pro = req.user
-Exam.find({},(err, docs) => {
+var companyId = req.user.companyId
+Exam.find({companyId:companyId},(err, docs) => {
     if (!err) {
         res.render("adminExam/examList", {
            list:docs,pro:pro
@@ -2124,7 +3777,8 @@ Exam.find({},(err, docs) => {
 //grade List
 router.get('/gradeList',isLoggedIn,adminX, (req, res) => {
 var pro = req.user
-  Grade.find({},(err, docs) => {
+var companyId = req.user.companyId
+  Grade.find({companyId:companyId},(err, docs) => {
       if (!err) {
           res.render("adminExam/glist", {
              list:docs, pro:pro
@@ -2142,7 +3796,8 @@ var pro = req.user
 
     router.get('/feesRecords',isLoggedIn, (req, res) => {
 var pro = req.user
-      Fees.find({},(err, docs) => {
+var companyId = req.user.companyId
+      Fees.find({companyId:companyId},(err, docs) => {
           if (!err) {
               res.render("accounts/listX", {
                  list:docs, pro:pro
@@ -2177,7 +3832,8 @@ var pro = req.user
 
 router.get('/expenseList',isLoggedIn, (req, res) => {
 var pro = req.user
-Expenses.find({},(err, docs) => {
+var companyId = req.user.companyId
+Expenses.find({companyId:companyId},(err, docs) => {
     if (!err) {
         res.render("accounts/listE", {
            list:docs, pro:pro
@@ -2191,7 +3847,8 @@ Expenses.find({},(err, docs) => {
 //list of users
 router.get('/listX',isLoggedIn,adminX, (req, res) => {
 var pro = req.user
-User.find({},(err, docs) => {
+var companyId = req.user.companyId
+User.find({companyId:companyId},(err, docs) => {
     if (!err) {
         res.render("admin/users", {
            list:docs,
@@ -2224,7 +3881,7 @@ User.findById(req.params.id, (err, doc) => {
 });
 });
 
-router.post('/:id',isLoggedIn,adminX, upload.single('myFile'),  (req, res) => {
+router.post('/:id',isLoggedIn,adminX,  (req, res) => {
 var user = new User();
 var id = req.body._id;
 var name = req.body.name;
@@ -2236,12 +3893,15 @@ var pro = req.user
 
 req.check('name','Enter Name').notEmpty();
 req.check('surname','Enter Surname').notEmpty();
+req.check('email','Enter email').notEmpty().isEmail();
+req.check('dob','Enter Date Of Birth').notEmpty();
+req.check('address','Enter Address').notEmpty();
+req.check('grade','Enter Grade/Form').notEmpty();
+req.check('uid','Enter Student ID').notEmpty();
+req.check('class1','Enter Class').notEmpty();
+req.check('gender','Enter Gender').notEmpty();
+req.check('mobile', 'Enter Phone Number').notEmpty()
 
-req.check('dob', 'Enter Date Of Birth').notEmpty();
-
-if(req.body.password === req.body.confirmPassword && !req.validationErrors()){
-  user.password=req.body.password=encryptPassword(req.body.password)
- }
   
 var errors = req.validationErrors();
 
@@ -2252,7 +3912,7 @@ var errors = req.validationErrors();
    
       req.session.errors = errors;
       req.session.success = false;
-      res.render('users/list',{ errors:req.session.errors,pro:pro})
+      res.render('users/update',{ errors:req.session.errors,pro:pro})
    
   
   }

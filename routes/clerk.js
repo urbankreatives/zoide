@@ -1,12 +1,18 @@
 require('dotenv').config();
-
+require("../config5/keys")
 var express = require('express');
 var router = express.Router();
 const User =require('../models/user')
+const Setup =require('../models/setup')
 const Class1 =require('../models/class');
 const Subject =require('../models/subject');
+const Student =require('../models/studentStats');
 const Fees =require('../models/fees');
+const Num =require('../models/num');
+const Poll2 =require('../models/poll2');
 const Grade =require('../models/grade');
+const { Paynow } = require("paynow");
+const Subscriptions =require('../models/subscriptions');
 const Dept =require('../models/dept');
 const Test =require('../models/classTest');
 const Lesson =require('../models/lesson');
@@ -30,7 +36,12 @@ var Quiz = require('../models/quiz');
 const stripe = require('stripe')('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');
 const keys = require('../config1/keys')
 var mongoose = require('mongoose')
-const { Paynow } = require("paynow");
+const { google } = require("googleapis");
+const OAuth2 = google.auth.OAuth2;
+const jwt = require('jsonwebtoken');
+const JWT_KEY = "jwtactive987";
+const JWT_RESET_KEY = "jwtreset987";
+var nodemailer = require('nodemailer');
 var passport = require('passport')
 var xlsx = require('xlsx')
 var multer = require('multer')
@@ -40,24 +51,22 @@ var bcrypt = require('bcrypt-nodejs');
 var passport = require('passport')
 var moment = require('moment')
 var bcrypt = require('bcrypt-nodejs');
-
-
-
+const { countReset } = require('console');
 
 
 var storage = multer.diskStorage({
-    destination:function(req,file,cb){
-        cb(null,'./public/uploads/')
-    },
-    filename:(req,file,cb)=>{
-        cb(null,file.originalname)
-    }
+  destination:function(req,file,cb){
+      cb(null,'./public/uploads/')
+  },
+  filename:(req,file,cb)=>{
+      cb(null,file.originalname)
+  }
 })
 
 
 
 var upload = multer({
-    storage:storage
+  storage:storage
 })
 
 
@@ -147,9 +156,10 @@ router.get('/pollCheck',isLoggedIn,function(req,res){
   var m = moment()
   var year = m.format('YYYY')
   var month = m.format('MMMM')
-  var xId = req.user._id
+  var companyId = req.user.companyId
 
-User.find({role:"student"},function(err,docs){
+
+User.find({companyId:companyId,role:"student"},function(err,docs){
 for(var i = 0; i<docs.length;i++){
 if(docs[i].pollUrl === "null"){
 i++;
@@ -157,12 +167,12 @@ i++;
 }else{
 
 let pollUrl = docs[i].pollurl;
-let paynow = new Paynow("14628", "0b05a9bd-6779-4a6f-9da7-48e03cb96a67");
+let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
 
 paynow.pollTransaction(pollUrl).then(transaction => {
   if(transaction.status === 'awaiting delivery') {
     // User showed us the doe
-    let amount = transaction.amount;
+    let amount = docs[i].paynow;
     let uid = docs[i].uid;
     let balance = docs[i].balance
     let receiptNumber = 'paynow'
@@ -190,7 +200,7 @@ paynow.pollTransaction(pollUrl).then(transaction => {
       .then(fee =>{
  
 
-         User.findByIdAndUpdate(xId,{$set:{studentId:uid,amount:amount,receiptNumber:receiptNumber}},function(err,gocs){
+         User.findByIdAndUpdate(id,{$set:{studentId:uid,amount:amount,receiptNumber:'paynow'}},function(err,gocs){
 
 
 
@@ -200,7 +210,7 @@ paynow.pollTransaction(pollUrl).then(transaction => {
 
           if(newBalance >= 0){
   
-            User.findByIdAndUpdate(id,{$set:{balance:newBalance, status:"paid", term:term, year:year,balanceCarriedOver:balance}},function(err,docs){
+            User.findByIdAndUpdate(id,{$set:{balance:newBalance, status:"paid", term:term, year:year,balanceCarriedOver:balance,paynow:0,pollUrl:'null'}},function(err,docs){
           
       
             
@@ -209,7 +219,7 @@ paynow.pollTransaction(pollUrl).then(transaction => {
         
           }else
           
-          User.findByIdAndUpdate(id,{$set:{balance:newBalance, status:"owing", term:term, year:year,balanceCarriedOver:balance}},function(err,docs){
+          User.findByIdAndUpdate(id,{$set:{balance:newBalance, status:"owing", term:term, year:year,balanceCarriedOver:balance,paynow:0,pollUrl:'null'}},function(err,docs){
           
           
             
@@ -260,27 +270,28 @@ res.redirect('/clerk/stats')
 
 router.get('/stats',isLoggedIn, function(req,res){
     var students, teachers, paid, unpaid, depts, class1
+    var companyId = req.user.companyId
     var m = moment()
     var year = m.format('YYYY')
-  User.find({role:'student'},function(err,focs){
+  User.find({companyId:companyId,role:'student'},function(err,focs){
     students = focs.length
     
-  User.find({role:'teacher'},function(err,nocs){
+  User.find({companyId:companyId,role:'teacher'},function(err,nocs){
     teachers = nocs.length;
-    User.find({role:'student',status:'paid'},function(err,jocs){
+    User.find({companyId:companyId,role:'student',status:'paid'},function(err,jocs){
    paid = jocs.length;
   
-   User.find({role:'student',status:'owing'},function(err,klocs){
+   User.find({companyId:companyId,role:'student',status:'owing'},function(err,klocs){
      unpaid = klocs.length
 
-     Dept.find({},function(err,pocs){
+     Dept.find({companyId:companyId},function(err,pocs){
       depts = pocs.length;
      
-      Class1.find({},function(err,locs){
+      Class1.find({companyId:companyId},function(err,locs){
         class1 = locs.length
 
   
-     Stats.find({year:year},function(err,docs){
+     Stats.find({companyId:companyId,year:year},function(err,docs){
   
   if(docs == 0){
   
@@ -293,6 +304,7 @@ router.get('/stats',isLoggedIn, function(req,res){
   stat.depts = depts
   stat.class1 = class1
   stat.year = year
+  stat.companyId = companyId
   
   
   stat.save()
@@ -354,11 +366,12 @@ router.get('/stats',isLoggedIn, function(req,res){
     var arr1=[]
     var number1
     var totalStudents, students, passRate
+    var companyId = req.user.companyId
   
   
-    Income.find({year:year},function(err,docs){
+    Income.find({companyId:companyId,year:year},function(err,docs){
   
-      Fees.find({term:term,year:year},function(err,hods){
+      Fees.find({companyId:companyId,term:term,year:year},function(err,hods){
   
   
       
@@ -375,6 +388,7 @@ router.get('/stats',isLoggedIn, function(req,res){
               inc.thirdTermIncome = 0
               inc.thirdTermExpense = 0
               inc.year = year
+              inc.companyId = companyId
   
               inc.save()
       .then(incX =>{
@@ -385,10 +399,10 @@ router.get('/stats',isLoggedIn, function(req,res){
   
       }
       else
-      Income.find({year:year},function(err,docs){
+      Income.find({companyId:companyId,year:year},function(err,docs){
   
         var id3 = docs[0]._id
-      Fees.find({term:term,year:year},function(err,hods){
+      Fees.find({companyId:companyId,term:term,year:year},function(err,hods){
   
         for(var q = 0;q<hods.length; q++){
             
@@ -454,17 +468,18 @@ router.get('/stats',isLoggedIn, function(req,res){
     var fees
     var arr1=[]
     var number1
+    var companyId = req.user.companyId
   
-    Expenses.find({term:term,year:year},function(err,hods){
+    Expenses.find({companyId:companyId,term:term,year:year},function(err,hods){
   
       if(hods.length == 0){
   
-        res.redirect('/clerk/dash')
+        res.redirect('/clerk/dashX')
       }
   else
-  Income.find({year:year},function(err,docs){
+  Income.find({companyId:companyId,year:year},function(err,docs){
     var incX = docs[0]._id
-    Expenses.find({term:term,year:year},function(err,pods){
+    Expenses.find({companyId:companyId,term:term,year:year},function(err,pods){
     
     
   for(var q = 0;q<pods.length; q++){
@@ -521,11 +536,12 @@ router.get('/adminMonthInc', isLoggedIn,  function(req,res){
   var arr1=[]
   var number1
   var totalStudents, students, passRate
+  var companyId = req.user.companyId
 
 
-  MonthIncome.find({year:year,month:month},function(err,docs){
+  MonthIncome.find({companyId:companyId,year:year,month:month},function(err,docs){
 
-    Fees.find({year:year,month:month},function(err,hods){
+    Fees.find({companyId:companyId,year:year,month:month},function(err,hods){
 
 
     
@@ -538,6 +554,7 @@ router.get('/adminMonthInc', isLoggedIn,  function(req,res){
             inc.amount = 0;
             inc.month = month;
             inc.year = year
+            inc.companyId = companyId
 
             inc.save()
     .then(incX =>{
@@ -548,10 +565,10 @@ router.get('/adminMonthInc', isLoggedIn,  function(req,res){
 
     }
     else
-    MonthIncome.find({year:year,month:month},function(err,docs){
+    MonthIncome.find({companyId:companyId,year:year,month:month},function(err,docs){
 
       var id3 = docs[0]._id
-    Fees.find({year:year,month:month},function(err,hods){
+    Fees.find({companyId:companyId,year:year,month:month},function(err,hods){
 
       for(var q = 0;q<hods.length; q++){
           
@@ -603,11 +620,12 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
   var arr1=[]
   var number1
   var totalStudents, students, passRate
+  var companyId = req.user.companyId
 
 
-  MonthExpense.find({year:year,month:month},function(err,docs){
+  MonthExpense.find({companyId:companyId,year:year,month:month},function(err,docs){
 
-    Expenses.find({year:year,month:month},function(err,hods){
+    Expenses.find({companyId:companyId,year:year,month:month},function(err,hods){
 
 
     
@@ -620,20 +638,21 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
             exp.amount = 0;
             exp.month = month;
             exp.year = year
+            exp.companyId = companyId
 
             exp.save()
     .then(incX =>{
 
-      res.redirect('/clerk/dash')
+      res.redirect('/clerk/dashX')
 
     })
 
     }
     else
-    MonthExpense.find({year:year,month:month},function(err,docs){
+    MonthExpense.find({companyId:companyId,year:year,month:month},function(err,docs){
 
       var id3 = docs[0]._id
-    Expenses.find({year:year,month:month},function(err,hods){
+    Expenses.find({companyId:companyId,year:year,month:month},function(err,hods){
 
       for(var q = 0;q<hods.length; q++){
           
@@ -681,6 +700,57 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
 
 
 
+/*
+router.get('/fUpdate',isLoggedIn,function(req,res){
+
+  var feeX = req.user.fees
+  var annual = req.user.annual
+  var companyId = req.user.companyId
+  var term = req.user.term
+  var year = req.user.year
+  var feeId = req.user.feesUpdate
+
+
+User.find({companyId:companyId,role:"student"},function(err,docs){
+  if(docs.length == 0){
+    res.redirect('/clerk/dashX')
+  }else
+     
+    for(var i  = 0; i< docs.length; i++){
+      let balanceX;
+      let balance
+      let balanceCarriedOver
+    balanceX = docs[i].balance 
+    balance = balanceX - feeX
+    balanceCarriedOver = docs[i].balance
+  
+    console.log('balance',balance)
+    console.log('balanceX', balanceX)
+    console.log('fees',feeX)
+  
+    if(balance > 0){
+      
+      User.findByIdAndUpdate(docs[i]._id,{$set:{balance:balance, status:"paid", term:term, year:year,balanceCarriedOver:balanceCarriedOver,feesUpdate:feeId,annual:annual,fees:feeX}},function(err,docs){
+    
+    
+      
+    
+      })
+  
+    }else
+    
+    User.findByIdAndUpdate(docs[i]._id,{$set:{balance:balance, status:"owing", term:term, year:year,balanceCarriedOver:balanceCarriedOver,feesUpdate:feeId,annual:annual,fees:feeX}},function(err,docs){
+    
+    
+      
+    
+    })
+    
+    }
+    res.redirect('/clerk/dashX')
+    })
+
+    })
 
 
 
@@ -689,7 +759,7 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
 
 
 
-
+*/
 
   
   router.get('/dashX',isLoggedIn,function(req,res){
@@ -709,8 +779,9 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
      router.post('/statChart',isLoggedIn,function(req,res){
   var m = moment()
   var year = m.format('YYYY')
+  var companyId = req.user.companyId
 
-        Stats.find({year:year},function(err,docs){
+        Stats.find({companyId:companyId,year:year},function(err,docs){
           if(docs == undefined){
             res.redirect('/clerk/dash')
           }else
@@ -724,8 +795,8 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
       //calendar
   
       router.post('/calendarChart',isLoggedIn,function(req,res){
-  
-        Calendar.find({},function(err,docs){
+        var companyId = req.user.companyId
+        Calendar.find({companyId:companyId},function(err,docs){
           if(docs == undefined){
             res.redirect('/clerk/dash')
           }else
@@ -749,8 +820,8 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
         router.post('/statChart',isLoggedIn,function(req,res){
           var m = moment()
           var year = m.format('YYYY')
-        
-                Stats.find({year:year},function(err,docs){
+        var companyId = req.user.companyId
+                Stats.find({companyId:companyId,year:year},function(err,docs){
                   if(docs == undefined){
                     res.redirect('/dash')
                   }else
@@ -771,8 +842,8 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
         router.post('/incomeChart',isLoggedIn, function(req,res){
           var m = moment()
           var year = m.format('YYYY')
-      
-                Income.find({year:year},function(err,docs){
+           var companyId = req.user.companyId
+                Income.find({companyId:companyId,year:year},function(err,docs){
                   if(docs == undefined){
                     res.redirect('/dash')
                   }else
@@ -789,8 +860,8 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
       router.post('/feesChart',isLoggedIn, function(req,res){
           var m = moment()
           var year = m.format('YYYY')
-      
-                MonthIncome.find({year:year},function(err,docs){
+          var companyId = req.user.companyId
+                MonthIncome.find({companyId:companyId,year:year},function(err,docs){
                   if(docs == undefined){
                     res.redirect('/dash')
                   }else
@@ -808,8 +879,8 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
       router.post('/expenseChart',isLoggedIn, function(req,res){
         var m = moment()
         var year = m.format('YYYY')
-    
-              MonthExpense.find({year:year},function(err,docs){
+        var companyId = req.user.companyId
+              MonthExpense.find({companyId:companyId,year:year},function(err,docs){
                 if(docs == undefined){
                   res.redirect('/dash')
                 }else
@@ -892,7 +963,8 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
       var m = moment()
       var year = m.format('YYYY')
       var term = req.user.term
-            Income.find({year:year, term:term},function(err,docs){
+      var companyId = req.user.companyId
+            Income.find({companyId:companyId,year:year, term:term},function(err,docs){
               if(docs == undefined){
                 res.redirect('/clerk/dash')
               }else
@@ -921,6 +993,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
   var receiptNumber = req.body.receiptNumber;
   var method = 'manual'
   var day = moment().toString()
+  var companyId = req.user.companyId
   
     req.check('uid','Enter Student ID').notEmpty();
     req.check('fullname','Enter Student Name').notEmpty();
@@ -958,17 +1031,18 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
         fees.method = method;
         fees.paymentId = 'null'
         fees.receiptNumber = receiptNumber;
+        fees.companyId = companyId
       
       
       
         fees.save()
           .then(fee =>{
-            User.find({uid:uid},function(err,docs){
+            User.find({companyId:companyId,uid:uid},function(err,docs){
   
              User.findByIdAndUpdate(xId,{$set:{studentId:uid,amount:amount,receiptNumber:receiptNumber}},function(err,gocs){
+            
   
-  
-  
+  console.log('xId',xId)
   
               balance = docs[0].balance;
               newBalance = balance + fees.amount;
@@ -1005,19 +1079,23 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
   
       }
       
-    res.redirect('/clerk/print')
+    res.redirect('/clerk/printX')
   })
   }
    
   })
   
   
+  router.get('/printX',isLoggedIn,function(req,res){
+    res.redirect('/clerk/print')
+  })
   
   router.get('/print',isLoggedIn,function(req,res){
     var uid =req.user.studentId;
     var day = moment().toString();
     var amount = req.user.amount
-    User.find({uid:uid},function(err,zocs){
+    var companyId = req.user.companyId
+    User.find({companyId:companyId,uid:uid},function(err,zocs){
   
       
          
@@ -1037,7 +1115,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
     var companyId = req.user.companyId
         var regex= new RegExp(req.query["term"],'i');
        
-        var uidFilter =User.find({uid:regex, role:"student"},{'uid':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+        var uidFilter =User.find({companyId:companyId,uid:regex, role:"student"},{'uid':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
       
         
         uidFilter.exec(function(err,data){
@@ -1087,10 +1165,11 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
   //this route autopopulates info of the title selected from the autompleteX route
       router.post('/autoX',isLoggedIn,function(req,res){
           var uid = req.body.code
+          var companyId = req.user.companyId
       
           
          
-          User.find({uid:uid},function(err,docs){
+          User.find({companyId:companyId,uid:uid},function(err,docs){
          if(docs == undefined){
            res.redirect('/clerk/addFees')
          }else
@@ -1109,7 +1188,8 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
   
         router.get('/feesRecords',isLoggedIn, (req, res) => {
           var pro = req.user
-          Fees.find({},(err, docs) => {
+          var companyId = req.user.companyId
+          Fees.find({companyId:companyId},(err, docs) => {
               if (!err) {
                   res.render("clerk/feesRecord", {
                      list:docs, pro:pro
@@ -1125,22 +1205,428 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
   
   
   
+
   
   
+router.get('/subscriptions',isLoggedIn,function(req,res){
+  var pro = req.user
+
+  Subscriptions.find({},(err, docs) => {
+
+  res.render('clerk/subscriptions1',{doc:docs[0],pro:pro})
+
+  })
+})
+
+router.get('/startup',isLoggedIn,function(req,res){
+
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var m = moment()
+  var id  = req.user._id
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+     
+      console.log(amount,'money')
+ /*
+  Subscriptions.find({},function(err,docs){
+amount = docs[0].startup
+  })*/
   
+  let payment = paynow.createPayment("Subscription");
+
   
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Startup Quartely Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.date = date;
+        poll.package = "Startup Quarterly Package"
+        poll.amount = amount
+        poll.count = pollCount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount, duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/clerk/subscriptions')
+    }
+  })
+})
+})
+
+//startup A
+router.get('/startupA',isLoggedIn,function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
   
+  let payment = paynow.createPayment("Subscription");
+
   
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Startup Annual Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.date = date;
+        poll.package = "Startup Annual Package"
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount,duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/clerk/subscriptions')
+    }
+  })
+})
+
+
+//advanced Q
+router.get('/advanced',isLoggedIn, function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+
+  var count = 100
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
   
+  let payment = paynow.createPayment("Subscription");
+
   
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Advanced Quartely Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.package = "Advanced Quartely Package"
+        poll.date = date;
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount, duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/clerk/subscriptions')
+    }
+  })
+})
+
+//advanced A
+router.get('/advancedA',isLoggedIn, function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+ 
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
   
+  let payment = paynow.createPayment("Subscription");
+
   
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Advanced Annual Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.package = "Advanced Quartely Package"
+        poll.date = date;
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount, duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/clerk/subscriptions')
+    }
+  })
+})
+
+//enterprise Q
+router.get('/enterprise',isLoggedIn, function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+ 
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
   
+  let payment = paynow.createPayment("Subscription");
+
   
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Enterprise Quartely Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.package = "Enterprise Quartely Package"
+        poll.date = date;
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount,duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/clerk/subscriptions')
+    }
+  })
+})
+
+//enterprise A
+router.get('/enterpriseA',isLoggedIn, function(req,res){
+  var m = moment()
+  var companyId = req.user.companyId;
+  var schoolName = req.user.schoolName;
+  var date = moment().toString();
+
+  const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var amount , pollCount, duration
+  Subscriptions.find({},function(err,docs){
+    amount = docs[0].startup
+    pollCount = docs[0].startupCount
+    duration = docs[0].startupDuration
+      })
   
+  let payment = paynow.createPayment("Subscription");
+
   
+// Add items to the payment list passing in the name of the item and it's price
+payment.add("Enterprise Annual Package", amount);
+// Send off the payment to Paynow
+paynow.send(payment).then( (response) => {
+
+    if(response.success) {
+        // Get the link to redirect the user to, then use it as you see fit
+        let link = response.redirectUrl;
+
+        let pollUrl = response.pollUrl;
+
+        var poll = new Poll2();
+ 
+        poll.pollUrl = pollUrl;
+        poll.companyId = companyId;
+        poll.schoolName = schoolName;
+        poll.package = "Enterprise Annual Package"
+        poll.date = date;
+        poll.amount = amount
+        poll.duration = duration
+        poll.save()
+           .then(poll =>{
+           
+            User.findByIdAndUpdate(id,{$set:{pollUrl2:pollUrl,paynow:amount,pollCount:pollCount, duration:duration}},function(err,docs){
+               
+               
+                 
+               
+            })
+        
+
+
+
+              res.redirect(link)
+           })
+    }
+    else{
+res.redirect('/clerk/subscriptions')
+    }
+  })
+})
   
+
+
+
+router.get('/subsPoll',isLoggedIn, (req, res) => {
+  var pro = req.user 
+  var companyId = req.user.companyId 
+  var set = moment()
+  var m2 = moment(req.user.expStr)
   
+  var msg ="Package Expired"
+  var days=m2.diff(set,"days");
+  console.log(days)
+  var les = days<=0;
+  console.log(les)
+  var mor = days>0;
+  Poll2.find({companyId:companyId}, (err, doc) => {
+      if (!err) {
+      
+          res.render("CLERK/subPoll", {
+             
+              list: doc, pro:pro, msg:msg, days:days, les:les, mor:mor
+            
+              
+          });
+        
+      }
+  });
+  });
+
   
   //role admin
   //adding expenses
@@ -1167,6 +1653,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
       var month = m.format('MMMM')
       var days = moment().toString()
       var voucherNumber = req.body.voucherNumber
+      var companyId = req.user.companyId
   
   
   
@@ -1188,7 +1675,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
       
      }
      else
-     Expenses.findOne({'voucherNumber':voucherNumber})
+     Expenses.findOne({'companyId':companyId,'voucherNumber':voucherNumber})
     .then(exp=>{
       if(exp){
         req.session.message = {
@@ -1212,6 +1699,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
      expenses.status = status;
      expenses.payment = payment;
      expenses.month = month;
+     expenses.companyId = companyId
    
    
      expenses.save()
@@ -1234,7 +1722,8 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
   
   router.get('/expenseList',isLoggedIn, (req, res) => {
     var pro = req.user
-    Expenses.find({},(err, docs) => {
+    var companyId = req.user.companyId
+    Expenses.find({companyId:companyId},(err, docs) => {
         if (!err) {
             res.render("clerk/expenseRecord", {
                list:docs, pro:pro
@@ -1257,6 +1746,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
     var day = moment().toString()
     var days, endDate;
     var user = req.user.feesUpdate
+    var companyId = req.user.companyId
     if(user == 'null'){
     
 
@@ -1284,7 +1774,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
       if(days >  0){
     readonly = 'readonly'
     title = days + '' + ' '+ 'days left until you can add new term'
-        res.render('clerk/feesUpdate2',{readonly:readonly,day:day, title:title,pro:pro})
+        res.render('clerk/feesUpdate2',{readonly:readonly,day:day, title:title,pro:pro,doc:docs[0]})
     
       }else
     
@@ -1299,8 +1789,6 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
     
     
     })
-    
-    
       })
       
       router.post('/feesUpdate',isLoggedIn,clerk,  function(req,res){
@@ -1314,6 +1802,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
       year = m.format('YYYY')
       var feeX = req.body.fees
       var annual = req.body.annual
+      var companyId = req.user.companyId
       
      
       
@@ -1354,6 +1843,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
       fees.annual = annual;
       fees.term = term;
       fees.year = year
+      fees.companyId = companyId
     
       fees.person = req.user.fullname
     
@@ -1361,13 +1851,13 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
       fees.save()
         .then(fee =>{
        var adminBal = 0 - fee.fees
-          User.findByIdAndUpdate(id,{$set:{feesUpdate:fee._id,term:term,balance:adminBal}},function(err,docs){
+          User.findByIdAndUpdate(id,{$set:{feesUpdate:fee._id,term:term,balance:adminBal,fees:feeX,annual:annual}},function(err,docs){
     
     
           })
     
     
-      User.find({role:"student"},function(err,nocs){
+      User.find({companyId:companyId,role:"student"},function(err,nocs){
       
       for(var i  = 0; i< nocs.length; i++){
       balanceX = nocs[i].balance 
@@ -1397,7 +1887,7 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
       })
       
       }
-      res.redirect('/clerk/feesUpdate')
+      res.redirect('/clerk/feesUpdateX')
       })
     })
       
@@ -1405,17 +1895,9 @@ router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
     
 
 
-
-
-
-
-
-
-
-
-
-
-
+router.get('/feesUpdateX',isLoggedIn,function(req,res){
+  res.redirect('/clerk/feesUpdate')
+})
 
 
 

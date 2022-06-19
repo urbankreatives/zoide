@@ -49,48 +49,7 @@ var upload = multer({
 })
 
 //student Dashboard
-/*
-router.get('/',isLoggedIn,function(req,res){
-  var studentId = req.user.uid
-  var m = moment()
-  var year = m.format('YYYY')
-  var term = req.user.term
-  var class1 = req.user.class1
-    StudentExamRate.find({studentId:studentId},function(err,lods){
-    
-  if(lods.length == 0){
-  
-        var pass =StudentExamRate();
-        pass.firstTerm = 0;
-        pass.firstAvgMark = 0
-        pass.secondTerm= 0;
-        pass.secondAvgMark = 0
-        pass.thirdTerm = 0
-        pass.thirdAvgMark=0;
-        pass.studentId = studentId;
-        pass.class1 = class1
-        pass.term = term
-        pass.type = 'Final Exam';
-        pass.year = year
-  
-        pass.save()
-        .then(pass =>{
 
-         
-        })
-
-
-
-      }
-
-        res.redirect('/student/passRate')
-  
-  
-      
-     
-    })
-  })
-  */
 
 
 // change password
@@ -176,6 +135,7 @@ router.get('/passRate',isLoggedIn,function(req,res){
   var term = req.user.term
   var uid = req.user.uid
   var fullname = req.user.fullname;
+  var companyId = req.user.companyId
   var studentId = req.user.uid
   var clas6 = req.user.class1
    var m = moment()
@@ -185,13 +145,13 @@ router.get('/passRate',isLoggedIn,function(req,res){
    var number1
 console.log(studentId, 'studentId')
     
-   StudentExamRate.find({year:year, studentId:studentId, class1:clas6},function(err,docs){
+   StudentExamRate.find({companyId:companyId,year:year,term:term, studentId:studentId, class1:clas6},function(err,docs){
  
      if(docs.length == 0){
  
-       TestX.find({term:term,year:year,uid:studentId, type:'Final Exam' },function(err,hods){
+       TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:'Final Exam' },function(err,hods){
  
-         TestX.find({term:term,year:year,uid:studentId, result:'pass', type:'Final Exam'},function(err,lods){
+         TestX.find({companyId:companyId,term:term,year:year,uid:studentId, result:'pass', type:'Final Exam'},function(err,lods){
        /*  if(hods.length >=1){*/
  
  
@@ -223,6 +183,7 @@ console.log(studentId, 'studentId')
              pass.term = term
              pass.type = 'Final Exam';
              pass.year = year
+             pass.companyId = companyId
  
              pass.save()
      .then(pas =>{
@@ -259,9 +220,9 @@ console.log(studentId, 'studentId')
  
          var  idX  = docs[0]._id
  
-         TestX.find({term:term,year:year,uid:studentId, type:"Final Exam",class1:clas6},function(err,shods){
+         TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:"Final Exam",class1:clas6},function(err,shods){
  
-          TestX.find({term:term,year:year, result:'pass',uid:studentId,type:"Final Exam",class1:clas6},function(err,slods){
+          TestX.find({companyId:companyId,term:term,year:year, result:'pass',uid:studentId,type:"Final Exam",class1:clas6},function(err,slods){
         /*  if(shods.length >=1){*/
 console.log(shods)
 console.log(slods)
@@ -336,24 +297,26 @@ router.get('/passRateX',isLoggedIn,function(req,res){
   var fullname = req.user.fullname;
   var studentId = req.user.uid
   var clas6 = req.user.class1
-   var m = moment()
-   var year = m.format('YYYY')
+  console.log(clas6,"class++")
+ 
    var marks, marks2
    var arr1=[]
    var number1
+   var companyId = req.user.companyId
 
 
 
 
 
     
-   StudentClassRate.find({year:year, studentId:studentId, class1:clas6},function(err,docs){
- 
+   StudentClassRate.find({companyId:companyId,year:year,term:term, studentId:studentId, class1:clas6, type:"Class Test"},function(err,docs){
+ console.log(docs,'buda')
      if(docs.length == 0){
+      console.log('sybeth wafa')
  
-       TestX.find({term:term,year:year,uid:studentId, type:'Class Test', class1:clas6},function(err,hods){
+       TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:'Class Test', class1:clas6},function(err,hods){
  
-         TestX.find({term:term,year:year,uid:studentId, result:'pass', type:'Class Test'},function(err,lods){
+         TestX.find({companyId:companyId,term:term,year:year,uid:studentId, result:'pass', type:'Class Test'},function(err,lods){
        /*  if(hods.length >=1){*/
  
  
@@ -367,7 +330,7 @@ router.get('/passRateX',isLoggedIn,function(req,res){
   
             arr1.push(hods[q].mark)
               }
-              //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
+              
                totalMarks=0;
               for(var z in arr1) { totalMarks += arr1[z]; }
  
@@ -385,6 +348,7 @@ router.get('/passRateX',isLoggedIn,function(req,res){
              pass.term = term
              pass.type = 'Class Test';
              pass.year = year
+             pass.companyId = companyId
  
              pass.save()
      .then(pas =>{
@@ -421,9 +385,9 @@ router.get('/passRateX',isLoggedIn,function(req,res){
  
          var  idX  = docs[0]._id
  
-         TestX.find({term:term,year:year,uid:studentId, type:"Class Test",class1:clas6, },function(err,hods){
+         TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:"Class Test",class1:clas6, },function(err,hods){
  
-          TestX.find({term:term,year:year, result:'pass',uid:studentId, type:"Class Test",class1:clas6},function(err,lods){
+          TestX.find({companyId:companyId,term:term,year:year, result:'pass',uid:studentId, type:"Class Test",class1:clas6},function(err,lods){
          /* if(hods.length >=1){*/
   
   
@@ -503,15 +467,16 @@ router.get('/passRateX',isLoggedIn,function(req,res){
      var marks, marks2
      var arr1=[]
      var number1
+     var companyId = req.user.companyId
   console.log(studentId, 'studentId')
       
-     StudentExamRate.find({year:year, studentId:studentId, class1:clas6},function(err,docs){
+     StudentExamRate.find({companyId:companyId,year:year, studentId:studentId, class1:clas6},function(err,docs){
    
        if(docs.length == 0){
    
-         TestX.find({term:term,year:year,uid:studentId, type:'Final Exam' },function(err,hods){
+         TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:'Final Exam' },function(err,hods){
    
-           TestX.find({term:term,year:year,uid:studentId, result:'pass', type:'Final Exam'},function(err,lods){
+           TestX.find({companyId:companyId,term:term,year:year,uid:studentId, result:'pass', type:'Final Exam'},function(err,lods){
          /*  if(hods.length >=1){*/
    
    
@@ -543,6 +508,7 @@ router.get('/passRateX',isLoggedIn,function(req,res){
                pass.term = term
                pass.type = 'Final Exam';
                pass.year = year
+               pass.companyId = companyId
    
                pass.save()
        .then(pas =>{
@@ -579,9 +545,9 @@ router.get('/passRateX',isLoggedIn,function(req,res){
    
            var  idX  = docs[0]._id
    
-           TestX.find({term:term,year:year,uid:studentId, type:"Final Exam",class1:clas6},function(err,shods){
+           TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:"Final Exam",class1:clas6},function(err,shods){
    
-            TestX.find({term:term,year:year, result:'pass',uid:studentId,type:"Final Exam",class1:clas6},function(err,slods){
+            TestX.find({companyId:companyId,term:term,year:year, result:'pass',uid:studentId,type:"Final Exam",class1:clas6},function(err,slods){
           /*  if(shods.length >=1){*/
   console.log(shods)
   console.log(slods)
@@ -661,19 +627,20 @@ router.get('/passRateX',isLoggedIn,function(req,res){
      var marks, marks2
      var arr1=[]
      var number1
+     var companyId = req.user.companyId
   
   
   
   
   
       
-     StudentClassRate.find({year:year, studentId:studentId, class1:clas6},function(err,docs){
+     StudentClassRate.find({companyId:companyId,year:year, studentId:studentId, class1:clas6},function(err,docs){
    
        if(docs.length == 0){
    
-         TestX.find({term:term,year:year,uid:studentId, type:'Class Test', class1:clas6},function(err,hods){
+         TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:'Class Test', class1:clas6},function(err,hods){
    
-           TestX.find({term:term,year:year,uid:studentId, result:'pass', type:'Class Test'},function(err,lods){
+           TestX.find({companyId:companyId,term:term,year:year,uid:studentId, result:'pass', type:'Class Test'},function(err,lods){
          /*  if(hods.length >=1){*/
    
    
@@ -705,6 +672,7 @@ router.get('/passRateX',isLoggedIn,function(req,res){
                pass.term = term
                pass.type = 'Class Test';
                pass.year = year
+               pass.companyId = companyId
    
                pass.save()
        .then(pas =>{
@@ -741,9 +709,9 @@ router.get('/passRateX',isLoggedIn,function(req,res){
    
            var  idX  = docs[0]._id
    
-           TestX.find({term:term,year:year,uid:studentId, type:"Class Test",class1:clas6, },function(err,hods){
+           TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:"Class Test",class1:clas6, },function(err,hods){
    
-            TestX.find({term:term,year:year, result:'pass',uid:studentId, type:"Class Test",class1:clas6},function(err,lods){
+            TestX.find({companyId:companyId,term:term,year:year, result:'pass',uid:studentId, type:"Class Test",class1:clas6},function(err,lods){
            /* if(hods.length >=1){*/
     
     
@@ -857,9 +825,12 @@ router.get('/passRateX',isLoggedIn,function(req,res){
       var fullname = req.user.fullname
       var class1 = req.user.class1
       var term = req.user.term
+      var companyId = req.user.companyId
       var method = 'paynow'
       var paymentId = req.user.pollUrl
+      var xId = req.user._id
       var m = moment()
+      var date = moment().toString()
       var year = m.format('YYYY')
       var month = m.format('MMMM')
       if(req.user.pollUrl === "null"){
@@ -867,16 +838,18 @@ router.get('/passRateX',isLoggedIn,function(req,res){
 
 
       }else{
-
-      var pollUrl = req.user.pollUrl;
+        var pollUrl = req.user.pollUrl;
+         var amount = req.user.paynow  
+     
     
        // Create instance of Paynow class
-       let paynow = new Paynow("14628", "0b05a9bd-6779-4a6f-9da7-48e03cb96a67");
+       let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
       
         paynow.pollTransaction(pollUrl).then(transaction => {
-          if(transaction.status === 'paid') {
+          if(transaction.status === 'awaiting delivery') {
             // User showed us the doe
-            var amount = transaction.amount;
+           
+           
             var fees = new Fees();
       
             fees.date = date;
@@ -890,24 +863,26 @@ router.get('/passRateX',isLoggedIn,function(req,res){
             fees.method = method;
             fees.paymentId = paymentId
             fees.receiptNumber = 'paynow';
+            fees.companyId = companyId
           
           
           
             fees.save()
               .then(fee =>{
-                User.find({uid:uid},function(err,docs){
+               
       
-                 User.findByIdAndUpdate(xId,{$set:{studentId:uid,amount:amount,receiptNumber:receiptNumber}},function(err,gocs){
-      
-      
+                 User.findByIdAndUpdate(xId,{$set:{studentId:uid,amount:amount,receiptNumber:'paynow'}},function(err,gocs){
       
       
-                  balance = docs[0].balance;
-                  newBalance = balance + fees.amount;
+      
+      
+                  balance = req.user.balance;
+                  newBalance = balance + fee.amount;
+                  console.log('new',newBalance)
       
                   if(newBalance >= 0){
           
-                    User.findByIdAndUpdate(docs[0]._id,{$set:{balance:newBalance, status:"paid", term:term, year:year,balanceCarriedOver:balance}},function(err,docs){
+                    User.findByIdAndUpdate(xId,{$set:{balance:newBalance, status:"paid", term:term, year:year,balanceCarriedOver:balance,paynow:0,pollUrl:'null'}},function(err,docs){
                   
               
                     
@@ -916,7 +891,7 @@ router.get('/passRateX',isLoggedIn,function(req,res){
                 
                   }else
                   
-                  User.findByIdAndUpdate(docs[0]._id,{$set:{balance:newBalance, status:"owing", term:term, year:year,balanceCarriedOver:balance}},function(err,docs){
+                  User.findByIdAndUpdate(xId,{$set:{balance:newBalance, status:"owing", term:term, year:year,balanceCarriedOver:balance,paynow:0,pollUrl:'null'}},function(err,docs){
                   
                   
                     
@@ -927,9 +902,10 @@ router.get('/passRateX',isLoggedIn,function(req,res){
                   
                 })
       
-                })
+                
       
                  }
+             
       res.redirect('/student/dash')
                 })
       
@@ -948,81 +924,6 @@ router.get('/passRateX',isLoggedIn,function(req,res){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-  var fees = new Fees();
-      
-        fees.date = date;
-        fees.uid = uid;
-        fees.class1 = class1;
-        fees.fullname = fullname;
-        fees.amount= amount;
-        fees.term = term;
-        fees.year = year;
-        fees.month = month;
-        fees.method = method;
-        fees.paymentId = 'null'
-        fees.receiptNumber = receiptNumber;
-      
-      
-      
-        fees.save()
-          .then(fee =>{
-            User.find({uid:uid},function(err,docs){
-  
-             User.findByIdAndUpdate(xId,{$set:{studentId:uid,amount:amount,receiptNumber:receiptNumber}},function(err,gocs){
-  
-  
-  
-  
-              balance = docs[0].balance;
-              newBalance = balance + fees.amount;
-  
-              if(newBalance >= 0){
-      
-                User.findByIdAndUpdate(docs[0]._id,{$set:{balance:newBalance, status:"paid", term:term, year:year,balanceCarriedOver:balance}},function(err,docs){
-              
-          
-                
-              
-                })
-            
-              }else
-              
-              User.findByIdAndUpdate(docs[0]._id,{$set:{balance:newBalance, status:"owing", term:term, year:year,balanceCarriedOver:balance}},function(err,docs){
-              
-              
-                
-              
-              })
-              
-              
-  
-  
-  
-            })
-  
-          })
-  
-
-
-*/
-
-
      router.get('/dash',isLoggedIn, function(req,res){
       var pro = req.user
       var uid = req.user.uid
@@ -1036,12 +937,13 @@ router.get('/passRateX',isLoggedIn,function(req,res){
 
 //Final Exam
 
-     router.post('/studentPassChart',isLoggedIn,function(req,res){
+     router.post('/studentPassChart',function(req,res){
       var m = moment()
       var year = m.format('YYYY')
       var uid = req.user.uid
       var term = req.user.term
-            StudentExamRate.find({year:year, term:term, studentId:uid},function(err,docs){
+      var companyId = req.user.companyId
+            StudentExamRate.find({companyId:companyId,year:year, term:term, studentId:uid},function(err,docs){
               if(docs == undefined){
                 res.redirect('/student/dash')
               }else
@@ -1060,7 +962,8 @@ router.get('/passRateX',isLoggedIn,function(req,res){
             var year = m.format('YYYY')
             var uid = req.user.uid
             var term = req.user.term
-                  StudentClassRate.find({year:year, term:term,studentId:uid},function(err,docs){
+            var companyId = req.user.companyId
+                  StudentClassRate.find({companyId:companyId,year:year, term:term,studentId:uid},function(err,docs){
                     if(docs == undefined){
                       res.redirect('/student/dash')
                     }else
@@ -1126,10 +1029,11 @@ router.get('/profile',isLoggedIn,student, function(req,res){
   
   
 //student registered subjects
-  router.get('/subjects',isLoggedIn,student,function(req,res){
+  router.get('/subjects',isLoggedIn,student, function(req,res){
     var pro = req.user
     var uid = req.user.uid
-    StudentSub.find({studentId:uid},(err, docs) => {
+    var companyId = req.user.companyId
+    StudentSub.find({companyId:companyId,studentId:uid},(err, docs) => {
       if (!err) {
           res.render('students/subjects', {
              list:docs, pro:pro
@@ -1152,7 +1056,8 @@ router.get('/timetable',isLoggedIn,student, (req, res) => {
     var class1 = req.user.class1
     var uid = req.user.uid
     var year = req.user.year
-    Lesson.find({term:term, class1:class1,  year:year},(err, docs) => {
+    var companyId = req.user.companyId
+    Lesson.find({companyId:companyId,term:term, class1:class1,  year:year},(err, docs) => {
         if (!err) {
             res.render("lesson/timetable", {
                list:docs,pro:pro
@@ -1164,10 +1069,11 @@ router.get('/timetable',isLoggedIn,student, (req, res) => {
 
 
 //exam timetable student
-router.get('/examList',isLoggedIn, (req, res) => {
+router.get('/examList',isLoggedIn,(req, res) => {
   var pro = req.user
  var grade = req.user.grade
-    Exam.find({grade:grade},(err, docs) => {
+ var companyId = req.user.companyId
+    Exam.find({companyId:companyId,grade:grade},(err, docs) => {
         if (!err) {
             res.render("exam/examList", {
                list:docs,pro:pro
@@ -1182,7 +1088,8 @@ router.get('/examList',isLoggedIn, (req, res) => {
    router.get('/results',isLoggedIn,student, (req, res) => {
     var pro = req.user
     var uid= req.user.uid
-     TestX.find({uid:uid, type:'Class Test'},(err, docs) => {
+    var companyId = req.user.companyId
+     TestX.find({companyId:companyId,uid:uid, type:'Class Test'},(err, docs) => {
          if (!err) {
              res.render("exam/result", {
                 list:docs, pro:pro
@@ -1194,10 +1101,11 @@ router.get('/examList',isLoggedIn, (req, res) => {
    
 
    //student results - final exam
-   router.get('/examResults',isLoggedIn,student, (req, res) => {
+   router.get('/examResults',isLoggedIn,student,  (req, res) => {
     var uid= req.user.uid
     var pro = req.user
-     TestX.find({uid:uid, type:'Final Exam'},(err, docs) => {
+    var companyId = req.user.companyId
+     TestX.find({companyId:companyId,uid:uid, type:'Final Exam'},(err, docs) => {
          if (!err) {
              res.render("exam/resultX", {
                 list:docs,pro:pro
@@ -1207,14 +1115,15 @@ router.get('/examList',isLoggedIn, (req, res) => {
      });
    });
 
-   router.get('/termInfo',isLoggedIn, function(req,res){
+   router.get('/termInfo',isLoggedIn,  function(req,res){
     var m = moment()
     var pro = req.user
     var year = m.format('YYYY')
     var term = req.user.term
+    var companyId = req.user.companyId
 
   
-  FeesUpdate.find({term:term, year:year},(err, docs) => {
+  FeesUpdate.find({companyId:companyId,term:term, year:year},(err, docs) => {
       if (!err) {
           res.render("students/newTerm", {
              list:docs, pro:pro
@@ -1225,124 +1134,7 @@ router.get('/examList',isLoggedIn, (req, res) => {
     
       })
 
-//role student
-//online payments
-/*
-router.get('/onlinePayment',isLoggedIn,student,function(req,res){
-    var id = req.user.feesUpdate
-    var fees
-    
-      FeesUpdate.find({_id:id},function(err,docs){
-        try {
-        if(!docs){
-          throw new SyntaxError('No data')
-        }
-        fees = docs[0].fees
-        res.render('accounts/fpay',{fees:fees,stripePublishableKey: keys.stripePublishableKey})
-      } catch(e){
-        res.send(e.message)
-       }
-        })
-   
-  
-  })
-  
-  
-  router.post('/onlinePayment',isLoggedIn,student, (req,res)=>{
-    var m = moment()
-  var uid = req.user.uid;
-  var fullname = req.user.fullname;
-  var class1 = req.user.class1;
-  var date = moment().toString();
-  var term = req.user.term;
-  var year = m.format('YYYY')
-  var month = m.format('MMMM')
-  var amount = req.body.amount
-  var receiptNumber = 'null'
-  var method = 'online';
-  var paymentId 
-  
- 
 
-  
-
-
-      stripe.charges.create({
-        amount:amount * 1000,
-        currency: "usd",
-        source: req.body.stripeToken, // obtained with Stripe.js
-        description: "School Fees"
-    }, function(err, charge) {
-        if (err) {
-            //return res.redirect('/checkout');
-          console.log(err)
-        }else
-  
-         paymentId = charge.id;
-  
-       
-    console.log('amount',amount)
-         
-         var fees = new Fees();
-      
-         fees.date = date;
-         fees.uid = uid;
-         fees.class1 = class1;
-         fees.fullname = fullname;
-         fees.amount= amount;
-         fees.term = term;
-         fees.year = year;
-         fees.month = month;
-         fees.method = method;
-         fees.paymentId = paymentId;
-         fees.receiptNumber = receiptNumber;
-       
-       
-       
-         fees.save()
-           .then(fee =>{
-             User.find({uid:uid},function(err,docs){
-   
-               balance = docs[0].balance;
-               newBalance = balance + fee.amount;
-   
-               if(balance >= 0){
-       
-                 User.findByIdAndUpdate(docs[0]._id,{$set:{balance:newBalance, status:"paid", term:term, year:year,balanceCarriedOver:balance,paymentId:paymentId}},function(err,docs){
-               
-               
-                 
-               
-                 })
-             
-               }else
-               
-               User.findByIdAndUpdate(docs[0]._id,{$set:{balance:newBalance, status:"owing", term:term, year:year,balanceCarriedOver:balance,paymentId:paymentId}},function(err,docs){
-               
-               
-                 
-               
-               })
-               
-               
-   
-   
-   
-             })
-   
-         
-      
-      
-    }) 
-  })
-    res.redirect('/student/feesRecord');
-        
-  
-    
-  
-  })
-  
-  */
   
   router.get('/feesRecord',isLoggedIn,student, function(req,res){
        var pro = req.user
@@ -1354,7 +1146,8 @@ router.get('/onlinePayment',isLoggedIn,student,function(req,res){
     var id = req.user.paymentId
     var uid = req.user.uid
     var use
-    Fees.find({paymentId:id},function(err,docs){
+    var companyId = req.user.companyId
+    Fees.find({companyId:companyId,paymentId:id},function(err,docs){
       User.find({uid:uid},function(err,nocs){
       use = nocs[0]
     
@@ -1369,7 +1162,8 @@ router.get('/onlinePayment',isLoggedIn,student,function(req,res){
   router.get('/paymentRecords',isLoggedIn,student, (req, res) => {
    var id = req.user.uid
       var pro = req.user
-    Fees.find({uid:id},(err, docs) => {
+      var companyId = req.user.companyId
+    Fees.find({companyId:companyId,uid:id},(err, docs) => {
         if (!err) {
             res.render("accounts/list", {
                list:docs,pro:pro
@@ -1380,10 +1174,11 @@ router.get('/onlinePayment',isLoggedIn,student,function(req,res){
   });
   
   
-  router.get('/paymentRecord',isLoggedIn,student, (req, res) => {
+  router.get('/paymentRecord',isLoggedIn,student,  (req, res) => {
     var id = req.user.uid
     var pro = req.user
-     Fees.find({uid:id},(err, docs) => {
+    var companyId = req.user.companyId
+     Fees.find({companyId:companyId,uid:id},(err, docs) => {
          if (!err) {
              res.render("accounts/list", {
                 list:docs, pro:pro
@@ -1396,15 +1191,16 @@ router.get('/onlinePayment',isLoggedIn,student,function(req,res){
    
   
 
-  //role student
-//online payments
-router.get('/onlinePayment',isLoggedIn,student,function(req,res){
+
+
+
+router.get('/onlinePayment',isLoggedIn,student, function(req,res){
   var id = req.user.feesUpdate
   var fees
   var pro = req.user
 
 
-res.render('accounts/fpay',{fees:fees, pro:pro})
+res.render('accounts/subscriptions',{fees:fees, pro:pro})
 
     
 
@@ -1413,13 +1209,12 @@ res.render('accounts/fpay',{fees:fees, pro:pro})
 })
 
 
-
-router.post('/onlinePayment',isLoggedIn,function(req,res){
+router.get('/onlinePaymentX3',isLoggedIn, function(req,res){
   var pro = req.user
 
   const { Paynow } = require("paynow");
   // Create instance of Paynow class
-  let paynow = new Paynow("14628", "0b05a9bd-6779-4a6f-9da7-48e03cb96a67");
+  let paynow = new  Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
       var m = moment()
       var uid = req.user.uid;
       var fullname = req.user.fullname;
@@ -1433,7 +1228,7 @@ router.post('/onlinePayment',isLoggedIn,function(req,res){
       var method = 'paynow';
       var paymentId, id = req.user._id;
 
-
+      var companyId = req.user.companyId
       let payment = paynow.createPayment("Invoice 35");
 
 
@@ -1455,10 +1250,12 @@ paynow.send(payment).then( (response) => {
         poll.studentId = uid;
         poll.fullname = fullname;
         poll.date = date;
+        poll.amount = amount
+        poll.companyId = companyId
         poll.save()
            .then(poll =>{
            
-            User.findByIdAndUpdate(id,{$set:{pollUrl:pollUrl}},function(err,docs){
+            User.findByIdAndUpdate(id,{$set:{pollUrl:pollUrl,paynow:amount}},function(err,docs){
                
                
                  
@@ -1483,12 +1280,13 @@ paynow.send(payment).then( (response) => {
 
 
 
-router.post('/onlinePayment2',isLoggedIn,function(req,res){
+router.get('/onlinePaymentX4',isLoggedIn, function(req,res){
   var pro = req.user
+  var companyId = req.user.companyId
 
   const { Paynow } = require("paynow");
   // Create instance of Paynow class
-  let paynow = new Paynow("14628", "0b05a9bd-6779-4a6f-9da7-48e03cb96a67");
+  let paynow = new  Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
       var m = moment()
       var uid = req.user.uid;
       var fullname = req.user.fullname;
@@ -1524,10 +1322,12 @@ paynow.send(payment).then( (response) => {
         poll.studentId = uid;
         poll.fullname = fullname;
         poll.date = date;
+        poll.amount = amount
+        poll.companyId = companyId
         poll.save()
            .then(poll =>{
            
-            User.findByIdAndUpdate(id,{$set:{pollUrl:pollUrl}},function(err,docs){
+            User.findByIdAndUpdate(id,{$set:{pollUrl:pollUrl,paynow:amount}},function(err,docs){
                
                
                  
@@ -1563,12 +1363,12 @@ paynow.send(payment).then( (response) => {
 
 
 
-router.post('/payNowX',isLoggedIn,function(req,res){
+router.post('/payNowX',isLoggedIn, function(req,res){
 
-
+  var companyId = req.user.companyId
     const { Paynow } = require("paynow");
     // Create instance of Paynow class
-    let paynow = new Paynow("14628", "0b05a9bd-6779-4a6f-9da7-48e03cb96a67");
+    let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
         var m = moment()
         var uid = req.user.uid;
         var fullname = req.user.fullname;
@@ -1604,10 +1404,12 @@ router.post('/payNowX',isLoggedIn,function(req,res){
           poll.studentId = uid;
           poll.fullname = fullname;
           poll.date = date;
+          poll.amount = amount;
+          poll.companyId = companyId
           poll.save()
              .then(poll =>{
              
-              User.findByIdAndUpdate(id,{$set:{pollUrl:pollUrl}},function(err,docs){
+              User.findByIdAndUpdate(id,{$set:{pollUrl:pollUrl,paynow:amount}},function(err,docs){
                  
                  
                    
@@ -1645,131 +1447,24 @@ router.post('/payNowX',isLoggedIn,function(req,res){
 
 
 
-router.get('/status',isLoggedIn,function(req,res){
+router.get('/status',isLoggedIn, function(req,res){
 
   
   // Create instance of Paynow class
   let paynow = new Paynow("14628", "0b05a9bd-6779-4a6f-9da7-48e03cb96a67");
- let pollUrl="https://www.paynow.co.zw/Interface/CheckPayment/?guid=e03fd2d2-c990-4f46-a458-a3a7f94f2635";
+ let pollUrl="https://www.paynow.co.zw/Interface/CheckPayment/?guid=aff0830e-9275-482a-b5f2-4c6ed0cbc35a";
 
   let status = paynow.pollTransaction(pollUrl)
 
   paynow.pollTransaction(pollUrl).then(transaction => {
   console.log(transaction.status)
+  console.log(transaction.amount)
 
     })
 
 
 })
-/*
-  router.post('/payNow',isLoggedIn,function(req,res){
-    const { Paynow } = require("paynow");
-// Create instance of Paynow class
-let paynow = new Paynow("14628", "0b05a9bd-6779-4a6f-9da7-48e03cb96a67");
-    var m = moment()
-    var uid = req.user.uid;
-    var fullname = req.user.fullname;
-    var class1 = req.user.class1;
-    var date = moment().toString();
-    var term = req.user.term;
-    var year = m.format('YYYY')
-    var month = m.format('MMMM')
-    var amount = req.body.amount
-    var receiptNumber = 'null'
-    var method = 'paynow';
-    var paymentId 
-    
-// Create a new payment
-let payment = paynow.createPayment("Invoice 35");
 
-// Add items to the payment list passing in the name of the item and it's price
-payment.add("fees", amount);
-
-
-// Send off the payment to Paynow
-paynow.send(payment).then( (response) => {
-
-    // Check if request was successful
-    if(response.success) {
-        // Get the link to redirect the user to, then use it as you see fit
-        let link = response.redirectUrl;
-
-        res.redirect(link)
-
-        // Save poll url, maybe (recommended)?
-        let pollUrl = response.pollUrl;
-        paymentId = pollUrl;
-
-        let status = paynow.pollTransaction(pollUrl)
-
-if(status.paid === 'Paid'){
-  
-       
-        console.log('amount',amount)
-             
-             var fees = new Fees();
-          
-             fees.date = date;
-             fees.uid = uid;
-             fees.class1 = class1;
-             fees.fullname = fullname;
-             fees.amount= amount;
-             fees.term = term;
-             fees.year = year;
-             fees.month = month;
-             fees.method = method;
-             fees.paymentId = paymentId;
-             fees.receiptNumber = receiptNumber;
-           
-           
-         fees.save()
-         .then(fee =>{
-           User.find({uid:uid},function(err,docs){
- 
-             balance = docs[0].balance;
-             newBalance = balance + fee.amount;
- 
-             if(balance >= 0){
-     
-               User.findByIdAndUpdate(docs[0]._id,{$set:{balance:newBalance, status:"paid", term:term, year:year,balanceCarriedOver:balance,paymentId:paymentId}},function(err,docs){
-             
-             
-               
-             
-               })
-           
-             }else
-             
-             User.findByIdAndUpdate(docs[0]._id,{$set:{balance:newBalance, status:"owing", term:term, year:year,balanceCarriedOver:balance,paymentId:paymentId}},function(err,docs){
-             
-             
-               
-             
-             })
-             
-            })
-
-          })
-
-     
-    
-           
-    }
-  }else{
-    console.log('zvafa')
-  }
-
-});
-
-
-
-
-
-  })
-  
-
-
-*/
 
 
 
@@ -1798,3 +1493,10 @@ function isLoggedIn(req, res, next) {
     res.render('errors/access')
     }  
 
+    function status(req,res,next){
+      if(req.user.status3 == 'activated'){
+        return next()
+      }
+      res.render('errors/student')
+      }  
+  

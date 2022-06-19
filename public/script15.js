@@ -45,7 +45,7 @@ var borderColor = KTUtil.getCssVariableValue('--bs-border-dashed-color');
 
 var options = {
     series: [{
-        name: 'Net Profit',
+        name: 'Amount',
         data: labels1
     }],
     chart: {

@@ -17,6 +17,7 @@ day:{type:String, required:true},
 term:{type:Number, required:true},
 year:{type:Number, required:true},
 month:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 

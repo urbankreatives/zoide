@@ -7,7 +7,9 @@ var schema = new Schema({
     pollUrl:{type:String, required:true},
     studentId:{type:String, required:true},
     date:{type:Date, default:Date.now},
+    amount:{type:Number, required:true},
     fullname:{type:String, required:true},
+    companyId:{type:String, required:true},
   
   
 });

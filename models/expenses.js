@@ -14,6 +14,7 @@ status:{type:String, required:true},
 month:{type:String, required:true},
 year:{type:Number, required:true},
 payment:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 

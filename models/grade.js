@@ -8,6 +8,7 @@ symbol:{type:String, required:true},
 from:{type:Number, required:true},
 to:{type:Number, required:true},
 comments:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 

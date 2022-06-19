@@ -13,7 +13,8 @@ month:{type:String, required:true},
 amount:{type:Number, required:true},
 method:{type:String, required:true},
 paymentId:{type:String, required:true},
-receiptNumber:{type:String, required:true}
+receiptNumber:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 

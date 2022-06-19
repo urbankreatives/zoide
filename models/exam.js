@@ -15,6 +15,7 @@ teacherName:{type:String, required:true},
 uid:{type:String, required:true},
 date:{type:String, required:true},
 room:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 

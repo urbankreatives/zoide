@@ -10,7 +10,10 @@ grade:{type:Number, required:true},
 level:{type:String, required:true},
 paid:{type:Number, required:true},
 unpaid:{type:Number, required:true},
-companyId:{type:String, required:true}
+companyId:{type:String, required:true},
+male:{type:Number, required:true},
+female:{type:Number, required:true},
+companyId:{type:String, required:true},
 
 
 

@@ -21,6 +21,7 @@ type:{type:String, required:true},
 symbol:{type:String, required:true},
 result:{type:String, required:true},
 category:{type:String, required:true},
+companyId:{type:String, required:true},
 
 
 })
