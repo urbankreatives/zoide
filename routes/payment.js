@@ -2155,8 +2155,7 @@ router.get('/enterpriseA',function(req,res){
                                              
                                            
                                         })
-                                        console.log('fuckk')
-                            
+                                
                             
                             
                                           res.redirect(link)

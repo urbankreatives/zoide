@@ -1219,7 +1219,7 @@ router.get('/subscriptions',isLoggedIn,function(req,res){
 })
 
 router.get('/startup',isLoggedIn,function(req,res){
-
+  const { Paynow } = require("paynow");
   // Create instance of Paynow class
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var m = moment()
@@ -1298,10 +1298,10 @@ router.get('/startupA',isLoggedIn,function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
+    amount = docs[0].startupA
     pollCount = docs[0].startupCount
-    duration = docs[0].startupDuration
-      })
+    duration = docs[0].startupAduration
+     
   
   let payment = paynow.createPayment("Subscription");
 
@@ -1346,6 +1346,7 @@ paynow.send(payment).then( (response) => {
 res.redirect('/clerk/subscriptions')
     }
   })
+  })
 })
 
 
@@ -1362,10 +1363,10 @@ router.get('/advanced',isLoggedIn, function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
-    pollCount = docs[0].startupCount
-    duration = docs[0].startupDuration
-      })
+    amount = docs[0].advanced
+    pollCount = docs[0].advancedCount
+    duration = docs[0].advancedDuration
+    
   
   let payment = paynow.createPayment("Subscription");
 
@@ -1410,6 +1411,7 @@ paynow.send(payment).then( (response) => {
 res.redirect('/clerk/subscriptions')
     }
   })
+  })
 })
 
 //advanced A
@@ -1424,10 +1426,10 @@ router.get('/advancedA',isLoggedIn, function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
-    pollCount = docs[0].startupCount
-    duration = docs[0].startupDuration
-      })
+    amount = docs[0].advancedA
+        pollCount = docs[0].advancedCount
+        duration = docs[0].advancedAduration
+     
   
   let payment = paynow.createPayment("Subscription");
 
@@ -1472,6 +1474,7 @@ paynow.send(payment).then( (response) => {
 res.redirect('/clerk/subscriptions')
     }
   })
+  })
 })
 
 //enterprise Q
@@ -1486,10 +1489,10 @@ router.get('/enterprise',isLoggedIn, function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
-    pollCount = docs[0].startupCount
-    duration = docs[0].startupDuration
-      })
+    amount = docs[0].enterprise
+    pollCount = docs[0].enterpriseCount
+    duration = docs[0].enterpriseDuration
+      
   
   let payment = paynow.createPayment("Subscription");
 
@@ -1534,6 +1537,7 @@ paynow.send(payment).then( (response) => {
 res.redirect('/clerk/subscriptions')
     }
   })
+  })
 })
 
 //enterprise A
@@ -1548,10 +1552,10 @@ router.get('/enterpriseA',isLoggedIn, function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
-    pollCount = docs[0].startupCount
-    duration = docs[0].startupDuration
-      })
+    amount = docs[0].enterprise
+    pollCount = docs[0].enterpriseCount
+    duration = docs[0].enterpriseAduration
+     
   
   let payment = paynow.createPayment("Subscription");
 
@@ -1595,6 +1599,7 @@ paynow.send(payment).then( (response) => {
     else{
 res.redirect('/clerk/subscriptions')
     }
+  })
   })
 })
   
