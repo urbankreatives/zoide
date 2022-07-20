@@ -746,7 +746,7 @@ router.get('/pollCheck',isLoggedIn,function(req,res){
  var id = req.user._id
 var pollUrl = req.user.pollUrl2
 var duration = req.user.duration
-var count = req.user.pollCount
+var count = req.user.count
 var pollCount = req.user.pollCount
 
 if(pollUrl == 'null'){
