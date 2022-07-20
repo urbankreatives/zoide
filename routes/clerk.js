@@ -1325,6 +1325,7 @@ paynow.send(payment).then( (response) => {
         poll.date = date;
         poll.package = "Startup Annual Package"
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
@@ -1390,6 +1391,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Advanced Quartely Package"
         poll.date = date;
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
@@ -1453,6 +1455,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Advanced Quartely Package"
         poll.date = date;
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
@@ -1516,6 +1519,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Enterprise Quartely Package"
         poll.date = date;
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
@@ -1579,6 +1583,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Enterprise Annual Package"
         poll.date = date;
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
