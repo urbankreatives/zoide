@@ -1292,6 +1292,7 @@ router.get('/startupA',isLoggedIn,function(req,res){
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
   var date = moment().toString();
+  var id  = req.user._id
 
   const { Paynow } = require("paynow");
   // Create instance of Paynow class
@@ -1357,6 +1358,7 @@ router.get('/advanced',isLoggedIn, function(req,res){
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
   var date = moment().toString();
+  var id  = req.user._id
 
   var count = 100
   const { Paynow } = require("paynow");
@@ -1422,6 +1424,7 @@ router.get('/advancedA',isLoggedIn, function(req,res){
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
   var date = moment().toString();
+  var id  = req.user._id
  
   const { Paynow } = require("paynow");
   // Create instance of Paynow class
@@ -1486,6 +1489,7 @@ router.get('/enterprise',isLoggedIn, function(req,res){
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
   var date = moment().toString();
+  var id  = req.user._id
  
   const { Paynow } = require("paynow");
   // Create instance of Paynow class
@@ -1550,6 +1554,7 @@ router.get('/enterpriseA',isLoggedIn, function(req,res){
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
   var date = moment().toString();
+  var id  = req.user._id
 
   const { Paynow } = require("paynow");
   // Create instance of Paynow class
@@ -1626,7 +1631,7 @@ router.get('/subsPoll',isLoggedIn, (req, res) => {
   Poll2.find({companyId:companyId}, (err, doc) => {
       if (!err) {
       
-          res.render("CLERK/subPoll", {
+          res.render("clerk/subPoll", {
              
               list: doc, pro:pro, msg:msg, days:days, les:les, mor:mor
             
