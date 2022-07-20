@@ -96,7 +96,7 @@ router.get('/startup',function(req,res){
     idNumber=docs[0].idNumber
     id = docs[0]._id
      uid = prefix + idNumber 
-      })
+      
       
     
      
@@ -216,6 +216,7 @@ router.get('/startup',function(req,res){
                      
                                     
                       }
+                    })
                       
                         })
                        
@@ -447,7 +448,7 @@ router.get('/startupA',function(req,res){
     idNumber=docs[0].idNumber
     id = docs[0]._id
      uid = prefix + idNumber 
-      })
+     
       
     
      
@@ -567,7 +568,7 @@ router.get('/startupA',function(req,res){
                      
                                     
                       }
-                      
+                    })
                         })
       })
       
@@ -813,7 +814,7 @@ router.get('/advanced',function(req,res){
     idNumber=docs[0].idNumber
     id = docs[0]._id
      uid = prefix + idNumber 
-      })
+      
       
     
      
@@ -933,7 +934,7 @@ router.get('/advanced',function(req,res){
                      
                                     
                       }
-                      
+                    })
                         })
                        
       })
@@ -1161,7 +1162,7 @@ router.get('/advancedA',function(req,res){
     idNumber=docs[0].idNumber
     id = docs[0]._id
      uid = prefix + idNumber 
-      })
+     
       
     
      
@@ -1281,7 +1282,7 @@ router.get('/advancedA',function(req,res){
                      
                                     
                       }
-                      
+                    })
                         })
       })
       
@@ -1517,7 +1518,7 @@ router.get('/enterprise',function(req,res){
     idNumber=docs[0].idNumber
     id = docs[0]._id
      uid = prefix + idNumber 
-      })
+    
       
     
      
@@ -1639,6 +1640,7 @@ router.get('/enterprise',function(req,res){
                       }
                       
                         })
+                      })
                        
       })
       
@@ -1870,7 +1872,7 @@ router.get('/enterpriseA',function(req,res){
     idNumber=docs[0].idNumber
     id = docs[0]._id
      uid = prefix + idNumber 
-      })
+      
       
     
      
@@ -1992,6 +1994,7 @@ router.get('/enterpriseA',function(req,res){
                       }
                       
                         })
+                      })
                        
       })
       
