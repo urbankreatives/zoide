@@ -737,6 +737,7 @@ router.get('/pollCheck',isLoggedIn,function(req,res){
   var currdate = sett.getTime()
   var set =moment(); 
   var stt = req.user.expStr;
+  console.log(stt,'what')
   var set2 = moment(stt)
   var year = m.format('YYYY')
   var month = m.format('MMMM')
