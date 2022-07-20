@@ -2543,7 +2543,7 @@ router.get('/startupA',isLoggedIn,function(req,res){
     amount = docs[0].startup
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
-      })
+    
   
   let payment = paynow.createPayment("Subscription");
 
@@ -2568,6 +2568,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Startup Annual Package"
         poll.amount = amount
         poll.duration = duration
+        poll.count = pollCount
         poll.save()
            .then(poll =>{
            
@@ -2589,6 +2590,7 @@ res.redirect('/subscriptions')
     }
   })
 })
+})
 
 
 //advanced Q
@@ -2607,7 +2609,7 @@ router.get('/advanced',isLoggedIn, function(req,res){
     amount = docs[0].startup
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
-      })
+     
   
   let payment = paynow.createPayment("Subscription");
 
@@ -2631,6 +2633,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Advanced Quartely Package"
         poll.date = date;
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
@@ -2652,6 +2655,7 @@ paynow.send(payment).then( (response) => {
 res.redirect('/subscriptions')
     }
   })
+  })
 })
 
 //advanced A
@@ -2669,7 +2673,7 @@ router.get('/advancedA',isLoggedIn, function(req,res){
     amount = docs[0].startup
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
-      })
+      
   
   let payment = paynow.createPayment("Subscription");
 
@@ -2693,6 +2697,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Advanced Quartely Package"
         poll.date = date;
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
@@ -2714,6 +2719,7 @@ paynow.send(payment).then( (response) => {
 res.redirect('/subscriptions')
     }
   })
+  })
 })
 
 //enterprise Q
@@ -2731,7 +2737,7 @@ router.get('/enterprise',isLoggedIn, function(req,res){
     amount = docs[0].startup
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
-      })
+      
   
   let payment = paynow.createPayment("Subscription");
 
@@ -2755,6 +2761,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Enterprise Quartely Package"
         poll.date = date;
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
@@ -2776,6 +2783,7 @@ paynow.send(payment).then( (response) => {
 res.redirect('/subscriptions')
     }
   })
+  })
 })
 
 //enterprise A
@@ -2793,7 +2801,7 @@ router.get('/enterpriseA',isLoggedIn, function(req,res){
     amount = docs[0].startup
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
-      })
+    
   
   let payment = paynow.createPayment("Subscription");
 
@@ -2817,6 +2825,7 @@ paynow.send(payment).then( (response) => {
         poll.package = "Enterprise Annual Package"
         poll.date = date;
         poll.amount = amount
+        poll.count = pollCount
         poll.duration = duration
         poll.save()
            .then(poll =>{
@@ -2837,6 +2846,7 @@ paynow.send(payment).then( (response) => {
     else{
 res.redirect('/subscriptions')
     }
+  })
   })
 })
 
