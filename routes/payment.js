@@ -240,7 +240,7 @@ router.get('/startup',function(req,res){
           amount = docs[0].startup
           pollCount = docs[0].startupCount
           duration = docs[0].startupDuration
-        })
+       
            
                             
       let errors = [];
@@ -405,6 +405,7 @@ router.get('/startup',function(req,res){
                          }
                   });
                 }
+              })
              
       });
     
@@ -590,7 +591,7 @@ router.get('/startupA',function(req,res){
         amount = docs[0].startupA
         pollCount = docs[0].startupCount
         duration = docs[0].startupAduration
-          })
+       
                             
       let errors = [];
       if (token) {
@@ -754,6 +755,7 @@ router.get('/startupA',function(req,res){
                          }
                   });
                 }
+              })
       });
     
 
@@ -957,7 +959,7 @@ router.get('/advanced',function(req,res){
         amount = docs[0].advanced
         pollCount = docs[0].advancedCount
         duration = docs[0].advancedDuration
-          })
+       
                             
       let errors = [];
       if (token) {
@@ -1121,6 +1123,7 @@ router.get('/advanced',function(req,res){
                          }
                   });
                 }
+              })
       });
     
 
@@ -1304,7 +1307,7 @@ router.get('/advancedA',function(req,res){
         amount = docs[0].advancedA
         pollCount = docs[0].advancedCount
         duration = docs[0].advancedAduration
-          })
+         
                             
       let errors = [];
       if (token) {
@@ -1468,6 +1471,7 @@ router.get('/advancedA',function(req,res){
                          }
                   });
                 }
+              })
       });
     
 
@@ -1662,7 +1666,7 @@ router.get('/enterprise',function(req,res){
         amount = docs[0].enterprise
         pollCount = docs[0].enterpriseCount
         duration = docs[0].enterpriseDuration
-          })
+       
                             
       let errors = [];
       if (token) {
@@ -1825,6 +1829,7 @@ router.get('/enterprise',function(req,res){
                          }
                   });
                 }
+              })
       });
     
 
@@ -2016,7 +2021,7 @@ router.get('/enterpriseA',function(req,res){
         amount = docs[0].enterprise
         pollCount = docs[0].enterpriseCount
         duration = docs[0].enterpriseAduration
-          })
+         
                             
       let errors = [];
       if (token) {
@@ -2178,6 +2183,7 @@ router.get('/enterpriseA',function(req,res){
                          }
                   });
                 }
+              })
       });
     
 
