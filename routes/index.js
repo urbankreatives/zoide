@@ -2470,7 +2470,8 @@ router.get('/startup',isLoggedIn,function(req,res){
   var date = moment().toString();
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
+   // amount = docs[0].startup
+   amount = 100
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
      
@@ -2540,7 +2541,8 @@ router.get('/startupA',isLoggedIn,function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
+   // amount = docs[0].startup
+   amount = 100
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
     
@@ -2607,7 +2609,8 @@ router.get('/advanced',isLoggedIn, function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
+   // amount = docs[0].startup
+   amount = 100
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
      
@@ -2672,7 +2675,8 @@ router.get('/advancedA',isLoggedIn, function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
+   // amount = docs[0].startup
+   amount = 100
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
       
@@ -2737,7 +2741,8 @@ router.get('/enterprise',isLoggedIn, function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
+    //amount = docs[0].startup
+    amount = 100
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
       
@@ -2802,7 +2807,8 @@ router.get('/enterpriseA',isLoggedIn, function(req,res){
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
   var amount , pollCount, duration
   Subscriptions.find({},function(err,docs){
-    amount = docs[0].startup
+   // amount = docs[0].startup
+   amount = 100
     pollCount = docs[0].startupCount
     duration = docs[0].startupDuration
     
