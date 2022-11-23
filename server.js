@@ -30,7 +30,8 @@ var indexRoute= require('./routes/index')
 
 var app = express();
 
-mongoose.connect(process.env.MONGO_URL ||'mongodb://localhost/smsDB',{
+
+mongoose.connect(process.env.MONGO_URL ||'mongodb://0.0.0.0:27017/smsDB',{
     useNewUrlParser:true,
     useUnifiedTopology:true
 } )
@@ -38,6 +39,8 @@ mongoose.connect(process.env.MONGO_URL ||'mongodb://localhost/smsDB',{
 mongoose.connection.on('connected',()=>{
     console.log('Mongoose is connected!!!')
 })
+
+
 
 
 require('./config/passport');
@@ -81,7 +84,7 @@ app.use('/', indexRoute);
 
 
 
-const port = process.env.PORT || 9000;
+const port = process.env.PORT || 8000;
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);

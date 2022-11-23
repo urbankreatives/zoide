@@ -237,7 +237,8 @@ router.get('/startup',function(req,res){
       var date = moment().toString();
         var amount , pollCount, duration
         Subscriptions.find({},function(err,docs){
-          amount = docs[0].startup
+         // amount = docs[0].startup
+         amount = 100
           pollCount = docs[0].startupCount
           duration = docs[0].startupDuration
        
@@ -588,7 +589,8 @@ router.get('/startupA',function(req,res){
       var date = moment().toString();
       var amount , pollCount, duration
       Subscriptions.find({},function(err,docs){
-        amount = docs[0].startupA
+      //  amount = docs[0].startupA
+      amount = 100
         pollCount = docs[0].startupCount
         duration = docs[0].startupAduration
        
@@ -956,7 +958,8 @@ router.get('/advanced',function(req,res){
       var date = moment().toString();
       var amount , pollCount,duration
       Subscriptions.find({},function(err,docs){
-        amount = docs[0].advanced
+       // amount = docs[0].advanced
+       amount = 100
         pollCount = docs[0].advancedCount
         duration = docs[0].advancedDuration
        
@@ -1304,7 +1307,8 @@ router.get('/advancedA',function(req,res){
       var date = moment().toString();
       var amount , pollCount, duration
       Subscriptions.find({},function(err,docs){
-        amount = docs[0].advancedA
+       // amount = docs[0].advancedA
+       amount = 100
         pollCount = docs[0].advancedCount
         duration = docs[0].advancedAduration
          
@@ -1663,7 +1667,8 @@ router.get('/enterprise',function(req,res){
       var date = moment().toString();
       var amount , pollCount, duration
       Subscriptions.find({},function(err,docs){
-        amount = docs[0].enterprise
+       // amount = docs[0].enterprise
+       amount = 100
         pollCount = docs[0].enterpriseCount
         duration = docs[0].enterpriseDuration
        
@@ -2018,7 +2023,8 @@ router.get('/enterpriseA',function(req,res){
       var date = moment().toString();
       var amount , pollCount, duration
       Subscriptions.find({},function(err,docs){
-        amount = docs[0].enterprise
+       // amount = docs[0].enterprise
+       amount = 100
         pollCount = docs[0].enterpriseCount
         duration = docs[0].enterpriseAduration
          

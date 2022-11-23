@@ -99,12 +99,7 @@ router.get('/', function (req, res, next) {
 
 
 
-  //logout route
-  router.get('/logout', function (req, res, next) {
-    req.logout();
-    res.redirect('/');
-  });
-
+ 
 
   
 //adding departments
@@ -1099,6 +1094,10 @@ router.get('/pass2',isLoggedIn, (req, res) => {
   });
 });
 
+
+router.get('/passX',isLoggedIn, (req, res) => {
+ res.render('admin/change4')
+ });
 
 
 router.post('/pass2',isLoggedIn, function(req,res){
