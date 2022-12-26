@@ -252,15 +252,19 @@ router.get('/yearUpdate',isLoggedIn,function(req,res){
   console.log(currentYearCount)
 var companyId = req.user.companyId
  User.find({companyId:companyId},function(err,docs){
+
+
+
 for(var i = 0;i<docs.length;i++){
   let id = docs[i]._id
 
   User.findByIdAndUpdate(id,{$set:{currentYearCount:currentYearCount}},function(err,gocs){
 
   })
-}
-res.redirect('/records/yearUpdateX')
 
+}
+
+res.redirect('/records/yearUpdateX')
  })
 
 })

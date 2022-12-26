@@ -98,6 +98,14 @@ router.get('/', function (req, res, next) {
   
 
 
+  
+
+
+
+  router.get("/logout",(req,res)=>{
+    req.logout();
+    res.redirect("/");
+});
 
  
 
@@ -741,19 +749,30 @@ router.get('/pollCheck',isLoggedIn,function(req,res){
  var id = req.user._id
 var pollUrl = req.user.pollUrl2
 var duration = req.user.duration
-var count = req.user.count
+var count = req.user.actualCount
 var pollCount = req.user.pollCount
+console.log(pollCount,'PollCount')
+console.log(count,'Count')
 
-if(pollUrl == 'null'){
+
+if(pollUrl == "null"){
+
   res.redirect('/classCheck')
 }
-else
 
+else{
+
+
+
+if(pollCount <= count){
+  console.log('front')
 paynow.pollTransaction(pollUrl).then(transaction => {
-  if(transaction.status === 'awaiting delivery') {
+  
+  if(transaction.status === 'paid') {
+    console.log('yess')
 
-    if(pollCount <= count){
 
+  
    
     if(expdate>curr){
       set2.add(duration,"months")
@@ -761,7 +780,7 @@ paynow.pollTransaction(pollUrl).then(transaction => {
         // console.log(docs)
         
        for(var i =0;i<docs.length;i++){
-         User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set2.valueOf(), expStr:set2.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:count}},function(err,locs){
+         User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set2.valueOf(), expStr:set2.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:pollCount}},function(err,locs){
         
           
          })
@@ -779,7 +798,7 @@ paynow.pollTransaction(pollUrl).then(transaction => {
       User.find({companyId:companyId}, function(err,docs){
          // console.log(docs)
         for(var i =0;i<docs.length;i++){
-          User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set.valueOf(), expStr:set.toString(),status3:'activate', status4:'deactivate',  pollUrl2:'null',count:count}},function(err,locs){
+          User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set.valueOf(), expStr:set.toString(),status3:'activate', status4:'deactivate',  pollUrl2:'null',count:pollCount}},function(err,locs){
            // console.log(locs)
             
               
@@ -789,18 +808,82 @@ paynow.pollTransaction(pollUrl).then(transaction => {
        
             
         res.redirect('/classCheck')
+      
+      
       })
-      }
 
     }
-  }else
-  if(expdate>curr){
+  }
+})
+}else{
+  res.redirect('pollCheckX')
+}
+
+
+}
+})
+    
+    
+  
+
+  
+
+
+
+  
+
+    
+  
+    
+
+
+
+
+
+
+router.get('/pollCheckX',isLoggedIn,function(req,res){
+const { Paynow } = require("paynow");
+  // Create instance of Paynow class
+  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
+  var m = moment()
+  var a = moment()
+  var curr = a.valueOf()
+  var sett = new Date()
+  var expdate = req.user.expdate
+  var currdate = sett.getTime()
+  var set =moment(); 
+  var stt = req.user.expStr;
+  
+  var set2 = moment(stt)
+  console.log(set2,'what')
+  var year = m.format('YYYY')
+  var month = m.format('MMMM')
+  var companyId = req.user.companyId
+ var id = req.user._id
+var pollUrl = req.user.pollUrl2
+var duration = req.user.duration
+var count = req.user.actualCount
+var pollCount = req.user.pollCount
+console.log(pollCount,'PollCount')
+console.log(count,'Count')
+
+if(pollUrl == 'null'){
+  res.redirect('/classCheck')
+}
+paynow.pollTransaction(pollUrl).then(transaction => {
+  
+  if(transaction.status === 'paid') {
+    console.log('zvaita wena')
+
+    if(expdate > curr){
+
+    console.log('wadiii')
     set2.add(duration,"months")
     User.find({companyId:companyId}, function(err,docs){
       // console.log(docs)
       
      for(var i =0;i<count;i++){
-       User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set2.valueOf(), expStr:set2.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:count}},function(err,locs){
+       User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set2.valueOf(), expStr:set2.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:pollCount}},function(err,locs){
       
         
        })
@@ -811,13 +894,14 @@ paynow.pollTransaction(pollUrl).then(transaction => {
    })
    
   }
-  else if(expdate<curr){
+  else if(expdate < curr){
+
     set.add(duration,"months")
     
     User.find({companyId:companyId}, function(err,docs){
        // console.log(docs)
       for(var i =0;i<count;i++){
-        User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set.valueOf(), expStr:set.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:count}},function(err,locs){
+        User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set.valueOf(), expStr:set.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:pollCount}},function(err,locs){
          // console.log(locs)
           
             
@@ -830,13 +914,16 @@ paynow.pollTransaction(pollUrl).then(transaction => {
     })
     }
 
+  }
+
   })
+
 
 
 })
 
 
-router.get('/classcheck',isLoggedIn,function(req,res){
+router.get('/classCheck',isLoggedIn,function(req,res){
   var companyId = req.user.companyId
   Class1.find({companyId:companyId},function(err,docs){
 
