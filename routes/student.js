@@ -312,7 +312,7 @@ router.get('/passRateX',isLoggedIn,function(req,res){
    StudentClassRate.find({companyId:companyId,year:year,term:term, studentId:studentId, class1:clas6, type:"Class Test"},function(err,docs){
  console.log(docs,'buda')
      if(docs.length == 0){
-      console.log('sybeth wafa')
+  
  
        TestX.find({companyId:companyId,term:term,year:year,uid:studentId, type:'Class Test', class1:clas6},function(err,hods){
  
@@ -846,7 +846,7 @@ router.get('/passRateX',isLoggedIn,function(req,res){
        let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
       
         paynow.pollTransaction(pollUrl).then(transaction => {
-          if(transaction.status === 'awaiting delivery') {
+          if(transaction.status === 'paid') {
             // User showed us the doe
            
            

@@ -1426,7 +1426,7 @@ router.get('/calendar',isLoggedIn, function(req,res){
                   //adding event
   router.get('/addEvent',isLoggedIn, function(req,res){
     var pro = req.user
-    res.rendmer('events/event',{pro:pro})
+    res.render('events/event',{pro:pro})
   })
   
 
