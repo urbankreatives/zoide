@@ -1006,7 +1006,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
          console.log(wb.SheetNames.length)
          var data =xlsx.utils.sheet_to_json(sheet)
              
-         var newData = data.map(async function (record){
+         var newData = data.map(function (record){
      
         
        
@@ -1082,9 +1082,9 @@ req.body.password = record.password
                 }
               
           }
+else
 
-
-
+/*
          
             const token = jwt.sign({uid, name,surname,grade, suffix,class1,address,adminBal,count,actualCount,  fullname,mobile,gender,dob,role,term,year,expdate,expStr,photo, companyId, email,prefix, password, }, JWT_KEY, { expiresIn: '100000m' });
             const CLIENT_URL = 'http://' + req.headers.host;
@@ -1149,8 +1149,90 @@ req.body.password = record.password
                 }
             })
        
-
+*/
              
+var user = new User();
+user.uid = uid;
+user.name = name;
+user.fullname = fullname;
+user.surname = surname;
+user.role = role;
+user.gender = gender;
+user.dob = dob;
+user.studentId = 'null'
+user.grade = grade;
+user.class1 = class1;
+user.mobile = mobile;
+user.classLength = 0;
+user.studentNum = 0;
+user.uidNum = 0;
+user.teacherId = 'null';
+user.teacherName = 'null';
+user.classNo = 0
+user.examDate = 'null';
+user.feeStatus = 'null';
+user.feesUpdate = 'null';
+user.term = term;
+user.amount = 0;
+user.idNumber = idNumber;
+user.schoolName = 'null';
+user.receiptNumber = 0;
+user.year = year;
+user.prefix = prefix
+user.balance = adminBal;
+user.balanceCarriedOver = 0;
+user.status = 'owing';
+user.status4 = 'null';
+user.number = 0;
+user.paymentId = 'null';
+user.suffix = suffix;
+user.photo = "propic.jpg";
+user.level = 'null';
+user.levelX = 'normal';
+user.pollUrl ='null';
+user.annual = 0;
+user.fees = 0;
+user.state = 'new'
+user.companyId = companyId
+user.idNumber = 0;
+user.idNumX = 0
+user.recNumber=0
+user.type = 'null';
+user.address = address;
+user.email = email
+user.category = 'null';
+user.subject = 0;
+user.subjects = 'null'
+user.subjectCode = 'null'
+user.dept = 'null';
+user.paynow = 0
+user.password = user.encryptPassword(password)
+user.expdate=expdate;
+user.expStr = expStr;    
+user.status3 = "null"
+user.pollUrl2 = "null"
+user.count=count
+user.pollCount = 0
+user.actualCount = actualCount
+user.startYear = year
+user.currentYearCount = 0
+user.stdYearCount = 0
+user.admissionYear = year 
+user.save()
+  .then(user =>{
+   
+  
+      
+    req.session.message = {
+      type:'success',
+      message:'Account Registered'
+    }  
+    res.render('imports/students',{message:req.session.message});
+  })
+  
+
+
+  
                      
                  
                      
@@ -1334,7 +1416,7 @@ router.get('/calendar',isLoggedIn, function(req,res){
                   //adding event
   router.get('/addEvent',isLoggedIn, function(req,res){
     var pro = req.user
-    res.render('events/event',{pro:pro})
+    res.rendmer('events/event',{pro:pro})
   })
   
 
@@ -4063,7 +4145,299 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
               
               
             
+        //testing
+        
+router.get('/importsT',isLoggedIn,function(req,res){
+  var pro = req.user
+  res.render('imports/studentsT',{pro:pro})
+})
+
+
+
+
+
+
+router.post('/importsT',isLoggedIn,records, upload.single('file'),  (req,res)=>{
+  var count = req.user.actualCount
+  var m = moment()
+
+  
+  var adminBal = req.user.balance
+  var pro = req.user
+  var id =   req.user._id
+  var idNumber = req.user.idNumber
+  var count = req.user.count
+  var actualCount = req.user.actualCount
+
+  if(!req.file){
+      req.session.message = {
+        type:'errors',
+        message:'Select File!'
+      }     
+        res.render('imports/students', {message:req.session.message,pro:pro}) 
+      }else if (req.file.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
+          req.session.message = {
+              type:'errors',
+              message:'Upload Excel File'
+            }     
+              res.render('imports/studentsT', {message:req.session.message,pro:pro
+                   
+               }) 
+
+
+
+      }
+        
+      else{
+   
+
+      
+          const file = req.file.filename;
+  
+          
+               var wb =  xlsx.readFile('./public/uploads/' + file)
+       
+               var sheets = wb.Sheets;
+               var sheetNames = wb.SheetNames;
+   
+               var sheetName = wb.SheetNames[0];
+   var sheet = wb.Sheets[sheetName ];
+   
+      for (var i = 0; i < wb.SheetNames.length; ++i) {
+       var sheet = wb.Sheets[wb.SheetNames[i]];
+   
+       console.log(wb.SheetNames.length)
+       var data =xlsx.utils.sheet_to_json(sheet)
+           
+       var newData = data.map( function (record){
+   
+      
+     
+    
+        
+       
+      
+          let levelX
+          let adminBal = req.user.balance
+          let uid = record.uid;
+          let name = record.name;
+          let surname = record.surname;
+          let fullname = name +" "+ surname
+          let role = 'student';
+          let address = record.address
+          let mobile = record.mobile;
+          let gender = record.gender;
+          let dob = record.dob;
+          let email = record.email
+          let class1 = record.class1;
+          let grade = record.grade
+          let password = record.password;
+          let term = req.user.term
+          var year = m.format('YYYY')
+          let suffix = 'null'
+          let prefix = req.user.prefix
+          let num = record.num
+          let expdate = req.user.expdate
+          let expStr = req.user.expStr
+          let companyId = req.user.companyId
+          let photo = 'propic.jpg'
+
+        
+
+req.body.uid = record.uid     
+req.body.name = record.name  
+req.body.surname = record.surname  
+req.body.email = record.email  
+req.body.dob = record.dob  
+req.body.address = record.address 
+req.body.grade = record.grade  
+req.body.class1 = record.class1 
+req.body.gender = record.gender
+req.body.mobile = record.mobile  
+req.body.password = record.password             
+
+          
+      
+          try{
+            req.check('uid','Enter uid').notEmpty();
+            req.check('name','Enter Name').notEmpty();
+            req.check('surname','Enter Surname').notEmpty();
+            req.check('email','Enter email').notEmpty();
+            req.check('email','Enter valid email').notEmpty().isEmail();
+            req.check('dob','Enter Date Of Birth').notEmpty();
+            req.check('address','Enter Address').notEmpty();
+            req.check('grade','Enter Grade/Form').notEmpty();
+            req.check('grade','Grade must be numeric').notEmpty().isNumeric();
+            req.check('uid','Enter Student ID').notEmpty();
+            req.check('class1','Enter Student Class').notEmpty();
+            req.check('gender','Enter Gender').notEmpty();
+            req.check('mobile', 'Enter Phone Number').notEmpty()
+
+
+            var errors = req.validationErrors();
+
+            if (errors) {
+              
+              req.session.errors = errors;
+              req.session.success = false;
+              for(let x=0;x<req.session.errors.length;x++){
+                throw new SyntaxError(req.session.errors[x].msg +" "+"on line"+" "+ num)
+              }
             
+        }
+
+
+
+       
+          const token = jwt.sign({uid, name,surname,grade, suffix,class1,address,adminBal,count,actualCount,  fullname,mobile,gender,dob,role,term,year,expdate,expStr,photo, companyId, email,prefix, password, }, JWT_KEY, { expiresIn: '100000m' });
+          const CLIENT_URL = 'http://' + req.headers.host;
+    
+          const output = `
+          <h2>Please click on below link to activate your account</h2>
+          <a href="${CLIENT_URL}/records/activate3/${token}">click here</a>
+          <h1> User credentials</h1>
+          <p>userID:${uid}</p>
+          <p>password:${password}</p>
+          <p><b>NOTE: </b> The above activation link expires in 1 week.</p>
+          `;
+    
+          const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: "cashreq00@gmail.com",
+                pass: "itzgkkqtmchvciik",
+            },
+          });
+          
+    
+          // send mail with defined transport object
+          const mailOptions = {
+              from: '"Admin" <cashreq00@gmail.com>', // sender address
+              to: record.email, // list of receivers
+              subject: "Account Verification ✔", // Subject line
+              html: output, // html body
+          };
+    
+       transporter.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                console.log(error)
+          
+           req.session.message = {
+             type:'errors',
+             message:'confirmation emails not sent'
+           }
+           
+         /*  res.render('imports/studentsT', {
+            message:req.session.message ,pro:pro
+       }) */
+      
+        throw new SyntaxError(req.session.message.message)
+      
+       
+       
+              }
+              else {
+
+                try {
+                  
+              
+                  console.log('Mail sent : %s', info.response);
+                  
+                  idNumber++
+            
+                  User.findByIdAndUpdate(id,{$set:{idNumber:idNumber}},function(err,locs){
+                  req.session.message = {
+                    type:'success',
+                    message:'confirmation emails sent to students'
+                  }     
+
+                  
+                /*  res.render('imports/studentsT', {
+                    message:req.session.message ,pro:pro
+               
+              })*/
+             
+            })
+          }finally{
+            throw "email sent";
+          }
+              }
+          })
+     
+
+           
+                 
+               
+                   
+                 
+                  // .catch(err => console.log(err))
+                }
+                catch(e){
+                  res.send(e.message)
+                 }
+
+
+                
+                
+                  })
+                
+                
+       
+                }
+                
+                
+                  
+                  
+      
+                 
+      
+                  
+           
+              }
+    
+      
+
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             
             
 
@@ -4789,6 +5163,27 @@ router.get('/:id',isLoggedIn, (req, res) => {
   
   
   
+
+
+
+
+
+
+
+
+
+
+
+
+
+//testing
+
+
+
+
+
+
+
   
 
   module.exports = router;
