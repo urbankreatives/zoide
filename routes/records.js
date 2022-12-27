@@ -989,12 +989,12 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
      
 
         
-          //  const file = req.file.filename;
+           const file = req.file.filename;
     
             
-                // var wb =  xlsx.readFile('./public/uploads/' + file)
+                var wb =  xlsx.readFile('./public/uploads/' + file)
 
-                var wb =  xlsx.readFile('./public/uploads/' + student)
+             
          
                  var sheets = wb.Sheets;
                  var sheetNames = wb.SheetNames;
