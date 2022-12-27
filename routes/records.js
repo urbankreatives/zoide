@@ -949,7 +949,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
     res.render('imports/studentX',{pro:pro})
   })
   
-  
+
   
   
 
@@ -966,13 +966,13 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
     var count = req.user.count
     var actualCount = req.user.actualCount
   
-    if(!req.file){
+  /*  if(!req.file){
         req.session.message = {
           type:'errors',
           message:'Select File!'
         }     
-          res.render('imports/students', {message:req.session.message,pro:pro}) 
-        }else if (req.file.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
+          res.render('imports/students', {message:req.session.message,pro:pro}) */
+     if (!req.file || req.file.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
             req.session.message = {
                 type:'errors',
                 message:'Upload Excel File'
@@ -989,10 +989,12 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
      
 
         
-            const file = req.file.filename;
+          //  const file = req.file.filename;
     
             
-                 var wb =  xlsx.readFile('./public/uploads/' + file)
+                // var wb =  xlsx.readFile('./public/uploads/' + file)
+
+                var wb =  xlsx.readFile('./public/uploads/' + student)
          
                  var sheets = wb.Sheets;
                  var sheetNames = wb.SheetNames;
@@ -1150,6 +1152,10 @@ else
             })
        
 */
+
+
+
+
           
 var user = new User();
 user.uid = uid;
@@ -1218,23 +1224,26 @@ user.startYear = year
 user.currentYearCount = 0
 user.stdYearCount = 0
 user.admissionYear = year 
+
 user.save()
   .then(user =>{
    
    
-      
+     
     req.session.message = {
       type:'success',
-      message:'Account Registered'
+      message:'Accounts Registered'
     }  
     res.render('imports/students',{message:req.session.message});
+
+
   
   })
-  
 
 
 
-                     
+
+        
                  
                      
                    
@@ -2007,18 +2016,19 @@ router.get('/importTeacherX',isLoggedIn,function(req,res){
 var expStr = req.user.expStr
 var prefix = req.user.prefix
   
-    if(!req.file){
+    
+  /*  if(!req.file){
         req.session.message = {
           type:'errors',
           message:'Select File!'
         }     
-          res.render('imports/teacher', {message:req.session.message,pro:pro}) 
-        }else if (req.file.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
+          res.render('imports/students', {message:req.session.message,pro:pro}) */
+          if (!req.file || req.file.mimetype !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
             req.session.message = {
                 type:'errors',
                 message:'Upload Excel File'
               }     
-                res.render('imports/teacher', {message:req.session.message,pro:pro
+                res.render('imports/teacherX', {message:req.session.message,pro:pro
                      
                  }) 
   
@@ -2027,7 +2037,6 @@ var prefix = req.user.prefix
         }
           
         else{
-     
 
         
             const file = req.file.filename;
@@ -2111,7 +2120,7 @@ if (errors) {
 
 
         
-              
+             /* 
          
             const token = jwt.sign({uid,name,surname,address,mobile,gender,fullname,prefix, dob, photo,dept, term, year,companyId, email,role, password,expdate,expStr }, JWT_KEY, { expiresIn: '100000m' });
             const CLIENT_URL = 'http://' + req.headers.host;
@@ -2170,7 +2179,85 @@ if (errors) {
                   })
                 }
             })
+              */
+
+            var user = new User();
+            user.uid = uid;
+            user.name = name;
+            user.fullname = fullname;
+            user.surname = surname;
+            user.role = role;
+            user.gender = gender;
+            user.dob = dob;
+            user.studentId = 'null'
+            user.grade = 0;
+            user.class1 = 'null';
+            user.mobile = mobile;
+            user.classLength = 0;
+            user.studentNum = 0;
+            user.uidNum = 0;
+            user.teacherId = 'null';
+            user.teacherName = 'null';
+            user.classNo = 0
+            user.examDate = 'null';
+            user.feeStatus = 'null';
+            user.feesUpdate = 'null';
+            user.term = term;
+            user.amount = 0;
+            user.receiptNumber = 0;
+            user.year = year;
+            user.balance = 0;
+            user.idNumber = 0
+            user.idNumX = 0
+            user.number = 0
+            user.schoolName = 'null'
+            user.balanceCarriedOver = 0;
+            user.status = 'owing';
+            user.paymentId = 'null';
+            user.prefix = prefix;
+            user.photo = "propic.jpg";
+            user.level = 'null';
+            user.pollUrl ='null';
+            user.annual = 0;
+            user.fees = 0
+            user.type = 'null';
+            user.address = address;
+            user.email = email
+            user.category = 'null';
+            user.subject = 0;
+            user.subjects = 'null'
+            user.subjectCode = 'null'
+            user.dept = dept;
+            user.paynow = 0
+            user.companyId = companyId
+            user.expdate=expdate;
+            user.expStr = expStr; 
+            user.status3 = "null"
+            user.pollUrl2 = "null"
+            user.levelX = 'null';
+            user.status4 = 'null';
+            user.recNumber = 0
+            user.suffix = 'null'
+            user.count=0
+            user.pollCount = 0
+            user.actualCount = 0  
+            user.startYear = year
+            user.currentYearCount = 0
+            user.stdYearCount = 0
+            user.admissionYear = year
+            user.password = user.encryptPassword(password)   
+           
+            user.save()
+              .then(user =>{
+               
               
+                  
+                req.session.message = {
+                  type:'success',
+                  message:'Account Registered'
+                }  
+                res.render('imports/teacherX',{message:req.session.message});
+              })
                    
                     // .catch(err => console.log(err))
                   }
