@@ -3317,7 +3317,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
      arr1 = docs
      arr = focs
      if(docs == 0){
-       res.redirect('/records/addRoom')
+       res.redirect('/records/addClassRoom')
      }
   
   res.render('lesson/add-lesson',{fullname:fullname, teacherId:teacherId,arr:arr, arr1:arr1,pro:pro})
