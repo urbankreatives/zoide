@@ -3475,7 +3475,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
     var regex= new RegExp(req.query["term"],'i');
    var teacherId = req.user.teacherId
-    var uidFilter =TeacherSub.find({companyId:companyId,subjectCode:regex},{'subjectCode':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+    var uidFilter =TeacherSub.find({companyId:companyId,teacherId:teacherId, subjectCode:regex},{'subjectCode':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
   
     
     uidFilter.exec(function(err,data){
