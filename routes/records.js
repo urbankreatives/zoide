@@ -712,21 +712,9 @@ res.redirect('/records/addStudentX')
   
 })
 
-router.get('/addStudentX',isLoggedIn,function(req,res){
-  var pro = req.user
-var actualCount = req.user.actualCount
-var count = req.user.count
-var prefix = req.user.prefix
-var title = 'You have reched maximum users'
-var readonly = 'readonly'
-
-
-
-res.render('students/admit',{pro:pro,readonly:readonly, title:title})
-})
-
 
 router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, next) {
+  var m = moment()
   var m = moment()
   var year = m.format('YYYY')
   var pro = req.user
@@ -777,21 +765,21 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
     req.check('gender','Enter Gender').notEmpty();
     req.check('mobile', 'Enter Phone Number').notEmpty()
     req.check('password', 'Password do not match').isLength({min: 4}).equals(req.body.confirmPassword);
+ 
+  
+   
+  
         
           
        
     var errors = req.validationErrors();
 
         if (errors) {
-          Class1.find({companyId:companyId}, function(err,docs){
-            Level.find({companyId:companyId},function(err,gocs){
-
-              let arr = gocs
-            let arr1 = docs;  
+          Class1.find({}, function(err,docs){
+            var arr1 = docs;  
           req.session.errors = errors;
           req.session.success = false;
-          res.render('students/admit',{ errors:req.session.errors,uid1:uid1,arr:arr, arr1:arr1,pro:pro,pre:prefix})
-          })
+          res.render('students/admit',{ errors:req.session.errors, arr1:arr1,pro:pro})
     })
         
       }
@@ -803,101 +791,100 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
             if(user){ 
           // req.session.errors = errors
             //req.success.user = false;
-            Class1.find({companyId:companyId}, function(err,docs){
-              Level.find({companyId:companyId},function(err,gocs){
-
-                var arr = gocs
-              let arr1 = docs;
+            Class1.find({}, function(err,docs){
+              var arr1 = docs;
            req.session.message = {
              type:'errors',
-             message:'user id already in use'
+             message:'student already in the system'
            }     
            
               res.render('students/admit', {
-                   message:req.session.message ,arr:arr, arr1:arr1,pro:pro,uid1:uid1,pre:prefix
+                   message:req.session.message ,arr1:arr1,pro:pro
               }) 
-              })
             })
       }
       
                     else  {   
-                 console.log('gradeX',grade)
-                      const token = jwt.sign({uid,name,suffix, prefix,surname,fullname,address,mobile,adminBal, photo,gender, dob,class1, grade, term, count, actualCount, year,companyId, email,role,expdate,expStr, password, idNumber, schoolName }, JWT_KEY, { expiresIn: '100000m' });
-                      const CLIENT_URL = 'http://' + req.headers.host;
-                
-                      const output = `
-                      <h2>Please click on below link to activate your account</h2>
-                      <a href="${CLIENT_URL}/records/activate3/${token}">click here</a>
-                      <h1> User credentials</h1>
-                      <p>userID:${uid}</p>
-                      <p>password:${password}</p>
-                      <p><b>NOTE: </b> The above activation link expires in 1 week.</p>
-                      `;
-                
-                      const transporter = nodemailer.createTransport({
-                        service: 'gmail',
-                        auth: {
-                            user: "cashreq00@gmail.com",
-                            pass: "itzgkkqtmchvciik",
-                        },
-                      });
-                      
-                
-                      // send mail with defined transport object
-                      const mailOptions = {
-                          from: '"Admin" <cashreq00@gmail.com>', // sender address
-                          to: email, // list of receivers
-                          subject: "Account Verification ✔", // Subject line
-                          html: output, // html body
-                      };
-                
-                      transporter.sendMail(mailOptions, (error, info) => {
-                          if (error) {
-                            console.log(error)
-                           
-                            Class1.find({companyId:companyId}, function(err,docs){
-                              Level.find({companyId:companyId},function(err,gocs){
-
-                                var arr = gocs
-                              let arr1 = docs;
-                       req.session.message = {
-                         type:'errors',
-                         message:'confirmation email not sent'
-                       }
-                       
-                       res.render('students/admit', {
-                        message:req.session.message ,arr1:arr1,pro:pro,uid1:uid1,pre:prefix,arr:arr
-                   }) 
-                   })
-                
-                   })
-                    
-                          }
-                          else {
-                              console.log('Mail sent : %s', info.response);
-                              idNumber + 1
-                              actualCount++
-                              let idNumQ = idNumber + 1
-                              let uid9 = prefix + idNumQ
-                              User.findByIdAndUpdate(id,{$set:{idNumber:idNumber,actualCount:actualCount}},function(err,locs){
-                              Class1.find({companyId:companyId}, function(err,docs){
-                                Level.find({companyId:companyId},function(err,gocs){
-
-                                  let arr = gocs
-                                let arr1 = docs;
-
-                              req.session.message = {
-                                type:'success',
-                                message:'confirmation email sent'
-                              }     
-                              
-                              res.render('students/admit', {
-                                message:req.session.message ,arr1:arr1,uid1:uid9,pro:pro,pre:prefix,arr:arr
-                           }) 
-                          })
-                          })
+                      var user = new User();
+                      user.uid = uid;
+                      user.name = name;
+                      user.fullname = fullname;
+                      user.surname = surname;
+                      user.role = 'student';
+                      user.gender = gender;
+                      user.dob = dob;
+                      user.studentId = 'null'
+                      user.grade = grade;
+                      user.class1 = class1;
+                      user.mobile = mobile;
+                      user.classLength = 0;
+                      user.studentNum = 0;
+                      user.uidNum = 0;
+                      user.teacherId = 'null';
+                      user.teacherName = 'null';
+                      user.classNo = 0
+                      user.examDate = 'null';
+                      user.feeStatus = 'null';
+                      user.feesUpdate = 'null';
+                      user.term = term;
+                      user.amount = 0;
+                      user.idNumber = idNumber;
+                      user.schoolName = 'null';
+                      user.receiptNumber = 0;
+                      user.year = year;
+                      user.prefix = prefix
+                      user.balance = adminBal;
+                      user.balanceCarriedOver = 0;
+                      user.status = 'owing';
+                      user.status4 = 'null';
+                      user.number = 0;
+                      user.paymentId = 'null';
+                      user.suffix = suffix;
+                      user.photo = "propic.jpg";
+                      user.level = 'null';
+                      user.levelX = 'normal';
+                      user.pollUrl ='null';
+                      user.annual = 0;
+                      user.fees = 0;
+                      user.state = 'new'
+                      user.companyId = companyId
+                      user.idNumber = 0;
+                      user.idNumX = 0
+                      user.recNumber=0
+                      user.type = 'null';
+                      user.address = address;
+                      user.email = email
+                      user.category = 'null';
+                      user.subject = 0;
+                      user.subjects = 'null'
+                      user.subjectCode = 'null'
+                      user.dept = 'null';
+                      user.paynow = 0
+                      user.password = user.encryptPassword(password)
+                      user.expdate=expdate;
+                      user.expStr = expStr;    
+                      user.status3 = "null"
+                      user.pollUrl2 = "null"
+                      user.count=count
+                      user.pollCount = 0
+                      user.actualCount = actualCount
+                      user.startYear = year
+                      user.currentYearCount = 0
+                      user.stdYearCount = 0
+                      user.admissionYear = year 
+                      user.save()
+                        .then(user =>{
+                         
+                        
+                            
+                          req.session.message = {
+                            type:'success',
+                            message:'Account Registered'
+                          }  
+                          Class1.find({}, function(err,docs){
+                            var arr1 = docs;  
+                          res.render('students/admit',{message:req.session.message,arr1:arr1,pro:pro});
                         })
-                          }
                       })
                         .catch(err => console.log(err))
                       }
@@ -905,12 +892,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
                         })
                        }
                 });
-
-
-
-
-
-
+   
                  //importing students details from excel
   
   router.get('/import',isLoggedIn,records, function(req,res){
@@ -1152,7 +1134,26 @@ else
             })
        
 */
+{
+  User.findOne({'uid':uid})
+  .then(user =>{
+      if(user){ 
+    // req.session.errors = errors
+      //req.success.user = false;
 
+
+
+     req.session.message = {
+       type:'errors',
+       message:'user id already in use'
+     }     
+     
+        res.render('imports/students', {
+             message:req.session.message ,pro:pro
+        }) 
+    
+}
+else
 
 
 
@@ -1236,14 +1237,14 @@ user.save()
     }  
     res.render('imports/students',{message:req.session.message});
 
-
+  })
   
   })
 
 
 
 
-        
+}     
                  
                      
                    
@@ -1807,99 +1808,173 @@ var readonly = 'readonly'
 res.render('teachers/admit',{pro:pro,readonly:readonly, title:title})
 })
 
-
 router.post('/addTeacher',isLoggedIn, function(req,res){
   var m = moment()
-  var year = m.format('YYYY')
-  var pro = req.user
-var uid = req.body.uid;
-var name = req.body.name;
-var teacher = 'teacher'
-var dept = req.body.dept
-var surname = req.body.surname;
-var role = 'teacher';
-var mobile = req.body.mobile;
-var expdate = req.user.expdate
-var expStr = req.user.expStr
-var gender = req.body.gender;
-var dob = req.body.dob;
-var class1 = 'null';
-var fullname = name +" "+ surname 
-var grade = 0
-var id = req.user._id;
-var email = req.body.email
-var password = req.body.password;
-var term = req.user.term;
-var address = req.body.address
-var prefix = req.user.prefix
-var idNum=req.user.idNumber
-idNum++
-var uid1 = prefix+idNum
-var file = req.body.file;
-var companyId = req.user.companyId
-var count = req.user.actualCount           
-var idNumber = req.user.idNumber
-
-req.check('name','Enter Name').notEmpty();
-req.check('surname','Enter Surname').notEmpty();
-req.check('dob','Enter Date Of Birth').notEmpty();
-req.check('email','Enter email').notEmpty().isEmail();
-req.check('uid','Enter Teacher ID').notEmpty();
-
-req.check('gender','Enter Gender').notEmpty();
-req.check('mobile', 'Enter Phone Number').notEmpty();
-req.check('password', 'Password do not match').isLength({min: 4}).equals(req.body.confirmPassword);
-    
-
-      
-   
-var errors = req.validationErrors();
-    if (errors) {
-      Dept.find({companyId:companyId},function(err,docs){
-        var arr1 = docs;
-    
-      req.session.errors = errors;
-      req.session.success = false;
-      res.render('teachers/admit',{ errors:req.session.errors,uid:uid1,arr1:arr1,pro:pro,pre:prefix})
-      })
-    
-  }
-  else
-
- {
-    User.findOne({'companyId':companyId,'fullname':fullname, 'role':teacher})
-    .then(user =>{
-        if(user){ 
-      // req.session.errors = errors
-        //req.success.user = false;
-        Dept.find({companyId:companyId},function(err,docs){
-          var arr1 = docs;
-       req.session.message = {
-         type:'errors',
-         message:'user id already in use'
-       }     
-       
-          res.render('teachers/admit', {
-              message:req.session.message, uid:uid1, pro:pro  }) 
-          })
-        
-  }
-  
-                else  {   
+                  var year = m.format('YYYY')
+                  var pro = req.user
+                var uid = req.body.uid;
+                var name = req.body.name;
+                var teacher = 'teacher'
+                var dept = req.body.dept
+                var surname = req.body.surname;
+                var role = 'teacher';
+                var mobile = req.body.mobile;
+                var expdate = req.user.expdate
+                var expStr = req.user.expStr
+                var gender = req.body.gender;
+                var dob = req.body.dob;
+                var class1 = 'null';
+                var fullname = name +" "+ surname 
+                var grade = 0
+                var id = req.user._id;
+                var email = req.body.email
+                var password = req.body.password;
+                var term = req.user.term;
+                var address = req.body.address
+                var prefix = req.user.prefix
+                var idNum=req.user.idNumber
+                idNum++
+                var uid1 = prefix+idNum
+                var file = req.body.file;
+                var companyId = req.user.companyId
+                var count = req.user.actualCount           
+                var idNumber = req.user.idNumber
+                
+                req.check('name','Enter Name').notEmpty();
+                req.check('surname','Enter Surname').notEmpty();
+                req.check('dob','Enter Date Of Birth').notEmpty();
+                req.check('email','Enter email').notEmpty().isEmail();
+                req.check('uid','Enter Teacher ID').notEmpty();
+                
+                req.check('gender','Enter Gender').notEmpty();
+                req.check('mobile', 'Enter Phone Number').notEmpty();
+                req.check('password', 'Password do not match').isLength({min: 4}).equals(req.body.confirmPassword);
+                    
+                
+                      
+                   
+                var errors = req.validationErrors();
+                    if (errors) {
+                      Dept.find({companyId:companyId},function(err,docs){
+                        var arr1 = docs;
+                    
+                      req.session.errors = errors;
+                      req.session.success = false;
+                      res.render('teachers/admit',{ errors:req.session.errors,uid:uid1,arr1:arr1,pro:pro,pre:prefix})
+                      })
+                    
+                  }
+                  else
+                
+                 {
+                    User.findOne({'companyId':companyId,'fullname':fullname, 'role':teacher})
+                    .then(user =>{
+                        if(user){ 
+                      // req.session.errors = errors
+                        //req.success.user = false;
+                        Dept.find({companyId:companyId},function(err,docs){
+                          var arr1 = docs;
+                       req.session.message = {
+                         type:'errors',
+                         message:'user id already in use'
+                       }     
+                       
+                          res.render('teachers/admit', {
+                              message:req.session.message, uid:uid1, pro:pro  }) 
+                          })
+                        
+                  }
+                  
+                                else  {   
                
 
-                  const token = jwt.sign({uid,name,surname,fullname,address,mobile, gender, dob,class1,dept, grade,prefix, term, year,companyId,expdate,expStr, email,role, password,file }, JWT_KEY, { expiresIn: '100000m' });
+                  
+                  var user = new User();
+                  user.uid = uid;
+                  user.name = name;
+                  user.fullname = fullname;
+                  user.surname = surname;
+                  user.role = role;
+                  user.gender = gender;
+                  user.dob = dob;
+                  user.studentId = 'null'
+                  user.grade = 0;
+                  user.class1 = 'null';
+                  user.mobile = mobile;
+                  user.classLength = 0;
+                  user.studentNum = 0;
+                  user.uidNum = 0;
+                  user.teacherId = 'null';
+                  user.teacherName = 'null';
+                  user.classNo = 0
+                  user.examDate = 'null';
+                  user.feeStatus = 'null';
+                  user.feesUpdate = 'null';
+                  user.term = term;
+                  user.amount = 0;
+                  user.receiptNumber = 0;
+                  user.year = year;
+                  user.balance = 0;
+                  user.idNumber = 0
+                  user.idNumX = 0
+                  user.number = 0
+                  user.schoolName = 'null'
+                  user.balanceCarriedOver = 0;
+                  user.status = 'owing';
+                  user.paymentId = 'null';
+                  user.prefix = prefix;
+                  user.photo = "propic.jpg";
+                  user.level = 'null';
+                  user.pollUrl ='null';
+                  user.annual = 0;
+                  user.fees = 0
+                  user.type = 'null';
+                  user.address = address;
+                  user.email = email
+                  user.category = 'null';
+                  user.subject = 0;
+                  user.subjects = 'null'
+                  user.subjectCode = 'null'
+                  user.dept = dept;
+                  user.paynow = 0
+                  user.companyId = companyId
+                  user.expdate=expdate;
+                  user.expStr = expStr; 
+                  user.status3 = "null"
+                  user.pollUrl2 = "null"
+                  user.levelX = 'null';
+                  user.status4 = 'null';
+                  user.recNumber = 0
+                  user.suffix = 'null'
+                  user.count=0
+                  user.pollCount = 0
+                  user.actualCount = 0  
+                  user.startYear = year
+                  user.currentYearCount = 0
+                  user.stdYearCount = 0
+                  user.admissionYear = year
+                  
+                  user.password = user.encryptPassword(password)
+
+                  
+                   
+              
+                   
+          
+                  user.save()
+                    .then(user =>{
                       const CLIENT_URL = 'http://' + req.headers.host;
-                
+      
                       const output = `
                       <h2>Please click on below link to activate your account</h2>
-                      <a href="${CLIENT_URL}/records/activate/${token}">click here</a>
+                      <a href="${CLIENT_URL}/">click here to login</a>
                       <h1> User credentials</h1>
                       <p>userID:${uid}</p>
                       <p>password:${password}</p>
                       <p><b>NOTE: </b> The above activation link expires in 1 week.</p>
                       `;
                 
+                     
                       const transporter = nodemailer.createTransport({
                         service: 'gmail',
                         auth: {
@@ -1917,49 +1992,58 @@ var errors = req.validationErrors();
                           html: output, // html body
                       };
                 
-                      transporter.sendMail(mailOptions, (error, info) => {
+                    transporter.sendMail(mailOptions, (error, info) => {
                           if (error) {
                             console.log(error)
-                            Dept.find({companyId:companyId},function(err,docs){
-                              var arr1 = docs;
                            
                        req.session.message = {
                          type:'errors',
-                         message:'confirmation email not sent'
+                         message:'confirmation emails not sent'
                        }
                        
-                       res.render('teachers/admit',{ errors:req.session.errors, message:req.session.message, uid:uid1,pro:pro,pre:prefix})
-                      })
+                       res.render('imports/teacher', {message:req.session.message,pro:pro}) 
                    
                     
                           }
                           else {
                               console.log('Mail sent : %s', info.response);
-                              idNumber + 1
-                             
-                              let idNumQ = idNumber + 1
-                              let uid9 = prefix + idNumQ
-                             
+                              idNumber++
+                           
                               User.findByIdAndUpdate(id,{$set:{idNumber:idNumber}},function(err,locs){
-                                 Dept.find({companyId:companyId},function(err,docs){
-        var arr1 = docs;
-
+          
                               req.session.message = {
                                 type:'success',
-                                message:'confirmation email sent'
+                                message:'confirmation emails sent'
                               }     
                               
-                              res.render('teachers/admit',{ errors:req.session.errors,message:req.session.message,uid:uid9,pro:pro,arr1:arr1})
-                            })
+                              res.render('imports/teacher', {message:req.session.message,pro:pro}) 
                             })
                           }
-                      })
-                        .catch(err => console.log(err))
-                      }
                       
-                  
+                 
+                      User.findByIdAndUpdate(id,{$set:{uidNum:idNum}},function(err,locs){
+                      
+                      
+                      res.redirect('/records/addTeacher')
+                      })
+                   
+                  })
+
+                })
+                }
+
                     })
-                   }
+                  }
+              
+                 
+                
+                    
+                    
+                
+                 
+                  
+
+                  
 })
 
 
@@ -2181,6 +2265,33 @@ if (errors) {
             })
               */
 
+
+
+            {
+              User.findOne({'uid':uid})
+              .then(user =>{
+                  if(user){ 
+                // req.session.errors = errors
+                  //req.success.user = false;
+            
+            
+            
+                 req.session.message = {
+                   type:'errors',
+                   message:'user id already in use'
+                 }     
+                 
+                    res.render('imports/students', {
+                         message:req.session.message ,pro:pro
+                    }) 
+                
+            }
+            else
+
+
+
+
+
             var user = new User();
             user.uid = uid;
             user.name = name;
@@ -2258,6 +2369,9 @@ if (errors) {
                 }  
                 res.render('imports/teacherX',{message:req.session.message});
               })
+
+            })
+          }
                    
                     // .catch(err => console.log(err))
                   }
