@@ -1150,7 +1150,7 @@ else
             })
        
 */
-             
+          
 var user = new User();
 user.uid = uid;
 user.name = name;
@@ -1221,18 +1221,19 @@ user.admissionYear = year
 user.save()
   .then(user =>{
    
-  
+   
       
     req.session.message = {
       type:'success',
       message:'Account Registered'
     }  
     res.render('imports/students',{message:req.session.message});
+  
   })
   
 
 
-  
+
                      
                  
                      
