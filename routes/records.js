@@ -874,25 +874,89 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
                       user.admissionYear = year 
                       user.save()
                         .then(user =>{
+                          const CLIENT_URL = 'http://' + req.headers.host;
+      
+                          const output = `
+                          <h2>Please click on below link to activate your account</h2>
+                          <a href="${CLIENT_URL}/">click here to login</a>
+                          <h1> User credentials</h1>
+                          <p>userID:${uid}</p>
+                          <p>password:${password}</p>
+                          <p><b>NOTE: </b> The above activation link expires in 1 week.</p>
+                          `;
+                    
                          
+                          const transporter = nodemailer.createTransport({
+                            service: 'gmail',
+                            auth: {
+                                user: "cashreq00@gmail.com",
+                                pass: "itzgkkqtmchvciik",
+                            },
+                          });
+                          
+                    
+                          // send mail with defined transport object
+                          const mailOptions = {
+                              from: '"Admin" <cashreq00@gmail.com>', // sender address
+                              to: email, // list of receivers
+                              subject: "Account Verification ✔", // Subject line
+                              html: output, // html body
+                          };
+                    
+                        transporter.sendMail(mailOptions, (error, info) => {
+                              if (error) {
+                                console.log(error)
+                               
+                           req.session.message = {
+                             type:'errors',
+                             message:'confirmation emails not sent'
+                           }
+                           
+                           res.render('students/admit', {message:req.session.message,pro:pro}) 
+                       
                         
-                            
-                          req.session.message = {
-                            type:'success',
-                            message:'Account Registered'
-                          }  
-                          Class1.find({}, function(err,docs){
-                            var arr1 = docs;  
-                          res.render('students/admit',{message:req.session.message,arr1:arr1,pro:pro});
-                        })
+                              }
+                              else {
+                                  console.log('Mail sent : %s', info.response);
+                                  idNumber++
+                               
+                                  User.findByIdAndUpdate(id,{$set:{idNumber:idNumber}},function(err,locs){
+              
+                                  req.session.message = {
+                                    type:'success',
+                                    message:'confirmation emails sent'
+                                  }     
+                                  
+                                  res.render('students/admit', {message:req.session.message,pro:pro}) 
+                                })
+                              }
+                          
+                     
+                          User.findByIdAndUpdate(id,{$set:{uidNum:idNum}},function(err,locs){
+                          
+                          
+                          res.redirect('/records/addStudent')
+                          })
+                       
                       })
-                        .catch(err => console.log(err))
-                      }
-                      
+    
+                    })
+                    }
+    
                         })
-                       }
-                });
-   
+                      }
+                  
+                     
+                    
+                        
+                        
+                    
+                     
+                      
+    
+                      
+    })
+    
                  //importing students details from excel
   
   router.get('/import',isLoggedIn,records, function(req,res){
