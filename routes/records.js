@@ -171,8 +171,9 @@ User.findByIdAndUpdate(id,{$set:{levelX:levelX}},function(err,jocs){
      })
   
     }
-    res.redirect('/records/idUp')
+  
   })
+  res.redirect('/records/idUp')
 })
 
 
