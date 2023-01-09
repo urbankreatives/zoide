@@ -3124,7 +3124,7 @@ router.get('/listSub',isLoggedIn, (req, res) => {
 //updating user
 router.get('/sub/:id', (req, res) => {
   var pro = req.user  
-  User.findById(req.params.id, (err, doc) => {
+ Subscriptions.findById(req.params.id, (err, doc) => {
       if (!err) {
       
           res.render("accounts/update", {
@@ -3142,15 +3142,20 @@ router.get('/sub/:id', (req, res) => {
   var sub = new Subscriptions();
   var id = req.body._id;
   var startup = req.body.startup;
+  var startupA = req.body.startupA;
   var advanced = req.body.advanced;
+  var advancedA = req.body.advancedA;
   var enterprise = req.body.enterprise;
+  var enterpriseA = req.body.enterpriseA;
 
   var pro = req.user
   
   req.check('startup','Enter Startup Amount').notEmpty().isNumeric();
+  req.check('startupA','Enter Startup Annual Amount').notEmpty().isNumeric();
   req.check('advanced','Enter Advanced').notEmpty().isNumeric();
-  
+  req.check('advancedA','Enter Advanced Annual').notEmpty().isNumeric();
   req.check('enterprise', 'Enter Enterprise').notEmpty().isNumeric();
+  req.check('enterpriseA', 'Enter Enterprise Annual').notEmpty().isNumeric();
   
  
     
