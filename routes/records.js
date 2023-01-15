@@ -3216,7 +3216,7 @@ else
   
     var regex= new RegExp(req.query["term"],'i');
    
-    var uidFilter =User.find({companyId:companyId,fullname:regex, role:"teacher"},{'fullname':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+    var uidFilter =User.find({  role:"teacher", companyId:companyId,fullname:regex, },{'fullname':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
   
     
     uidFilter.exec(function(err,data){
@@ -3271,7 +3271,7 @@ else
     var fullname = req.body.code
     var companyId = req.user.companyId
    
-    User.find({companyId:companyId,fullname:fullname},function(err,docs){
+    User.find({companyId:companyId,fullname:fullname ,role:"teacher"},function(err,docs){
    if(docs == undefined){
      res.redirect('/records/autoTS')
    }else
@@ -3654,7 +3654,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
     var regex= new RegExp(req.query["term"],'i');
    var teacherId = req.user.teacherId
-    var uidFilter =TeacherSub.find({companyId:companyId,teacherId:teacherId, subjectCode:regex},{'subjectCode':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+    var uidFilter =TeacherSub.find({ subjectCode:regex,companyId:companyId},{'subjectCode':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
   
     
     uidFilter.exec(function(err,data){
@@ -3707,7 +3707,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   //this routes autopopulates teachers info from the id selected from automplet1
   router.post('/autoLBX',isLoggedIn,function(req,res){
     var code = req.body.code
-  
+  console.log(code,'code')
    var companyId = req.user.companyId
   
     TeacherSub.find({companyId:companyId,subjectCode:code},function(err,docs){
