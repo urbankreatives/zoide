@@ -961,9 +961,9 @@ router.get('/passRateX',isLoggedIn,function(req,res){
             var m = moment()
             var year = m.format('YYYY')
             var uid = req.user.uid
-         
+            var term = req.user.term
             var companyId = req.user.companyId
-                  StudentClassRate.find({companyId:companyId,year:year, studentId:uid},function(err,docs){
+                  StudentClassRate.find({companyId:companyId,year:year, term:term,studentId:uid},function(err,docs){
                     if(docs == undefined){
                       res.redirect('/student/dash')
                     }else
