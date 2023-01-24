@@ -24,7 +24,7 @@ $.ajax({
    
      }
 
-     let labels2 =  ['1st Term PassRate', 'AvgMark', '2nd Term PassRate', '3rd Term PassRate', 'Avg Mark'];
+     let labels2 =  ['1st Term PassRate', 'AvgMark', '2nd Term PassRate','AvgMark', '3rd Term PassRate', 'Avg Mark'];
 
 
 //contractQty
