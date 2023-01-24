@@ -505,9 +505,9 @@ router.post('/passChart',isLoggedIn,function(req,res){
     var m = moment()
     var year = m.format('YYYY')
     var uid = req.user.uid
-    var term = req.user.term
+ 
     var companyId = req.user.companyId
-          TeacherExamRate.find({companyId:companyId,year:year, term:term, teacherId:uid},function(err,docs){
+          TeacherExamRate.find({companyId:companyId,year:year, teacherId:uid},function(err,docs){
             if(docs == undefined){
               res.redirect('/teacher/dash')
             }else
@@ -525,9 +525,9 @@ router.post('/passChart',isLoggedIn,function(req,res){
           var m = moment()
           var year = m.format('YYYY')
           var uid = req.user.uid
-          var term = req.user.term
+   
           var companyId = req.user.companyId
-                TeacherClassRate.find({companyId:companyId,year:year, term:term, teacherId:uid},function(err,docs){
+                TeacherClassRate.find({companyId:companyId,year:year,  teacherId:uid},function(err,docs){
                   if(docs == undefined){
                     res.redirect('/teacher/dash')
                   }else
