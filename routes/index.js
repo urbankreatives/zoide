@@ -2382,6 +2382,27 @@ User.find({companyId:companyId,role:"student"},(err, docs) => {
 });
 
 
+   //view profile
+   router.get('/student/:id',isLoggedIn,function(req,res){
+    var pro = req.user
+    User.findById(req.params.id, (err, doc) => {
+      if (!err) {
+      
+          res.render("admin/overviewStudent", {
+             
+              doc: doc,pro:pro
+            
+              
+          });
+        
+      }
+  });
+  
+  
+  
+  })
+  
+
 
 //role student
 

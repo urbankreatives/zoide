@@ -1597,6 +1597,65 @@ router.get('/calendar',isLoggedIn, function(req,res){
 
 
 
+     //view profile
+     router.get('/prof/:id',isLoggedIn,function(req,res){
+      var pro = req.user
+      User.findById(req.params.id, (err, doc) => {
+        if (!err) {
+        
+            res.render("records/overviewStudent", {
+               
+                doc: doc,pro:pro
+              
+                
+            });
+          
+        }
+    });
+    
+    
+    
+    })
+    
+
+    router.post('/prof',isLoggedIn,upload.single('file'),function(req,res){
+ 
+      var pro = req.user
+      var id = req.body.id
+      console.log(id)
+    
+      if(!req.file){
+       req.session.message = {
+         type:'errors',
+         message:'Select Picture'
+       }     
+         res.render('records/overviewStudent', {
+         message:req.session.message, pro:pro 
+          }) 
+       
+      } else
+      var imageFile = req.file.filename;
+     
+     console.log(imageFile)
+     console.log(id)
+      User.findByIdAndUpdate(id,{$set:{photo:imageFile}},function(err,data){ 
+      
+      
+        
+      
+      
+      })
+     
+      res.redirect('/records/prof/'+id)
+    
+         //res.render('uploads/index',{title:'Upload File',records:data, success:success})
+    
+    
+       
+    
+      
+     
+    })
 
 
  //adding student grades/levels

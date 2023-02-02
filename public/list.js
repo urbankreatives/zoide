@@ -15,7 +15,7 @@ $(document).ready( function () {
 			"searchable": true
 		}],
 		buttons: [
-            'copy', 'csv', 'excel', 'pdf', 'print'
+            'copy', 'csv', 'excel',  'print'
         ],
 	});
 });
