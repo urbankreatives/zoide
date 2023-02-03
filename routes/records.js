@@ -22,6 +22,7 @@ const Stats =require('../models/stats');
 const Gender =require('../models/gender');
 const Pass =require('../models/passRate');
 const PassX =require('../models/passRateX');
+const hbs = require('nodemailer-express-handlebars');
 const TeacherClassRate = require('../models/tcPassRateX')
 const TeacherExamRate = require('../models/tcPassRate')
 const Expenses = require('../models/expenses')
@@ -1593,7 +1594,7 @@ router.get('/calendar',isLoggedIn, function(req,res){
             console.log('Error in retrieving Student list :' + err);
         }
     });
-  });-
+  });
 
 
 
@@ -1658,6 +1659,107 @@ router.get('/calendar',isLoggedIn, function(req,res){
     })
 
 
+    router.get('/studentReport',isLoggedIn,function(req,res){
+
+      
+      const output = `
+   
+
+
+      
+      
+   
+
+      
+      `;
+      var nodemailer = require('nodemailer');
+      var os = require("os");
+      var hostname = os.hostname();
+      
+      var originalFile = 'studentReport.html';
+      var baseDir = './views/';
+      var recipient = 'kratosmusasa@gmail.com';
+      
+      var Styliner = require('styliner');
+      
+      
+      var uncDrive = '\\\\' + hostname + '\\DevTC';
+      var uncPath = baseDir.replace(/.*DevTC/gi, uncDrive);
+      
+      
+      // prependUNCPath is a function called by Styliner for every
+      // link that is found in the HTML.
+      function prependUNCPath(path, type) {
+          return uncPath + path;
+      }
+      
+      // See http://styliner.slaks.net/#about for Styliner options
+      var options = { url : prependUNCPath, noCSS : true };
+      var styliner = new Styliner(baseDir, options);
+     
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: "cashreq00@gmail.com",
+            pass: "itzgkkqtmchvciik",
+        },
+      });
+      
+      // Step 2
+
+/*
+      // send mail with defined transport object
+      const mailOptions = {
+          from: '"Admin" <cashreq00@gmail.com>', // sender address
+          to: 'kratosmusasa@gmail.com', // list of receivers
+          subject: "Account Verification ✔", // Subject line
+        
+          html:source,
+           // html body
+      };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+          if (error) {
+            console.log(error)
+       
+   
+    
+          }
+          else {
+              console.log('Mail sent : %s', info.response);
+      
+           
+           
+          }*/
+          var fs = require('fs')
+
+// Do the reading of the original index.html, and kick everything off.
+fs.readFile(originalFile, 'utf8', function (err, data) {
+    if (err) {
+        return console.log(err);
+    }
+
+    styliner.processHTML(data)
+    .then(function (source)
+         {
+
+        sendEmail(source);
+
+        fs.writeFile("studentReport.html", source, function (err) {
+            if (err) {
+                return console.log(err);
+            }
+
+            console.log("The file was saved!");
+        });
+
+      }
+
+    );
+
+});
+        })
+      
  //adding student grades/levels
  router.get('/addlevel',isLoggedIn, function(req,res){
   var pro = req.user

@@ -1115,6 +1115,28 @@ router.get('/examList',isLoggedIn,(req, res) => {
      });
    });
 
+
+   router.get('/report/:id',isLoggedIn,student,  (req, res) => {
+    var uid= req.user.uid
+    var id = req.params.id
+    var pro = req.user
+    var companyId = req.user.companyId
+    TestX.find({_id:id},(err,nocs)=>{
+let term = nocs[0].term
+let year = nocs[0].year
+     TestX.find({companyId:companyId,uid:uid, type:'Final Exam',term:term, year:year},(err, docs) => {
+         if (!err) {
+             res.render("students/studentReport", {
+                list:docs,pro:pro
+               
+             });
+         }
+     });
+    })
+   });
+
+
+
    router.get('/termInfo',isLoggedIn,  function(req,res){
     var m = moment()
     var pro = req.user

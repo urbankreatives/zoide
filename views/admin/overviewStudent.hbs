@@ -41,6 +41,8 @@ License: For each use you must have a valid license purchased only from above li
 		<link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
 		<link href="assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
 		<!--end::Global Stylesheets Bundle-->
+		    <script src="/pdf.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
 	</head>
 	<!--end::Head-->
 	 <style>
@@ -1504,10 +1506,14 @@ License: For each use you must have a valid license purchased only from above li
 									</div>
 								</div>
 								<!--end::Navbar-->
+													     <div class="col-md-12 text-right mb-3">
+               <button class="btn btn-primary" id="download"> download pdf</button>
+            </div>
+							
 								<!--begin::details View-->
-								<div class="card mb-5 mb-xl-10" id="kt_profile_details_view">
+								<div class="card mb-5 mb-xl-10" id="kt_profile_details_view" >
 									<!--begin::Card header-->
-									<div class="card-header cursor-pointer">
+						<div class="card-header cursor-pointer">
 										<!--begin::Card title-->
 										<div class="card-title m-0">
 											<h3 class="fw-bolder m-0">Profile Details</h3>
@@ -1603,6 +1609,7 @@ License: For each use you must have a valid license purchased only from above li
 									<!--end::Card body-->
 								</div>
 								<!--end::details View-->
+								
 								<!--begin::Row-->
 							
 								<!--end::Row-->
