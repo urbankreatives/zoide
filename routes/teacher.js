@@ -462,7 +462,8 @@ router.get('/passRate',isLoggedIn,function(req,res){
              })
             }
   
-            res.redirect('/teacher/dashX')
+            res.redirect('/teacher/min')
+          
   
           })
              
@@ -476,11 +477,86 @@ router.get('/passRate',isLoggedIn,function(req,res){
   
 
 
+//student stats
+       router.get('/min',isLoggedIn,function(req,res){
+        /*const numbers = [4,8,2,5]
+        let maximum = -Infinity
+        let minimum = Infinity
+      
+        for(let number of numbers){
+          if(number > maximum)
+      
+          maximum = number
+      
+          if(number < minimum)
+      
+          minimum = number
+        }*/
+      
+
+      
+var companyId = req.user.companyId
+
+Test.find({companyId:companyId},function(err,docs){
+  console.log(docs.length,'length')
+  for(var i = 0; i<docs.length;i++){
+   var topic = docs[i].topic
+    var type = docs[i].type
+    var term = docs[i].term
+    var year = docs[i].year
+    var class1 = docs[i].class1
+  var subject = docs[i].subject
+   var subjectCode = docs[i].subjectCode
+    var id = docs[0]._id
+
+
+
+    TestX.find({topic:topic, type:type, term:term, year:year, class1:class1, subject:subject, subjectCode:subjectCode},function(err,nocs){
+   
+      let min = nocs[0].mark
+      let max = nocs[0].mark
+         console.log(nocs.length,'length')
+        for(var x=0;x<nocs.length;x++){
+          if(min >nocs[x].mark)
+          min = nocs[x].mark
+
+          if(max < nocs[x].mark)
+          max = nocs[x].mark
+
+          /*if(nocs[i].mark < minimum){
+            minimum = nocs[i].mark
+          }*/
+         
+        
+      }
+      let average = 0
+
+      for(let d = 0; d<nocs.length;d++){
+        let currentNum = nocs[d].mark
+        average += currentNum
+      }
+      average = average/nocs.length
+      console.log(average)
+console.log(topic,type,term)
+   TestX.find({topic:topic, type:type, term:term, year:year, class1:class1, subject:subject, subjectCode:subjectCode,result:'pass'},function(err,tocs){
+let numPasses = tocs.length
+  
+  Test.findByIdAndUpdate(id,{$set:{lowestScore:min, highScore:max, avgMark:average,numPasses:numPasses}},function(err,kocs){
+     
+    })
+  })
+})
+  }
+  res.redirect('/teacher/dashX')
+})
+
+      })
+      
 
 
 
 
-
+      
 
 
 
@@ -716,6 +792,8 @@ var teacher = req.user.fullname
 var m = moment()
 var year = m.format('YYYY')
 var month = m.format('MMMM')
+var topic = req.body.topic
+var possibleMark = req.body.possibleMark
 
 
 /*
@@ -785,6 +863,12 @@ test.teacher = teacher;
 test.numberOfStudents = 0;
 test.passRate = 0;
 test.term = term;
+test.topic = topic;
+test.highScore = 0
+test.lowestScore=0;
+test.numPasses=0
+test.avgMark=0
+test.possibleMark = possibleMark
 test.type = type
 test.grade = req.body.grade;
 test.level = 'highschool';
@@ -801,7 +885,7 @@ stdNum = nocs.length - 1;
 console.log(stdNum)
 console.log(nocs.length,'wangu')
 
-User.findByIdAndUpdate(id,{$set:{class1:class1, subjects:subject,examDate:date,term:term, classLength:stdNum, studentNum:0, type:type,subjectCode:subjectCode}}, function(err,trocs){
+User.findByIdAndUpdate(id,{$set:{class1:class1, subjects:subject,examDate:date,term:term, classLength:stdNum,possibleMark:possibleMark,topic:topic, studentNum:0, type:type,subjectCode:subjectCode}}, function(err,trocs){
 
 console.log(trocs)
 
@@ -977,6 +1061,12 @@ var subjectCode = req.user.subjectCode
 var date = req.user.examDate
 var pro = req.user
 var type = req.body.type
+var possibleMark = req.body.possibleMark
+var percentageX = mark / possibleMark
+var percentage = percentageX * 100
+var topic = req.body.topic
+
+
 console.log(x, num)
 
 req.check('mark','Enter Student Mark').notEmpty();
@@ -1015,7 +1105,10 @@ test.result = "null";
 test.subject = subject
 test.subjectCode = subjectCode
 test.date = date
+test.percentage = percentage
+test.possibleMark = possibleMark;
 test.type = type
+test.topic = topic
 test.companyId = companyId
 
 test.save()
@@ -1027,7 +1120,7 @@ let symbol = qocs[i].symbol
 let from = qocs[i].from
 let to = qocs[i].to
 
-if(mark >= from && mark <= to ){
+if(percentage >= from && percentage <= to ){
 TestX.findByIdAndUpdate(tes._id,{$set:{symbol:symbol}},function(err,mocs){
 
 
@@ -1133,6 +1226,19 @@ res.redirect('/teacher/profile')
 
 })
 
+router.get('/tests',isLoggedIn, (req, res) => {
+  var pro = req.user
+var uid= req.user.uid
+var companyId = req.user.companyId
+Test.find({companyId:companyId,teacherId:uid, type:'Class Test'},(err, docs) => {
+if (!err) {
+   res.render("teacherExam/resultXX", {
+      list:docs, pro:pro
+     
+   });
+}
+});
+});
 
 
 //student results
@@ -1149,6 +1255,8 @@ if (!err) {
 }
 });
 });
+
+
 
 
 //student results - final exam
@@ -1192,10 +1300,6 @@ FeesUpdate.find({companyId:companyId,term:term, year:year},(err, docs) => {
   
   
   
-
-
-
-
 
 
 

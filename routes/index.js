@@ -420,10 +420,13 @@ router.get('/activate/:token',(req,res)=>{
                     user.receiptNumber = 0;
                     user.year = year;
                     user.balance = 0;
+                    user.possibleMark = 0;
+                    user.topic = 'null';
                     user.balanceCarriedOver = 0;
                     user.status = 'null';
                     user.paymentId = 'null';
-                  
+                    user.possibleMark = 0;
+                    user.topic = 'null';
                     user.photo = 'propic.jpg';
                     user.level = 'null';
                     user.pollUrl='null'
@@ -2283,6 +2286,8 @@ res.render('admin/staff',{pro:pro,uid1:uid, title:title,readonly})
                                     user.term = term;
                                     user.amount = 0;
                                     user.receiptNumber = 0;
+                                    user.possibleMark = 0;
+                                    user.topic = 'null';
                                     user.year = year;
                                     user.recNumber = 0;
                                     user.balance = 0;

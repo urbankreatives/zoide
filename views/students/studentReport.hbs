@@ -27,6 +27,8 @@
 		<link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
 		<link href="assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
 		<!--end::Global Stylesheets Bundle-->
+		    <script src="/pdf.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
 	</head>
 
 	
@@ -1282,10 +1284,10 @@
               <div class="text-center img-placeholder"  onClick="triggerClick()">
                
               </div>
-              <img src="/uploads/{{doc.photo}}" onClick="triggerClick()" id="profileDisplay">
+              <img src="/uploads/{{pro.photo}}" onClick="triggerClick()" id="profileDisplay">
             </span>
             <input type="file" name="file" onChange="displayImage(this)" id="profileImage" value="file" class="custom-file-input" style="display: none;">
-           <input type="hidden" name="id" id="id" value="{{doc._id}}">
+           <input type="hidden" name="id" id="id" value="{{pro._id}}">
           </div>
 		
       
@@ -1363,18 +1365,24 @@
 										<!--begin::Navs-->
 									</div>
 								</div>
+																     <div class="col-md-12 text-right mb-3">
+               <button class="btn btn-primary" id="download"> download report</button>
+            </div>
+						
 								<!--end::Navbar-->
-								  {{#each docs}}
+								  {{#each list}}
 								<!--begin::details View-->
 								<div class="card mb-5 mb-xl-10" id="kt_profile_details_view">
 									<!--begin::Card header-->
 									<div class="card-header cursor-pointer">
 										<!--begin::Card title-->
 										<div class="card-title m-0">
-											<h3 class="fw-bolder m-0">Report</h3>
+											<h3 class="fw-bolder m-0"> {{this.fullname}} - {{this.uid}} - {{this.class1}} -Term {{this.term}} - {{this.year}}</h3>
+											
 										</div>
 										<!--end::Card title-->
 										<!--begin::Action-->
+										
 									
 										<!--end::Action-->
 									</div>
@@ -1384,11 +1392,11 @@
 										<!--begin::Row-->
 										<div class="row mb-7">
 											<!--begin::Label-->
-											<label class="col-lg-4 fw-bold text-muted">Maths</label>
+											<label class="col-lg-4 fw-bold text-muted">{{this.subject}}</label>
 											<!--end::Label-->
 											<!--begin::Col-->
 											<div class="col-lg-8">
-												<span class="fw-bolder fs-6 text-gray-800">B</span>
+												<span class="fw-bolder fs-6 text-gray-800">{{this.symbol}}</span>
 											</div>
 											<!--end::Col-->
 										</div>
