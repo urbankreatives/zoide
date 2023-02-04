@@ -178,7 +178,7 @@ router.get('/passRate',isLoggedIn,function(req,res){
   
             for(var q = 0;q<hods.length; q++){
     
-              arr1.push(hods[q].mark)
+              arr1.push(hods[q].percentage)
                 }
                 //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
                  totalMarks=0;
@@ -251,7 +251,7 @@ router.get('/passRate',isLoggedIn,function(req,res){
    
              for(var q = 0;q<hods.length; q++){
      
-               arr1.push(hods[q].mark)
+               arr1.push(hods[q].percentage)
                  }
                  //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
                   totalMarks=0;
@@ -346,7 +346,7 @@ router.get('/passRate',isLoggedIn,function(req,res){
     
               for(var q = 0;q<hods.length; q++){
       
-                arr1.push(hods[q].mark)
+                arr1.push(hods[q].percentage)
                   }
                   //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
                    totalMarks=0;
@@ -420,7 +420,7 @@ router.get('/passRate',isLoggedIn,function(req,res){
      
                for(var q = 0;q<hods.length; q++){
        
-                 arr1.push(hods[q].mark)
+                 arr1.push(hods[q].percentage)
                    }
                    //adding all incomes from all lots of the same batch number & growerNumber & storing them in variable called total
                     totalMarks=0;
@@ -1132,7 +1132,7 @@ TestX.findByIdAndUpdate(tes._id,{$set:{symbol:symbol}},function(err,mocs){
 
 })
 
-if(mark >= 50){
+if(percentage >= 50){
 
 TestX.findByIdAndUpdate(tes._id,{$set:{result:'pass'}},function(err,mocs){
 
@@ -1165,10 +1165,10 @@ User.findByIdAndUpdate(id,{$set:{studentNum:x}}, function(err,docs){
 
 
 })
-res.redirect('/teacher/gradeX1')
+
 })
 
-
+res.redirect('/teacher/gradeX1')
 }
 
 
