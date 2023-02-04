@@ -540,8 +540,9 @@ Test.find({companyId:companyId},function(err,docs){
 console.log(topic,type,term)
    TestX.find({topic:topic, type:type, term:term, year:year, class1:class1, subject:subject, subjectCode:subjectCode,result:'pass'},function(err,tocs){
 let numPasses = tocs.length
-  
-  Test.findByIdAndUpdate(id,{$set:{lowestScore:min, highScore:max, avgMark:average,numPasses:numPasses}},function(err,kocs){
+  let passRateX = numPasses / nocs.length
+  let passRate =passRateX * 100
+  Test.findByIdAndUpdate(id,{$set:{lowestScore:min, highScore:max, avgMark:average,numPasses:numPasses, passRate:passRate}},function(err,kocs){
      
     })
   })
