@@ -31,27 +31,37 @@
 		<!--begin::Global Stylesheets Bundle(used by all pages)-->
 		<link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
 		<link href="assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
-		<link href="https://cdn.datatables.net/buttons/1.6.2/css/buttons.dataTables.min.css" rel="stylesheet" />
-
-<link href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
-<link href="https://cdn.datatables.net/buttons/1.6.2/css/buttons.dataTables.min.css" rel="stylesheet" />
-
-<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-
-<script src="https://cdn.datatables.net/buttons/1.6.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.6.2/js/buttons.flash.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.6.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/1.6.2/js/buttons.print.min.js"></script>
 		<!--end::Global Stylesheets Bundle-->
 	</head>
 	<!--end::Head-->
-
+	 <style>
+    
+.errors {
+    background: #e79892;
+    padding: 5px;
+    margin-bottom: 10px;
+    min-width: 200px;
+    display: inline-block;
+    border: 1px solid #e74c3c;
+  }
+  
+  .errors ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  
+  .success {
+    background: #80cca0;
+    padding: 5px;
+    margin-bottom: 10px;
+    min-width: 200px;
+    display: inline-block;
+    border: 1px solid black;
+  }
+</style>
 	<!--begin::Body-->
-		<body id="kt_body" class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:55px;--kt-toolbar-height-tablet-and-mobile:55px">
+	<body id="kt_body" class="header-fixed header-tablet-and-mobile-fixed toolbar-enabled toolbar-fixed aside-enabled aside-fixed" style="--kt-toolbar-height:55px;--kt-toolbar-height-tablet-and-mobile:55px">
 		<!--begin::Main-->
 		<!--begin::Root-->
 		<div class="d-flex flex-column flex-root">
@@ -230,8 +240,6 @@
 
 
 
-
-
 <!--messages-->
 
 	<div class="menu-item">
@@ -289,7 +297,6 @@
 								
 								
 							
-
 
 
 
@@ -1312,7 +1319,7 @@
 						<!--end::Container-->
 					</div>
 					<!--end::Header-->
-					<!--begin::Content-->
+				<!--begin::Content-->
 					<div class="content d-flex flex-column flex-column-fluid" id="kt_content">
 						<!--begin::Toolbar-->
 						<div class="toolbar" id="kt_toolbar">
@@ -1321,137 +1328,179 @@
 								<!--begin::Page title-->
 								<div data-kt-swapper="true" data-kt-swapper-mode="prepend" data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}" class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
 									<!--begin::Title-->
-									<h1 class="d-flex align-items-center text-dark fw-bolder fs-3 my-1">Exam Teacher Stats</h1>
-									<!--end::Title-->
+									<h1 class="d-flex align-items-center text-dark fw-bolder fs-3 my-1">{{title}}
 									<!--begin::Separator-->
-									<span class="h-20px border-gray-300 border-start mx-4"></span>
+									<span class="h-20px border-gray-200 border-start ms-3 mx-2"></span>
 									<!--end::Separator-->
-									<!--begin::Breadcrumb-->
-									<ul class="breadcrumb breadcrumb-separatorless fw-bold fs-7 my-1">
-										<!--begin::Item-->
-										<li class="breadcrumb-item text-muted">
-										
-										</li>
-										<!--end::Item-->
-										<!--begin::Item-->
-										<li class="breadcrumb-item">
-											<span class="bullet bg-gray-300 w-5px h-2px"></span>
-										</li>
-										<!--end::Item-->
-										<!--begin::Item-->
-										
-										<!--end::Item-->
-									</ul>
-									<!--end::Breadcrumb-->
+									<!--begin::Description-->
+									<small class="text-muted fs-7 fw-bold my-1 ms-1"></small>
+									<!--end::Description--></h1>
+									<!--end::Title-->
 								</div>
 								<!--end::Page title-->
-								<!--begin::Actions-->
 								
+										
+											<!--end::Form-->
+										
+									<!--end::Filter menu-->
+									<!--begin::Secondary button-->
+									<!--end::Secondary button-->
+									<!--begin::Primary button-->
+									<a href="/staffList" class="btn btn-sm btn-primary"  data-bs-target="#kt_modal_create_app">View Staff</a>
+									<!--end::Primary button-->
+								</div>
 								<!--end::Actions-->
 							</div>
 							<!--end::Container-->
 						</div>
 						<!--end::Toolbar-->
-						<!--begin::Post-->
-
-						
 
 
-	<div class="post d-flex flex-column-fluid" id="kt_post" style="background-color: white;">
+
+
+
+	<div class="post d-flex flex-column-fluid" id="kt_post">
 							<!--begin::Container-->
 							<div id="kt_content_container" class="container-xxl">
-					<table id="example" class="display" style="width:100%">
- <thead>
-        <tr>
-         
-            <th>Code</th>
-            <th>Subject</th>
-            <th>1st Term Pass Rate</th>
-            <th>Avg Mark</th>
-             <th>2nd Term Pass Rate</th>
-            <th>Avg Mark</th>
-             <th>3rd Term Pass Rate</th>
-            <th>Avg Mark</th>
-            <th>Type</th>
-              <th>Teacher</th>
-            <th>Year</th>
-    
-            
-                
-        </tr>
-    </thead>
-    <tbody>
-        {{#each list}}
-        <tr>
-
-        <td>{{this.subjectCode}}</td>
-        <td>{{this.subject}}</td>
-        <td>{{this.firstTerm}}</td>
-        <td>{{this.firstAvgMark}}</td>
-         <td>{{this.secondTerm}}</td>
-        <td>{{this.secondAvgMark}}</td>
-         <td>{{this.thirdTerm}}</td>
-        <td>{{this.thirdAvgMark}}</td>
-        <td>{{this.type}}</td>
-          <td>{{this.teacherName}}</td>
-        <td>{{this.year}}</td>
-        
-     
-
-  
-
- 
-          
-          
-        </tr>
-        {{/each}}
-    </tbody>
-     <tfoot>
-            <tr> 
-                  
-            <th>Code</th>
-            <th>Subject</th>
-            <th>1st Term Pass Rate</th>
-            <th>Avg Mark</th>
-             <th>2nd Term Pass Rate</th>
-            <th>Avg Mark</th>
-             <th>3rd Term Pass Rate</th>
-            <th>Avg Mark</th>
-            <th>Type</th>
-              <th>Teacher</th>
-            <th>Year</th>
-         
-             
-
-            
 
 
-            </tr>
-        </tfoot>
-</table>
 
-                
-						<!--end::Post-->
-					</div>
-					<!--end::Content-->
-					<!--begin::Footer-->
-				
-		<!--end::Root-->
-		<!--begin::Drawers-->
-		<!--begin::Activities drawer-->
-		
-		<!--end::Activities drawer-->
-		<!--begin::Chat drawer-->
-		
-		<!--begin::Help drawer-->
-		
-		<!--end::Help drawer-->
-		<!--end::Engage drawers-->
-		<!--begin::Engage toolbar-->
-		
-		<!--end::Modal - Invite Friend-->
-		<!--end::Modals-->
-		<!--begin::Javascript-->
+<!--begin::Content-->
+									<div class="col-xl-12">
+										<!--begin::Contacts-->
+										<div class="card card-flush h-lg-100" id="kt_contacts_main">
+											<!--begin::Card header-->
+											<div class="card-header pt-7" id="kt_chat_contacts_header">
+												<!--begin::Card title-->
+												<div class="card-title">
+													<!--begin::Svg Icon | path: icons/duotune/communication/com005.svg-->
+													
+													<!--end::Svg Icon-->
+													<h2>Message Teachers</h2>
+												</div>
+												<!--end::Card title-->
+											</div>
+											<!--end::Card header-->
+											<!--begin::Card body-->
+											<div class="card-body pt-5">
+												<!--begin::Form-->
+												               	{{# if success }}
+    <section class="success">
+        <h2>Successful Validation!</h2>
+    </section>
+{{ else }}
+    {{# if errors }}
+        <section class="errors">
+            <ul>
+                {{# each errors }}
+                    <li>{{ this.msg }}</li>
+                {{/each}}
+            </ul>
+        </section>
+
+        {{/if}}
+        {{#if message}}
+        <div  class="{{message.type}}">
+            <strong>{{message.intro}}</strong>{{message.message}}
+        </div>
+        {{/if}}
+												<form id="kt_ecommerce_settings_general_form" class="form" method="post" action="/mess" autocomplete="off">
+													<!--begin::Input group-->
+													<div class="mb-7">
+														<!--begin::Label-->
+													
+														<!--end::Label-->
+														<!--begin::Image input wrapper-->
+															<div class="row row-cols-1 row-cols-sm-2 rol-cols-md-1 row-cols-lg-2">
+														<!--begin::Col-->
+														<div class="col">
+															<!--begin::Input group-->
+															<div class="fv-row mb-7">
+																<!--begin::Label-->
+																<label class="fs-6 fw-bold form-label mt-3">
+																	<span class="required">Subject</span>
+																	<i class="fas fa-exclamation-circle ms-1 fs-7" data-bs-toggle="tooltip" ></i>
+																</label>
+																<!--end::Label-->
+																<!--begin::Input-->
+																<input type="text" class="form-control form-control-solid" name="subject" id="subject" value="" />
+																<!--end::Input-->
+															</div>
+															<!--end::Input group-->
+														</div>
+
+														</div>
+													<!--end::Input group-->
+																<!--begin::Row-->
+													<div class="row row-cols-1 row-cols-sm-1 rol-cols-md-1 row-cols-lg-1">
+														<!--begin::Col-->
+														<div class="col">
+															<!--begin::Input group-->
+															<div class="fv-row mb-12">
+																<!--begin::Label-->
+																<label class="fs-6 fw-bold form-label mt-3">
+																	<span class="required">Enter Message</span>
+																	<i class="fas fa-exclamation-circle ms-1 fs-7" data-bs-toggle="tooltip" ></i>
+																</label>
+																<!--end::Label-->
+																<!--begin::Input-->
+																<textarea name="message" id="message" cols="30" rows="10" class="form-control form-control-solid"></textarea>
+																<!--end::Input-->
+															</div>
+															<!--end::Input group-->
+														</div>
+														<!--end::Col-->
+														<!--begin::Col-->
+														
+														<!--end::Col-->
+													</div>
+													<!--end::Row-->
+													
+
+													
+
+   											<!--begin::Input group-->
+												
+													<!--end::Input group-->
+													<!--begin::Separator-->
+													<div class="separator mb-6"></div>
+													<!--end::Separator-->
+													<!--begin::Action buttons-->
+													<div class="d-flex justify-content-end">
+														<!--begin::Button-->
+														<button type="reset" data-kt-contacts-type="cancel" class="btn btn-light me-3">Cancel</button>
+														<!--end::Button-->
+														<!--begin::Button-->
+														<button type="submit" class="btn btn-primary">
+															<span class="indicator-label">Send</span>
+															<span class="indicator-progress">Please wait...
+															<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+														</button>
+														<!--end::Button-->
+													</div>
+													<!--end::Action buttons-->
+												</form>
+												<!--end::Form-->
+												   {{/if}}
+											</div>
+											<!--end::Card body-->
+										</div>
+										<!--end::Contacts-->
+									</div>
+									<!--end::Content-->
+								</div>
+
+
+
+
+
+
+
+
+
+
+
+                                	<!--begin::Javascript-->
 		<script>var hostUrl = "assets/";</script>
 		<!--begin::Global Javascript Bundle(used by all pages)-->
 		<script src="assets/plugins/global/plugins.bundle.js"></script>
@@ -1461,18 +1510,10 @@
 		<script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
 		<!--end::Page Vendors Javascript-->
 		<!--begin::Page Custom Javascript(used by this page)-->
-		<script src="assets/js/custom/apps/ecommerce/customers/listing/listing.js"></script>
-		<script src="assets/js/custom/apps/ecommerce/customers/listing/add.js"></script>
-		<script src="assets/js/custom/apps/ecommerce/customers/listing/export.js"></script>
+		<script src="assets/js/custom/apps/contacts/edit-contact.js"></script>
 		<script src="assets/js/widgets.bundle.js"></script>
 		<script src="assets/js/custom/widgets.js"></script>
 		<script src="assets/js/custom/apps/chat/chat.js"></script>
 		<script src="assets/js/custom/utilities/modals/upgrade-plan.js"></script>
 		<script src="assets/js/custom/utilities/modals/create-app.js"></script>
 		<script src="assets/js/custom/utilities/modals/users-search.js"></script>
-	<script src="list.js"></script>
-		<!--end::Page Custom Javascript-->
-		<!--end::Javascript-->
-	</body>
-	<!--end::Body-->
-</html>

@@ -3676,12 +3676,236 @@ if(docs == undefined){
 
 
 
+router.get('/mess',isLoggedIn, function(req,res){
+  res.render('admin/message')
+})
+
+router.post('/mess',isLoggedIn, function(req,res){
+
+  const message = req.body.message
+  var companyId = req.user.companyId
+  var subject = req.body.subject
+
+
+
+  User.find({role:"teacher",companyId:companyId},function(err,docs){
+for(var i = 0; i<docs.length;i++){
+
+  let email = docs[i].email
+  
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: "cashreq00@gmail.com",
+        pass: "itzgkkqtmchvciik",
+    },
+  });
+  
+  const output = `
+  <h2>${subject}</h2>
+  <br>
+  <p> ${message}</p>
+ 
+  `;
+
+  // send mail with defined transport object
+  const mailOptions = {
+      from: '"Admin" <cashreq00@gmail.com>', // sender address
+      to: email, // list of receivers
+      subject: "Account Verification ✔", // Subject line
+      html: output, // html body
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error)
+      
+   req.session.message = {
+     type:'errors',
+     message:'confirmation email not sent'
+   }
+ 
+   res.render('admin/message',{message:req.session.message,pro:pro
+   })
+
+
+      }
+      else {
+
+       
+          console.log('Mail sent : %s', info.response);
+          req.session.message = {
+            type:'success',
+            message:'confirmation email sent'
+          }     
+         
+          res.render('admin/message',{message:req.session.message,pro:pro
+          })
+        
+         
+           
+      }
+    
+    })
+  }
+  })
+})
 
 
 
 
+router.get('/messX',isLoggedIn, function(req,res){
+  res.render('admin/message1')
+})
+
+router.post('/messX',isLoggedIn, function(req,res){
+
+  const message = req.body.message
+  var companyId = req.user.companyId
+  var subject = req.body.subject
 
 
+
+  User.find({role:"students",companyId:companyId},function(err,docs){
+for(var i = 0; i<docs.length;i++){
+
+  let email = docs[i].email
+  
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: "cashreq00@gmail.com",
+        pass: "itzgkkqtmchvciik",
+    },
+  });
+  
+  const output = `
+  <h2>${subject}</h2>
+  <br>
+  <p> ${message}</p>
+ 
+  `;
+
+  // send mail with defined transport object
+  const mailOptions = {
+      from: '"Admin" <cashreq00@gmail.com>', // sender address
+      to: email, // list of receivers
+      subject: "Account Verification ✔", // Subject line
+      html: output, // html body
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error)
+      
+   req.session.message = {
+     type:'errors',
+     message:'confirmation email not sent'
+   }
+ 
+   res.render('admin/message1',{message:req.session.message,pro:pro
+   })
+
+
+      }
+      else {
+
+       
+          console.log('Mail sent : %s', info.response);
+          req.session.message = {
+            type:'success',
+            message:'confirmation email sent'
+          }     
+         
+          res.render('admin/message1',{message:req.session.message,pro:pro
+          })
+        
+         
+           
+      }
+    
+    })
+  }
+  })
+})
+
+
+
+
+router.get('/messXX',isLoggedIn, function(req,res){
+  res.render('admin/message2')
+})
+
+router.post('/messXX',isLoggedIn, function(req,res){
+
+  const message = req.body.message
+  var companyId = req.user.companyId
+  var subject = req.body.subject
+
+
+
+  User.find({role:"all",companyId:companyId},function(err,docs){
+for(var i = 0; i<docs.length;i++){
+
+  let email = docs[i].email
+  
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: "cashreq00@gmail.com",
+        pass: "itzgkkqtmchvciik",
+    },
+  });
+  
+  const output = `
+  <h2>${subject}</h2>
+  <br>
+  <p> ${message}</p>
+ 
+  `;
+
+  // send mail with defined transport object
+  const mailOptions = {
+      from: '"Admin" <cashreq00@gmail.com>', // sender address
+      to: email, // list of receivers
+      subject: "Account Verification ✔", // Subject line
+      html: output, // html body
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error)
+      
+   req.session.message = {
+     type:'errors',
+     message:'confirmation email not sent'
+   }
+ 
+   res.render('admin/message2',{message:req.session.message,pro:pro
+   })
+
+
+      }
+      else {
+
+       
+          console.log('Mail sent : %s', info.response);
+          req.session.message = {
+            type:'success',
+            message:'confirmation email sent'
+          }     
+         
+          res.render('admin/message2',{message:req.session.message,pro:pro
+          })
+        
+         
+           
+      }
+    
+    })
+  }
+  })
+})
 
 
 

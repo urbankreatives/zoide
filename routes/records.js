@@ -964,7 +964,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
     
                  //importing students details from excel
   
-  router.get('/import',isLoggedIn,records, function(req,res){
+  router.get('/import',isLoggedIn, function(req,res){
     var actualCount = req.user.actualCount
     var count = req.user.count
     var pro = req.user
@@ -1005,7 +1005,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
   
 
   
-  router.post('/import',isLoggedIn,records, upload.single('file'),  (req,res)=>{
+  router.post('/import',isLoggedIn, upload.single('file'),  (req,res)=>{
     var count = req.user.actualCount
     var m = moment()
  
