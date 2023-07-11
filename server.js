@@ -23,6 +23,7 @@ var indexRoute= require('./routes/index')
  var studentRoute= require('./routes/student')
  var teacherRoute= require('./routes/teacher')
  var clerkRoute = require('./routes/clerk')
+ var parentRoute = require('./routes/parent')
  var packageRoute = require('./routes/payment')
 
 
@@ -77,6 +78,7 @@ app.use('/package',packageRoute)
  app.use('/clerk',clerkRoute)
  app.use('/student',studentRoute)
 app.use('/teacher', teacherRoute);
+app.use('/parent', parentRoute);
 app.use('/', indexRoute);
 
 
@@ -84,7 +86,7 @@ app.use('/', indexRoute);
 
 
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 4000;
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);

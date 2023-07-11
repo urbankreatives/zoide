@@ -7,8 +7,11 @@ const Class1 =require('../models/class');
 const Subject =require('../models/subject');
 const Fees =require('../models/fees');
 const Calendar =require('../models/calendar');
+var Message = require('../models/message');
+var Recepient = require('../models/recepients');
 const Student =require('../models/studentStats');
 const Grade =require('../models/grade');
+var Note = require('../models/note');
 const Level =require('../models/level');
 const Dept =require('../models/dept');
 const Test =require('../models/classTest');
@@ -71,7 +74,7 @@ var upload = multer({
 
 
 
-router.get('/stats',isLoggedIn, function(req,res){
+router.get('/stats',isLoggedIn,records, function(req,res){
     var students, teachers, paid, unpaid, depts, class1
     var companyId = req.user.companyId
     var m = moment()
@@ -113,11 +116,13 @@ router.get('/stats',isLoggedIn, function(req,res){
   stat.save()
   .then(sta =>{
   
-    res.redirect('/records/gradeUpdate')
+    //res.redirect('/records/gradeUpdate')
   
   })
   }
-  else
+  else{
+
+ 
 
   var id = docs[0]._id
   console.log(students,'students',teachers,'teachers',class1,'class1',depts,'depts', paid,'paid',unpaid,'unpaid')
@@ -127,7 +132,9 @@ router.get('/stats',isLoggedIn, function(req,res){
     
   })
   
-  res.redirect('/records/gradeUpdate')
+  //res.redirect('/records/gradeUpdate')
+
+}
 
   
   
@@ -144,7 +151,7 @@ router.get('/stats',isLoggedIn, function(req,res){
   
     })
   })
-  
+  res.redirect('/records/gradeUpdate')
   })
   
     
@@ -154,11 +161,11 @@ router.get('/stats',isLoggedIn, function(req,res){
 
 
 
-router.get('/gradeUpdate',isLoggedIn,function(req,res){
+router.get('/gradeUpdate',isLoggedIn,records,function(req,res){
 var companyId = req.user.companyId
 console.log('companyId',companyId)
   User.find({companyId:companyId,role:'student'},function(err,docs){
-    console.log(docs,'docs')
+    if(docs){
     for(var i = 0;i<docs.length;i++){
      let grade = docs[i].grade
      let id = docs[i]._id
@@ -170,7 +177,7 @@ User.findByIdAndUpdate(id,{$set:{levelX:levelX}},function(err,jocs){
 
 })
      })
-  
+    }
     }
   
   })
@@ -179,7 +186,7 @@ User.findByIdAndUpdate(id,{$set:{levelX:levelX}},function(err,jocs){
 
 
 
-router.get('/idUp',isLoggedIn,function(req,res){
+router.get('/idUp',isLoggedIn,records,function(req,res){
   var id = req.user._id
   var companyId = req.user.companyId
   var total
@@ -206,7 +213,7 @@ res.redirect('/records/classcheck')
 
 
 
-router.get('/classcheck',isLoggedIn,function(req,res){
+router.get('/classcheck',isLoggedIn,records,function(req,res){
   var companyId = req.user.companyId
   Class1.find({companyId:companyId},function(err,docs){
     for(var i= 0;i<docs.length;i++){
@@ -245,7 +252,7 @@ User.find({companyId:companyId,class1:classX, status:'paid'},function(err,yocs){
 
 
 
-router.get('/yearUpdate',isLoggedIn,function(req,res){
+router.get('/yearUpdate',isLoggedIn,records,function(req,res){
   var m = moment()
   var year = m.format('YYYY')
   var startYear = req.user.startYear
@@ -273,7 +280,7 @@ res.redirect('/records/yearUpdateX')
 
 
 
-router.get('/yearUpdateX',isLoggedIn,function(req,res){
+router.get('/yearUpdateX',isLoggedIn,records,function(req,res){
   var m = moment()
   var year = m.format('YYYY')
   var startYear = req.user.startYear
@@ -297,7 +304,7 @@ res.redirect('/records/actUpdate')
 
 
 
-router.get('/actUpdate',isLoggedIn,function(req,res){
+router.get('/actUpdate',isLoggedIn,records,function(req,res){
   var id = req.user._id
   
   var companyId = req.user.companyId
@@ -351,7 +358,7 @@ router.get('/actUpdate',isLoggedIn,function(req,res){
 
 
 
-router.get('/feeUpdate',isLoggedIn,function(req,res){
+router.get('/feeUpdate',isLoggedIn,records,function(req,res){
 var id = req.user._id
 var fees, annual
 var companyId = req.user.companyId
@@ -385,7 +392,7 @@ res.redirect('/records/std')
 
 })
 
-router.get('/std',isLoggedIn,function(req,res){
+router.get('/std',isLoggedIn,records,function(req,res){
   var companyId = req.user.companyId
   var m = moment()
   var year = m.format('YYYY')
@@ -525,13 +532,142 @@ if(currCount == 0){
 
 
   
-  router.get('/dash',isLoggedIn,function(req,res){
-   var pro = req.user
-      res.render('dashboard/records',{pro:pro})
+  router.get('/dash',isLoggedIn,records,function(req,res){
+    var pro = req.user
+    const arr = []
+  const m = moment();
+   var id =req.user._id
+   Recepient.find({recepientId:id,statusCheck:'not viewed'},function(err,rocs){
+    let lgt = rocs.length
+    var gt = lgt > 0
+  
+        console.log(req.user._id)
+        console.log(req.user.email)
+          Note.find({recId:req.user._id},function(err,docs){
+            console.log(docs,'docs')
+         for(var i = 0;i<docs.length;i++){
+  
+         
+           let date = docs[i].date
+           let id = docs[i]._id
+           let timeX = moment(date)
+           let timeX2 =timeX.fromNow()
+           console.log(timeX2,'timex2')
+  
+           Note.findByIdAndUpdate(id,{$set:{status4:timeX2}},function(err,locs){
+  
+           
+           
+          // Format relative time using negative value (-1).
+  
+            
+          })
+        }
+  
+        Note.find({recId:req.user._id,status1:'new'},function(err,flocs){
+          var les 
+       
+          Note.find({recId:req.user._id,status:'not viewed'},function(err,jocs){
+           les = jocs.length > 0
+        
+          for(var i = flocs.length - 1; i>=0; i--){
+      
+            arr.push(flocs[i])
+          }
+       
+  
+         
+          res.render('dashboard/records',{pro:pro,list:arr, les:les,gt:gt })
+  
+        })
+        })
+        })
+  
+      })
+  
+
   })
   
+
+
   
-     router.post('/statChart',isLoggedIn,function(req,res){
+  router.post('/classChart',isLoggedIn,records,function(req,res){
+    var uid = req.user.uid
+    var size
+    var companyId = req.user.companyId
+    var m = moment()
+    var year = m.format('YYYY')
+    var arr = []
+    var id = req.user._id
+  
+       
+      
+    
+     
+
+    
+    
+      User.find({role:'student'},function(err,docs) {
+        console.log(docs,'docs')
+        for(var i = 0;i<docs.length;i++){
+    size = docs.length
+       
+            
+           if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+                  console.log('true')
+                 arr.find(value => value.class1 == docs[i].class1).classNo++
+            }else{
+    arr.push(docs[i])
+
+    let resultX = arr.map(function(element){
+      element.classNo = 0
+      element.classNo= element.classNo + 1
+        })
+            }
+    
+        
+        }
+     
+        console.log(arr,'ndamama')
+       res.send(arr)
+      })
+  
+    })
+    
+
+
+
+
+    
+  
+  router.post('/classGenderChartX',isLoggedIn,records,function(req,res){
+    var uid = req.user.uid
+    var size
+    var companyId = req.user.companyId
+    var m = moment()
+    var year = m.format('YYYY')
+    var arr = []
+    var id = req.user._id
+  
+       
+      
+    
+     
+
+    
+    
+      Class1.find(function(err,docs) {
+        console.log(docs,'docs iwe')
+      
+     
+        //console.log(arr,'arr')
+       res.send(docs)
+      })
+  
+    })
+    
+  
+     router.post('/statChart',isLoggedIn,records,function(req,res){
   var m = moment()
   var year = m.format('YYYY')
   var companyId = req.user.companyId
@@ -549,7 +685,7 @@ if(currCount == 0){
       })
 
 //student stats
-      router.post('/stdStatsChart99',isLoggedIn, function(req,res){
+      router.post('/stdStatsChart99',isLoggedIn,records, function(req,res){
         var m = moment()
         var year = m.format('YYYY')
         var count = req.user.currentYearCount
@@ -571,6 +707,7 @@ if(currCount == 0){
       router.post('/calendarChart',isLoggedIn,function(req,res){
         var companyId = req.user.companyId
         Calendar.find({companyId:companyId},function(err,docs){
+          console.log(docs,'crap')
           if(docs == undefined){
             res.redirect('/dash')
           }else
@@ -581,9 +718,982 @@ if(currCount == 0){
            })
       
       })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     
+ router.get('/msgUpdate',isLoggedIn,records,function(req,res){
+  var id = req.user._id
+  var arr = []
+  Recepient.find({recepientId:id},function(err,docs){
+//  
+  if(docs.length > 0){
+    for(var i = 0; i<docs.length;i++){
+    let msgId = docs[0].msgId
+    Message.find({msgId:msgId},function(err,tocs){
+      if(tocs.length >= 1){
+        arr.push(tocs[0])
+      }
+      let size = arr.length
+      console.log(size,'size')
+      User.findByIdAndUpdate(id,{$set:{inboxNo:size}},function(err,locs){
+  
+      })
+    
+    })
+  }
+  }
+  
+  })
+  })
+
+router.get('/sentUpdate',isLoggedIn,records,function(req,res){
+  var id = req.user._id
+  Message.find({senderId:id},function(err,docs){
+    let size = docs.length
+    User.findByIdAndUpdate(id,{$set:{sent:size}},function(err,nocs){
+
+    })
+  })
+})
+
+
+
+
+
+
+
+
+      router.get('/msgX',isLoggedIn,records,function(req,res){
+        var id = req.user.id
+        var list = []
+        var num
+      Recepient.find({recepientId :id},function(err,nocs){
+      
+      for(var i = 0 ; i<nocs.length;i++){
+      
+      let recId = nocs[i].msgId
+      
+        Message.find({status:'reply',msgId:recId},function(err,docs){
+          for(var i = 0; i<docs.length;i++){
+            let date = docs[i].date
+            let Vid = docs[i]._id
+            let timeX = moment(date)
+            let timeX2 =timeX.fromNow()
+            let timeX3 =timeX.format("LLL")
+            console.log(timeX2,'timex2')
+      
+      
+            Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+      
+            
+            
+           // Format relative time using negative value (-1).
+      
+             
+           })
+          }
+      
+        
+        })
+      }
+
+      res.redirect('/records/msg')
+      })
+      
+      })
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      router.get('/msg',isLoggedIn,records,function(req,res){
+      var id = req.user._id
+      const list2 =[]
+      const list = []
+      let num = req.user.inboxNo
+      var pro = req.user
+      
+      Recepient.find({recepientId :id, status:'active', statusXX:'null'},function(err,klocs){
+      
+      //var recFilter =Recepient.find({recepientId :id}).sort({"numDate":-1});
+      //recFilter.exec(function(err,klocs){
+      for(var c = 0 ; c <klocs.length;c++){
+      
+      let recIdX = klocs[c].msgId
+      
+            Message.find({status:'reply',msgId:recIdX},function(err,  docs){
+      
+             // var bookFilter =Message.find({status:'reply',msgId:recIdX}).sort({"numDate":-1});
+      
+            
+      // bookFilter.exec(function(err,docs){
+    
+      
+      let x = docs.length - 1
+      for(var i = x ;i>=0; i--){
+      console.log(i,'b')
+      if(docs[i].senderId !=id){
+      //console.log(docs[i],'black skinhead')
+      
+      list.push(docs[i])
+      list.sort((x, y) =>  y.numDate - x.numDate)
+      console.log(list,'list yacho')
+      
+     
+      
+      }
+      
+      
+  
+      }
+      })  
+      
+      //})
+      
+      }
+
+      res.render('messagesRecords/inbox',{list:list,num:num,pro:pro })
+      })
+      
+      })
+      
+      
+      
+      
+      
+      //on click dashboard icon & msg redirect
+      router.post('/msg/:id',isLoggedIn,records,function(req,res){
+      var m = moment()
+      var date = m.toString()
+      
+      var id = req.params.id
+      Recepient.find({recepientId:id},function(err,docs){
+        for(var i = 0; i<docs.length; i++){
+          let nId = docs[i]._id
+      
+          Recepient.findByIdAndUpdate(nId,{$set:{statusCheck:'viewed'}},function(err,locs){
+      
+            
+          })
+        }
+      
+        res.send('success')
+      })
+      })
+      
+      
+      router.get('/sentXX',isLoggedIn,records,function(req,res){
+      var id = req.user.id
+      var list = []
+      var num
+      
+      
+      Message.find({senderId:id},function(err,docs){
+      for(var i = 0; i<docs.length;i++){
+        let date = docs[i].date
+        let Vid = docs[i]._id
+        let timeX = moment(date)
+        let timeX2 =timeX.fromNow()
+        let timeX3 =timeX.format("LLL")
+        console.log(timeX2,'timex2')
+      
+      
+        Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+      
+      
+      
+         
+       })
+      }
+      res.redirect('/records/sent')
+      })
+      
+      })
+      
+      
+      
+      
+      
+      router.get('/sent',isLoggedIn,records,function(req,res){
+      var id = req.user.id
+      const list2 =[]
+      const list = []
+      var num = req.user.inboxNo
+      var pro = req.user
+      
+      Message.find({senderId :id},function(err,docs){
+      
+      
+      
+      console.log(docs.length,'mainstream')
+      if(docs.length > 1){
+      
+      let x = docs.length - 1
+      for(var i = x ;i>=0; i--){
+      console.log(i,'b')
+      
+      //console.log(docs[i],'black skinhead')
+      
+      list.push(docs[i])
+      list.sort((x, y) =>  y.numDate - x.numDate)
+      console.log(list,'list yacho')
+      
+      
+      
+      
+      
+      num  = docs.length
+      }
+      
+      }else if(docs.length == 1){
+      
+      list.push(docs[0])
+      console.log(list,'list')
+      }else{
+      console.log('inquisition')
+      }
+      //})
+      
+      
+      res.render('messagesRecords/sent',{list:list, num:num,pro:pro})
+      })
+      
+      })
+      
+      
+      
+      router.get('/archiveXX',isLoggedIn,records,function(req,res){
+      var id = req.user.id
+      var list = []
+      var num
+      
+      Recepient.find({recepientId :id, status:'active', statusXX:'yes', archive:'yes'},function(err,klocs){
+      
+      for(var c = 0 ; c <klocs.length;c++){
+      
+        let recIdX = klocs[c].msgId
+      
+              Message.find({msgId:recIdX},function(err,  docs){
+      for(var i = 0; i<docs.length;i++){
+        let date = docs[i].date
+        let Vid = docs[i]._id
+        let timeX = moment(date)
+        let timeX2 =timeX.fromNow()
+        let timeX3 =timeX.format("LLL")
+        console.log(timeX2,'timex2')
+      
+      
+        Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+      
+        
+        
+       // Format relative time using negative value (-1).
+      
+         
+       })
+      }
+      })
+      }
+      res.redirect('/records/archive')
+      
+      })
+      
+      })
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      router.get('/archive',isLoggedIn,records,function(req,res){
+      var id = req.user.id
+      const list2 =[]
+      const list = []
+      var num = req.user.inboxNo
+      var pro = req.user
+      
+      Recepient.find({recepientId :id, status:'active', statusXX:'yes', archive:'yes'},function(err,klocs){
+      
+      for(var c = 0 ; c <klocs.length;c++){
+      
+      let recIdX = klocs[c].msgId
+      
+            Message.find({msgId:recIdX},function(err,  docs){
+      
+      console.log(docs.length,'mainstream')
+      if(docs.length > 1){
+      
+      let x = docs.length - 1
+      for(var i = x ;i>=0; i--){
+      console.log(i,'b')
+      
+      //console.log(docs[i],'black skinhead')
+      
+      list.push(docs[i])
+      list.sort((x, y) =>  y.numDate - x.numDate)
+      console.log(list,'list yacho')
+      
+      
+      
+      
+      
+      num  = docs.length
+      }
+      
+      }else{
+      
+      list.push(docs[0])
+      console.log(list,'list')
+      }
+      //})
+      })
+      }      
+      
+      res.render('messagesRecords/sent',{list:list, num:num,pro:pro})
+           
+      })
+      
+      })
+      
+      
+      
+      
+      router.post('/marked',isLoggedIn,records,function(req,res){
+      let code = req.body.code
+      console.log(code,'code')
+      let id = req.user.id
+      Recepient.find({ msgId:code, recepientId:id },function(err,docs){
+      let nId = docs[0]._id
+      if(docs[0].statusX == 'unmarked'){
+      Recepient.findByIdAndUpdate(nId,{$set:{statusX:'marked'}},function(err,nocs){
+      
+      })
+      }else{
+      Recepient.findByIdAndUpdate(nId,{$set:{statusX:'unmarked'}},function(err,nocs){
+      
+      })
+      
+      }
+      
+      })
+      })
+      
+      router.post('/archiveX',isLoggedIn,records,function(req,res){
+      
+      let id = req.user.id
+      Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+      
+      for(var i = 0; i<docs.length;i++){
+      
+      
+      Recepient.findByIdAndUpdate(docs[i]._id,{$set:{archive:'yes',statusXX:'yes'}},function(err,nocs){
+      
+      })
+      
+      }
+      
+      res.send(docs)
+      })
+      })
+      
+      
+      
+      router.post('/readX',isLoggedIn,records,function(req,res){
+      
+      let id = req.user.id
+      Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+      
+      for(var i = 0; i<docs.length;i++){
+      
+      
+      Recepient.findByIdAndUpdate(docs[i]._id,{$set:{read:'yes',statusXX:'yes'}},function(err,nocs){
+      
+      })
+      
+      }
+      
+      res.send(docs)
+      })
+      })
+      
+      
+      
+      
+      
+      
+      
+      
+      router.post('/delete',isLoggedIn,records,function(req,res){
+      
+      let id = req.user.id
+      Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+      
+      for(var i = 0; i<docs.length;i++){
+      
+      
+      Recepient.findByIdAndUpdate(docs[i]._id,{$set:{status:'deleted',statusXX:'yes'}},function(err,nocs){
+      
+      })
+      
+      }
+      
+      res.send(docs)
+      })
+      })
+      
+      
+      router.get('/compose',isLoggedIn,records,  function(req,res){
+        var num = req.user.num
+        var pro = req.user
+        res.render('messagesRecords/compose',{num:num,pro:pro})
+      })
+      
+      
+      router.post('/userX',isLoggedIn,records,function(req,res){
+        var id =req.user._id
+        var arr = []
+        User.find({},function(err,docs){
+          console.log(docs.length,'length')
+          for(var i = 0; i< docs.length;i++){
+      if(docs[i]._id != id){
+      console.log(docs[i]._id,'success')
+      arr.push(docs[i])
+      }else
+      console.log(docs[i]._id,'failed')
+      
+          }
+          res.send(arr)
+        })
+      })
+      
+      
+      
+      router.post('/dataX',isLoggedIn,records,function(req,res){
+      var m = moment()
+      var year = m.format('YYYY')
+      var numDate = m.valueOf()
+      var date = m.toString()
+      var senderId = req.user._id
+      var senderName = req.user.fullname
+      var senderPhoto = req.user.photo
+      var senderEmail = req.user.email
+      
+      var uid = req.user._id
+      
+      
+      
+      console.log(req.body['code[]'])
+      let code = req.body['code[]']
+      var sub = req.body.code1
+      let msg = req.body.code2
+      
+      
+      
+      var ms = new Message()
+      
+      ms.senderId = senderId
+      ms.senderName = senderName
+      ms.senderPhoto = senderPhoto
+      ms.senderEmail = senderEmail
+      ms.msgId = 'null'
+      ms.msg = msg
+      ms.status = 'reply'
+      ms.status4 = 'null'
+      ms.status5 = 'null'
+      
+      ms.type = 'original'
+      ms.subject = sub
+      ms.numDate = numDate
+      ms.date = date
+      
+      ms.save().then(ms=>{
+      
+      Message.findByIdAndUpdate(ms._id,{$set:{msgId:ms._id}},function(err,nocs){
+      
+      })
+      for(var i = 0;i<code.length - 1;i++){
+        User.findById(code[i],function(err,doc){
+       
+        let recepientName = doc.fullname
+        let recepientId = doc._id
+        let recepientEmail = doc.email
+        let msgId = ms._id
+        Recepient.find({msgId:ms._id,recepientId:recepientId},function(err,tocs){
+          let size = tocs.length
+       
+      
+          if(tocs.length == 0){
+            let rec = new Recepient()
+      
+          
+           
+            rec.msgId = msgId
+            rec.recepientName = recepientName
+            rec.recepientId= recepientId
+            rec.numDate = numDate
+            rec.status = 'active'
+            rec.statusX = 'unmarked'
+            rec.statusXX ='null'
+            rec.statusCheck = 'not viewed'
+            rec.read = 'null'
+            rec.archive = 'null'
+            rec.recepientEmail = recepientEmail
+            rec.save()
+      
+          }
+         
+      
+        })
+      })
+      }
+      res.redirect('/records/sentX')
+      })
+      
+      
+      
+      
+      
+      })
+      
+      router.get('/reply/:id', isLoggedIn,records, function(req,res){
+      var id = req.params.id
+      var pro = req.user
+      var uid = req.user._id
+      console.log(id,'id')
+      var arr = []
+      var num = req.user.inboxNo
+      Message.find({msgId:id},function(err,tocs){
+      console.log(tocs,'tocs')
+      arr.push(tocs[0].senderEmail)
+      let sub = tocs[0].subject
+      Message.find({msgId:id,status:'reply'},function(err,docs){
+      Recepient.find({msgId:id},function(err,nocs){
+      for(var i = 0; i<nocs.length;i++){
+      console.log(nocs[i].recepientEmail,'email')
+      arr.push(nocs[i].recepientEmail)
+      
+      
+      let date = nocs[i].date
+      let Vid = nocs[i]._id
+      let timeX = moment(date)
+      let timeX2 =timeX.fromNow()
+      let timeX3 =timeX.format("LLL")
+      console.log(timeX2,'timex2')
+      
+      
+      Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+      
+      
+      
+      // Format relative time using negative value (-1).
+      
+      
+      })
+      
+      }
+      console.log(arr,'arr')
+      
+      res.render('messagesRecords/reply',{list:docs,id:id,pro:pro, arr:arr, subject:sub,num:num})
+      })
+      
+      })
+      })
+      })
+      
+      
+      
+      router.post('/reply/:id', isLoggedIn,records, function(req,res){
+      var m = moment()
+      var year = m.format('YYYY')
+      var numDate = m.valueOf()
+      var id = req.params.id
+      var senderId = req.user._id
+      var senderName = req.user.fullname
+      var senderEmail = req.user.email
+      var sub = req.body.compose_subject
+      let msg = 'vocal tone'
+      
+      Message.findById({msgId:id},function(err,docs){
+      
+      
+      
+      
+      
+      
+      var ms = new Message()
+      
+      ms.senderId = senderId
+      ms.senderName = senderName
+      ms.senderEmail = senderEmail
+      ms.msgId = id
+      ms.msg = msg
+      ms.status = 'reply'
+      ms.status4 = 'null'
+      ms.status5 = 'null'
+      ms.type = 'reply'
+      ms.numDate = numDate
+      ms.subject = sub
+      ms.date = date
+      
+      ms.save().then(ms=>{
+      console.log(ms._id,'msgId')
+      
+      
+      
+      let date = ms.date
+      let Vid = ms._id
+      let timeX = moment(date)
+      let timeX2 =timeX.fromNow()
+      let timeX3 =timeX.format("LLL")
+      console.log(timeX2,'timex2')
+      
+      
+      Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+      
+      
+      
+      // Format relative time using negative value (-1).
+      
+      
+      })
+      
+      })
+      
+      
+      
+      })
+      
+      
+      
+      
+      
+      })
+      
+      
+      
+      
+      router.post('/replyX/:id',isLoggedIn,records,function(req,res){
+      console.log(req.body.code1,'code1')
+      console.log(req.body['compose_to[]'],'compose_to')
+      let code = req.body.code1
+      var sub = req.body.code1
+      let id = req.params.id
+      var arr = []
+      Message.find({msgId:id,},function(err,tocs){
+      console.log(tocs)
+      arr.push(tocs[0].senderId)
+      
+      Recepient.find({msgId:id},function(err,nocs){
+      for(var i = 0; i<nocs.length;i++){
+      console.log(nocs[i].recepientId,'email')
+      arr.push(nocs[i].recepientId)
+      
+      }
+      
+      
+      res.send(arr)
+      })
+      
+      })
+      
+      })
+      
+      
+      router.post('/replyX2/:id',isLoggedIn,records,function(req,res){
+      var m = moment()
+      var year = m.format('YYYY')
+      var numDate = m.valueOf()
+      var date = m.toString()
+      var msgId = req.params.id
+      var senderId = req.user._id
+      var senderName = req.user.fullname
+      var senderPhoto = req.user.photo
+      var senderEmail = req.user.email
+      
+      var uid = req.user._id
+      
+      
+      
+      console.log(req.body['code[]'])
+      let code = req.body['code[]']
+      var sub = req.body.code1
+      let msg = req.body.code2
+      
+      
+      
+      var ms = new Message()
+      
+      ms.senderId = senderId
+      ms.senderName = senderName
+      ms.senderPhoto = senderPhoto
+      ms.senderEmail = senderEmail
+      ms.msgId = msgId
+      ms.msg = msg
+      ms.status = 'reply'
+      ms.status4 = 'null'
+      ms.status5 = 'null'
+      ms.type = 'reply'
+      ms.numDate = numDate
+      ms.subject = sub
+      ms.date = date
+      
+      ms.save().then(ms=>{
+      
+      
+      for(var i = 0;i<code.length - 1;i++){
+        User.findById(code[i],function(err,doc){
+       
+        let recepientName = doc.fullname
+        let recepientId = doc._id
+        let recepientEmail = doc.email
+        
+        Recepient.find({msgId:msgId,recepientId:recepientId},function(err,tocs){
+          let size = tocs.length
+       
+      
+          if(tocs.length == 0){
+            let rec = new Recepient()
+      
+          
+           
+            rec.msgId = msgId
+            rec.recepientName = recepientName
+            rec.recepientId= recepientId
+            rec.numDate = numDate
+            rec.status = 'active'
+            rec.statusX = 'unmarked'
+            rec.statusXX = 'null'
+            rec.read = 'null'
+            rec.statusCheck = 'not viewed'
+            rec.archive = 'null'
+            rec.recepientEmail = recepientEmail
+            rec.save()
+          }else{
+            Recepient.findByIdAndUpdate(tocs[0]._id,{$set:{statusCheck:"not viewed"}},function(err,locs){
+      
+      
+      
+              // Format relative time using negative value (-1).
+              
+               
+              })
+      
+          }
+         
+      
+        })
+      })
+      }
+      
+      let date = ms.date
+      let Vid = ms._id
+      let timeX = moment(date)
+      let timeX2 =timeX.fromNow()
+      let timeX3 =timeX.format("LLL")
+      console.log(timeX2,'timex2')
+      
+      
+      Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+      
+      
+      
+      // Format relative time using negative value (-1).
+      
+      
+      })
+      res.send(code)
+      })
+      
+      
+      })
+      
+      
+      
+      router.post('/replyX3/:id',isLoggedIn,records,function(req,res){
+      var m = moment()
+      var year = m.format('YYYY')
+      var numDate = m.valueOf()
+      var date = m.toString()
+      var msgId = req.params.id
+      var senderId = req.user._id
+      var senderName = req.user.fullname
+      var senderPhoto = req.user.photo
+      var senderEmail = req.user.email
+      
+      var uid = req.user._id
+      
+      
+      
+      console.log(req.body['code[]'])
+      let code = req.body['code[]']
+      var sub = req.body.code1
+      let msg = req.body.code2
+      
+      
+      
+      var ms = new Message()
+      
+      ms.senderId = senderId
+      ms.senderName = senderName
+      ms.senderPhoto = senderPhoto
+      ms.senderEmail = senderEmail
+      ms.msgId = msgId
+      ms.msg = msg
+      
+      ms.status = 'reply'
+      ms.status4 = 'null'
+      ms.status5 = 'null'
+      ms.type = 'reply'
+      ms.numDate = numDate
+      ms.subject = sub
+      ms.date = date
+      
+      ms.save().then(ms=>{
+      
+      
+      for(var i = 0;i<code.length - 1;i++){
+        User.findById(code[i],function(err,doc){
+       
+        let recepientName = doc.fullname
+        let recepientId = doc._id
+        let recepientEmail = doc.email
+      
+        Recepient.find({msgId:msgId,recepientId:recepientId},function(err,tocs){
+          let size = tocs.length
+       
+      
+          if(tocs.length == 0){
+            let rec = new Recepient()
+      
+          
+           
+            rec.msgId = msgId
+            rec.recepientName = recepientName
+            rec.recepientId= recepientId
+            rec.numDate = numDate
+            rec.status = 'active'
+            rec.statusX = 'unmarked'
+            rec.statusXX = 'null'
+            rec.statusCheck = 'not viewed'
+            rec.read = 'null'
+            rec.archive = 'null'
+            rec.recepientEmail = recepientEmail
+            rec.save()
+      
+          } else{
+      
+          Recepient.findByIdAndUpdate(tocs[0]._id,{$set:{statusCheck:"not viewed"}},function(err,locs){
+      
+      
+      
+            // Format relative time using negative value (-1).
+            
+             
+            })
+          }
+         
+      
+        })
+      })
+      }
+      
+      let date = ms.date
+      let Vid = ms._id
+      let timeX = moment(date)
+      let timeX2 =timeX.fromNow()
+      let timeX3 =timeX.format("LLL")
+      console.log(timeX2,'timex2')
+      
+      
+      Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+      
+      
+      
+      // Format relative time using negative value (-1).
+      
+      
+      })
+      res.send(code)
+      
+      })
+      })
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       
     //profile
-    router.get('/profile',isLoggedIn ,function(req,res){
+    router.get('/profile',isLoggedIn ,records,function(req,res){
       var pro = req.user
       var user = req.user
       res.render('records/overview',{pro:pro,user:user})
@@ -591,7 +1701,7 @@ if(currCount == 0){
 
 
     
-  router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
+  router.post('/profile',isLoggedIn,records,upload.single('file'),function(req,res){
  
   
   var pro = req.user
@@ -625,7 +1735,7 @@ if(currCount == 0){
   })
 
 //setting ID prefix  
-router.get('/fix',isLoggedIn,function(req,res){
+router.get('/fix',isLoggedIn,records,function(req,res){
   var id = req.user._id
  var readonly
  var prefix 
@@ -642,7 +1752,7 @@ router.get('/fix',isLoggedIn,function(req,res){
    })    
  })
  
- router.post('/fix',isLoggedIn,function(req,res){
+ router.post('/fix',isLoggedIn,records,function(req,res){
   
  var prefix = req.body.prefix
  var id = req.user._id
@@ -679,7 +1789,7 @@ router.get('/fix',isLoggedIn,function(req,res){
 
       //add student
 
-router.get('/addStudent',isLoggedIn,  function(req,res){
+router.get('/addStudent',isLoggedIn,records,  function(req,res){
 var pro = req.user
 var actualCount = req.user.actualCount
 var count = req.user.count
@@ -715,7 +1825,7 @@ res.redirect('/records/addStudentX')
 })
 
 
-router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, next) {
+router.post('/addStudent',isLoggedIn,records,upload.single('file'),function(req, res, next) {
   var m = moment()
   var m = moment()
   var year = m.format('YYYY')
@@ -877,6 +1987,14 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
                       user.currentYearCount = 0
                       user.stdYearCount = 0
                       user.admissionYear = year 
+                      user.icon = 'null'
+                      user.subjectNo = 0
+                      user.quizDuration = 0
+                      user.inboxNo = 0
+                      user.quizNo = 0
+                      user.quizBatch = 0
+                      user.quizId = 'null'
+                      user.testId = 'null'
                       user.save()
                         .then(user =>{
                           const CLIENT_URL = 'http://' + req.headers.host;
@@ -964,10 +2082,12 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
     
                  //importing students details from excel
   
-  router.get('/import',isLoggedIn, function(req,res){
+  router.get('/import',isLoggedIn,records, function(req,res){
     var actualCount = req.user.actualCount
     var count = req.user.count
     var pro = req.user
+    var errorMsg = req.flash('danger')[0];
+    var successMsg = req.flash('success')[0];
     var m = moment()
     var year = m.format('YYYY')
     var title
@@ -981,7 +2101,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
         if(classes == 0){
           res.redirect('/records/addClass')
         }else
-        res.render('imports/students',{pro:pro})
+        res.render('imports/students',{pro:pro,successMsg: successMsg,errorMsg:errorMsg, noMessages: !successMsg,noMessages2:!errorMsg})
           })
         
         
@@ -995,7 +2115,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
   })
   
   
-  router.get('/importX',isLoggedIn,function(req,res){
+  router.get('/importX',isLoggedIn,records,function(req,res){
     var pro = req.user
     res.render('imports/studentX',{pro:pro})
   })
@@ -1005,7 +2125,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
   
 
   
-  router.post('/import',isLoggedIn, upload.single('file'),  (req,res)=>{
+  router.post('/import',isLoggedIn,records, upload.single('file'),  (req,res)=>{
     var count = req.user.actualCount
     var m = moment()
  
@@ -1090,7 +2210,7 @@ router.post('/addStudent',isLoggedIn,upload.single('file'),function(req, res, ne
             let expdate = req.user.expdate
             let expStr = req.user.expStr
             let companyId = req.user.companyId
-            let photo = 'propic.jpg'
+            let photo = record.photo
 
           
 
@@ -1104,11 +2224,12 @@ req.body.grade = record.grade
 req.body.class1 = record.class1 
 req.body.gender = record.gender
 req.body.mobile = record.mobile  
-req.body.password = record.password             
+req.body.password = record.password   
+req.body.photo = record.photo          
 
             
         
-            try{
+            
               req.check('uid','Enter uid').notEmpty();
               req.check('name','Enter Name').notEmpty();
               req.check('surname','Enter Surname').notEmpty();
@@ -1122,7 +2243,7 @@ req.body.password = record.password
               req.check('class1','Enter Student Class').notEmpty();
               req.check('gender','Enter Gender').notEmpty();
               req.check('mobile', 'Enter Phone Number').notEmpty()
-
+              req.check('photo', 'Enter Photo').notEmpty()
 
               var errors = req.validationErrors();
   
@@ -1130,79 +2251,15 @@ req.body.password = record.password
                 
                 req.session.errors = errors;
                 req.session.success = false;
-                for(let x=0;x<req.session.errors.length;x++){
-                  throw new SyntaxError(req.session.errors[x].msg +" "+"on line"+" "+ num)
-                }
+                req.flash('danger', req.session.errors[0].msg);
+       
+        
+                res.redirect('/records/import');
               
           }
 else
 
-/*
-         
-            const token = jwt.sign({uid, name,surname,grade, suffix,class1,address,adminBal,count,actualCount,  fullname,mobile,gender,dob,role,term,year,expdate,expStr,photo, companyId, email,prefix, password, }, JWT_KEY, { expiresIn: '100000m' });
-            const CLIENT_URL = 'http://' + req.headers.host;
-      
-            const output = `
-            <h2>Please click on below link to activate your account</h2>
-            <a href="${CLIENT_URL}/records/activate3/${token}">click here</a>
-            <h1> User credentials</h1>
-            <p>userID:${uid}</p>
-            <p>password:${password}</p>
-            <p><b>NOTE: </b> The above activation link expires in 1 week.</p>
-            `;
-      
-            const transporter = nodemailer.createTransport({
-              service: 'gmail',
-              auth: {
-                  user: "cashreq00@gmail.com",
-                  pass: "itzgkkqtmchvciik",
-              },
-            });
-            
-      
-            // send mail with defined transport object
-            const mailOptions = {
-                from: '"Admin" <cashreq00@gmail.com>', // sender address
-                to: record.email, // list of receivers
-                subject: "Account Verification ✔", // Subject line
-                html: output, // html body
-            };
-      
-          await transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                  console.log(error)
-            
-             req.session.message = {
-               type:'errors',
-               message:'confirmation emails not sent'
-             }
-             
-             res.render('imports/students', {
-              message:req.session.message ,pro:pro
-         }) 
-         
-          
-                }
-                else {
-                    console.log('Mail sent : %s', info.response);
-                    
-                    idNumber++
-              
-                    User.findByIdAndUpdate(id,{$set:{idNumber:idNumber}},function(err,locs){
-                    req.session.message = {
-                      type:'success',
-                      message:'confirmation emails sent to students'
-                    }     
-                    
-                    res.render('imports/students', {
-                      message:req.session.message ,pro:pro
-                 
-                })
-              })
-                }
-            })
-       
-*/
+
 {
   User.findOne({'uid':uid})
   .then(user =>{
@@ -1212,15 +2269,9 @@ else
 
 
 
-     req.session.message = {
-       type:'errors',
-       message:'user id already in use'
-     }     
-     
-        res.render('imports/students', {
-             message:req.session.message ,pro:pro
-        }) 
-    
+      req.flash('danger', 'User already in the system');
+  
+      //res.redirect('/records/import')
 }
 else
 
@@ -1263,7 +2314,7 @@ user.status4 = 'null';
 user.number = 0;
 user.paymentId = 'null';
 user.suffix = suffix;
-user.photo = "propic.jpg";
+user.photo = photo;
 user.level = 'null';
 user.levelX = 'normal';
 user.pollUrl ='null';
@@ -1297,17 +2348,20 @@ user.startYear = year
 user.currentYearCount = 0
 user.stdYearCount = 0
 user.admissionYear = year 
+user.icon = 'null'
+user.subjectNo = 0
+user.quizDuration = 0
+user.inboxNo = 0
+user.quizNo = 0
+user.quizBatch = 0
+user.quizId = 'null'
+user.testId = 'null'
 
 user.save()
   .then(user =>{
    
    
-     
-    req.session.message = {
-      type:'success',
-      message:'Accounts Registered'
-    }  
-    res.render('imports/students',{message:req.session.message});
+ 
 
   })
   
@@ -1319,15 +2373,15 @@ user.save()
 }     
                  
                      
-                   
+   
                     // .catch(err => console.log(err))
-                  }
-                  catch(e){
-                    res.send(e.message)
-                   }
+             
+                 
                     })
                   
-                  
+                    req.flash('success', 'File Successfully!');
+  
+                    res.redirect('/records/import')  
          
                   }
                   
@@ -1491,7 +2545,7 @@ user.save()
   
 
 //calendar
-router.get('/calendar',isLoggedIn, function(req,res){
+router.get('/calendar',isLoggedIn,records, function(req,res){
     var pro = req.user
   res.render('events/calendar',{pro:pro})
 })
@@ -1499,25 +2553,35 @@ router.get('/calendar',isLoggedIn, function(req,res){
     
 
                   //adding event
-  router.get('/addEvent',isLoggedIn, function(req,res){
+  router.get('/addEvent',isLoggedIn,records, function(req,res){
     var pro = req.user
     res.render('events/event',{pro:pro})
   })
   
 
-  router.post('/addEvent',isLoggedIn,  function(req,res){
+  router.post('/addEvent',isLoggedIn,records,  function(req,res){
     var title = req.body.title;
     var start = req.body.start;
     var end = req.body.end;
+    var m2 = moment()
     var date = req.body.date;
+    var dateValue = moment(date).valueOf()
     var userRole = req.body.role;
     var pro = req.user
+    var venue = req.body.venue
+     var m = moment(date)
+     console.log(m.format("L"),'zvinhu')
+     console.log(m,'dates')
+     var mformat = m2.format('L')
+     var mformat2 = m.format('L')
+    var year = m.format('YYYY')
     var companyId = req.user.companyId
   
       req.check('title','Enter Title').notEmpty();
       req.check('start','Time').notEmpty();
       req.check('end','Enter Finish Time').notEmpty();
       req.check('date','Enter Date').notEmpty();
+      req.check('venue','Enter Venue').notEmpty();
       req.check('role','Enter User Role').notEmpty();
     
       
@@ -1544,13 +2608,51 @@ router.get('/calendar',isLoggedIn, function(req,res){
                  message:req.session.message ,pro:pro
               })
             }else
+           
+
+          /*  for(var i =0 ;i<11; i++){
+              console.log(m,'tamama')
+              let days
+              if(i > 0){
+                 days = 7
+                 console.log(days,'days')
+              }else{
+                days = 0
+                console.log(days,'days')
+              }
+             
+              m.add(days,'days')
+              console.log(m.format("L"),'ehe')
+              m.format("L")
+              let nformat =   m.format("YYYY-MM-DD")+"T"+start;
+              let nformat2 = m.format("YYYY-MM-DD")+"T"+end
+
+             // console.log(nformat3,'3333')
+             // let nmoment = moment(nformat)
+              //console.log(nmoment,'ccc')
+              console.log(moment(m.format("YYYY-MM-DD")+"T"+start).diff(moment(m.format("YYYY-MM-DD")+"T"+end)),'moment')
+             let difference =moment(m.format("YYYY-MM-DD")+"T"+end).diff(moment(m.format("YYYY-MM-DD")+"T"+start))
+             let duration = moment.duration(difference).asHours()*/
+
+             console.log(moment(m.format("YYYY-MM-DD")+"T"+start).diff(moment(m.format("YYYY-MM-DD")+"T"+end)),'moment')
+             let difference =moment(m.format("YYYY-MM-DD")+"T"+end).diff(moment(m.format("YYYY-MM-DD")+"T"+start))
+             let duration = moment.duration(difference).asHours()
     
-      var clas = new Calendar();
-    
+              var clas = new Calendar();
       clas.title = title;
-      clas.start = date+"T"+start;
-      clas.end = date+"T"+end;
+      clas.start =    m.format("YYYY-MM-DD")+"T"+start;
+      clas.end =    m.format("YYYY-MM-DD")+"T"+end;
       clas.userRole = userRole;
+      clas.status = 'active'
+      clas.venue = venue
+      clas.duration = duration
+      clas.time = start +" - "+ end
+      clas.mformat = mformat
+      clas.mformat2 = mformat2
+      clas.slide = 0
+      clas.dateValue = dateValue
+      clas.style = 'null'
+      clas.style2 = 'null'
       clas.companyId = companyId
       
      
@@ -1560,19 +2662,22 @@ router.get('/calendar',isLoggedIn, function(req,res){
       clas.save()
         .then(clas =>{
          
-          req.session.message = {
+         /* req.session.message = {
             type:'success',
             message:'Event added'
           }  
-          res.render('events/event',{message:req.session.message,pro:pro});
+          res.render('events/event',{message:req.session.message,pro:pro});*/
       
     
       })
-    
-        .catch(err => console.log(err))
+            /*}*/
+        
       
       
       })
+
+
+      res.redirect('/records/addEvent')
     }
     
     
@@ -1588,13 +2693,13 @@ router.get('/calendar',isLoggedIn, function(req,res){
   //student List 
   
   
-  router.get('/studentList',isLoggedIn,(req, res) => {
+  router.get('/studentList',isLoggedIn,records,(req, res) => {
    var pro = req.user
    var companyId = req.user.companyId
     User.find({companyId:companyId,role:"student"},(err, docs) => {
         if (!err) {
             res.render("students/list", {
-                list: docs, pro:pro
+                listX: docs, pro:pro
                 
             });
         }
@@ -1604,10 +2709,63 @@ router.get('/calendar',isLoggedIn, function(req,res){
     });
   });
 
+  router.get('/studentProfile/:id',isLoggedIn,records,function(req,res){
+    var id = req.params.id
+    var pro = req.user
+    User.findById(id,function(err,doc){
+      
+   
+    //var pro = req.user
+    res.render('records/overview2',{doc:doc,id:id,pro:pro})
+    
+  })
+    })
 
+    router.get('/studentSubjects/:id',isLoggedIn,records,function(req,res){
+      var id = req.params.id
+      console.log(id,'idd')
+      var pro = req.user
+      User.findById(id,function(err,doc){
+        let uid = doc.uid
+    
+        StudentSub.find({studentId:uid},function(err,locs){
+          res.render('users/subjects3',{listX:locs,pro:pro,doc:doc,id:id})
+        })
+      })
+     
+    })
+    
+
+
+    router.get('/teacherSubjects/:id',isLoggedIn,records,function(req,res){
+      var id = req.params.id
+      console.log(id,'idd')
+      var pro = req.user
+      User.findById(id,function(err,doc){
+        let uid = doc.uid
+    
+        TeacherSub.find({studentId:uid},function(err,locs){
+          res.render('users/subjects4',{listX:locs,pro:pro,doc:doc,id:id})
+        })
+      })
+     
+    })
+    
+    
+    router.get('/teacherProfile/:id',isLoggedIn,records,function(req,res){
+      var id = req.params.id
+      User.findById(id,function(err,doc){
+        pro = req.user
+     
+      //var pro = req.user
+      res.render('records/overview3',{pro:pro,id:id,doc:doc})
+      
+    })
+      })
+  
 
      //view profile
-     router.get('/prof/:id',isLoggedIn,function(req,res){
+     router.get('/prof/:id',isLoggedIn,records,function(req,res){
       var pro = req.user
       User.findById(req.params.id, (err, doc) => {
         if (!err) {
@@ -1627,7 +2785,7 @@ router.get('/calendar',isLoggedIn, function(req,res){
     })
     
 
-    router.post('/prof',isLoggedIn,upload.single('file'),function(req,res){
+    router.post('/prof',isLoggedIn,records,upload.single('file'),function(req,res){
  
       var pro = req.user
       var id = req.body.id
@@ -1667,7 +2825,7 @@ router.get('/calendar',isLoggedIn, function(req,res){
     })
 
 
-    router.get('/studentReport',isLoggedIn,function(req,res){
+    router.get('/studentReport',isLoggedIn,records,function(req,res){
 
       
       const output = `
@@ -1769,14 +2927,14 @@ fs.readFile(originalFile, 'utf8', function (err, data) {
         })
       
  //adding student grades/levels
- router.get('/addlevel',isLoggedIn, function(req,res){
+ router.get('/addlevel',isLoggedIn,records, function(req,res){
   var pro = req.user
   res.render('students/levels',{pro:pro})
 })
 
 
 
-router.post('/addlevel',isLoggedIn,  function(req,res){
+router.post('/addlevel',isLoggedIn,records,  function(req,res){
   var grade = req.body.grade;
   var companyId = req.user.companyId
 var pro = req.user
@@ -1876,7 +3034,34 @@ if(focs[i].grade>focs[x].grade){
 
 
 
+router.get('/classUpdate',isLoggedIn,records,function(req,res){
+  Class1.find(function(err,docs){
+    for(var i = 0;i<docs.length;i++){
+      let class1 = docs[i].class1
+      let id = docs[i]._id
+      User.find({class1:class1},function(err,nocs){
+for(var c = 0; c<3;c++){
+  if(c == 0){
+    console.log(id,'cc')
+    Class1.findByIdAndUpdate(id,{$set:{pic1:nocs[c].photo}},function(err,locs){
 
+    })
+  }else if(c == 1){
+    console.log(id,'kk')
+    Class1.findByIdAndUpdate(id,{$set:{pic2:nocs[c].photo}},function(err,locs){
+
+    })
+  }else if(c == 2){
+    console.log(id,'yy')
+    Class1.findByIdAndUpdate(id,{$set:{pic3:nocs[c].photo}},function(err,locs){
+
+    })
+  }
+}
+      })
+    }
+  })
+})
 
 
 
@@ -1884,7 +3069,7 @@ if(focs[i].grade>focs[x].grade){
 
 
    //adding student classes
-   router.get('/addClass',isLoggedIn, function(req,res){
+   router.get('/addClass',isLoggedIn,records, function(req,res){
     var pro = req.user
     var arr=[]
     var companyId = req.user.companyId
@@ -1900,7 +3085,7 @@ if(focs[i].grade>focs[x].grade){
   
   
   
-  router.post('/addClass',isLoggedIn,  function(req,res){
+  router.post('/addClass',isLoggedIn, records, function(req,res){
     var class1 = req.body.class1;
   var pro = req.user
   var arr = []
@@ -1943,6 +3128,10 @@ if(focs[i].grade>focs[x].grade){
       clas.numberOfStudents = 0;
       clas.level = 0;
       clas.paid = 0;
+      clas.pic1 = 'propic.jpg'
+      clas.pic2 = 'propic.jpg'
+      clas.pic3 = 'propic.jpg'
+      clas.avgMark =0
       clas.unpaid = 0;
       clas.male = 0;
       clas.female = 0;
@@ -1981,13 +3170,13 @@ if(focs[i].grade>focs[x].grade){
   
   
   //class list
-router.get('/classList',isLoggedIn, (req, res) => {
+router.get('/classList',isLoggedIn,records, (req, res) => {
  var pro = req.user
  var companyId = req.user.companyId
   Class1.find({companyId:companyId},(err, docs) => {
       if (!err) {
           res.render("students/list2", {
-             list:docs, pro:pro
+             listX:docs, pro:pro
             
           });
       }
@@ -1995,10 +3184,23 @@ router.get('/classList',isLoggedIn, (req, res) => {
 });
 
   
+router.get('/class/:id',isLoggedIn,records,function(req,res,next){
+  var id = req.params.id
+  var pro = req.user
+Class1.findById(id,function(err,doc){
+let class1 = doc.class1
+User.find({class1:class1},function(err,docs){
+res.render('records/classStudents',{listX:docs,pro:pro})
 
+})
+})
+  //var successMsg = req.flash('success')[0]
+
+  
+})
 
 //add teachers
-router.get('/addTeacher',isLoggedIn,  function(req,res){
+router.get('/addTeacher',isLoggedIn,records,  function(req,res){
    var pro = req.user
    var actualCount = req.user.actualCount
    var count = req.user.count
@@ -2031,7 +3233,7 @@ router.get('/addTeacher',isLoggedIn,  function(req,res){
   
 })
 
-router.get('/addTeacherX',isLoggedIn,function(req,res){
+router.get('/addTeacherX',isLoggedIn,records,function(req,res){
   var pro = req.user
 
 var title = 'You have reched maximum users'
@@ -2042,7 +3244,7 @@ var readonly = 'readonly'
 res.render('teachers/admit',{pro:pro,readonly:readonly, title:title})
 })
 
-router.post('/addTeacher',isLoggedIn, function(req,res){
+router.post('/addTeacher',isLoggedIn,records, function(req,res){
   var m = moment()
                   var year = m.format('YYYY')
                   var pro = req.user
@@ -2189,7 +3391,14 @@ router.post('/addTeacher',isLoggedIn, function(req,res){
                   user.currentYearCount = 0
                   user.stdYearCount = 0
                   user.admissionYear = year
-                  
+                  user.icon = 'null'
+                  user.subjectNo = 0
+                  user.quizDuration = 0
+                  user.inboxNo = 0
+                  user.quizNo = 0
+                  user.quizBatch = 0
+                  user.quizId = 'null'
+                  user.testId = 'null'
                   user.password = user.encryptPassword(password)
 
                   
@@ -2295,6 +3504,8 @@ router.post('/addTeacher',isLoggedIn, function(req,res){
    var idNum=req.user.idNumber
    idNum++
    var companyId = req.user.companyId
+   var errorMsg = req.flash('danger')[0];
+   var successMsg = req.flash('success')[0];
    var uid = prefix+idNum
    if(actualCount < count){
     title = "Import Teachers"
@@ -2305,7 +3516,7 @@ router.post('/addTeacher',isLoggedIn, function(req,res){
     if(docs.length == 0){
      res.redirect('/records/dept')
    }
-  res.render('imports/teacher',{pro:pro,title:title,readonly:readonly}) 
+  res.render('imports/teacher',{pro:pro,title:title,readonly:readonly,successMsg: successMsg,errorMsg:errorMsg, noMessages: !successMsg,noMessages2:!errorMsg}) 
 
     })
   }else
@@ -2382,8 +3593,7 @@ var prefix = req.user.prefix
          
       
           
-          try{
-        
+       
        
       
             let uid = record.uid;
@@ -2396,12 +3606,12 @@ var prefix = req.user.prefix
             let gender = record.gender;
             let dob = record.dob;
           let email = record.email
-          let photo = 'propic.jpg'
+        
            let dept = record.dept
            let num = record.num
             let password = record.password;
             let term = req.user.term
-      
+            let photo = record.photo
             let companyId = req.user.companyId
         req.body.uid=record.uid
         req.body.name=record.name
@@ -2413,6 +3623,7 @@ var prefix = req.user.prefix
         req.body.email=record.email
         req.body.dept=record.dept
         req.body.password=record.password
+        req.body.photo = record.photo
       
 
         req.check('name','Enter Name').notEmpty();
@@ -2422,6 +3633,7 @@ req.check('email','Enter email').notEmpty().isEmail();
 req.check('uid','Enter Teacher ID').notEmpty();
 req.check('address','Enter Address').notEmpty();
 req.check('gender','Enter Gender').notEmpty();
+req.check('photo','Enter Photo').notEmpty();
 req.check('mobile', 'Enter Phone Number').notEmpty();
 req.check('password', 'Password do not match').notEmpty();
     
@@ -2432,75 +3644,14 @@ if (errors) {
   
   req.session.errors = errors;
   req.session.success = false;
-  for(let x=0;x<req.session.errors.length;x++){
-    throw new SyntaxError(req.session.errors[x].msg +" "+"on line"+" "+ num)
-  }
+  req.flash('danger', req.session.errors[0].msg);
+       
+        
+  res.redirect('/records/importTeacher');
 
 }
 
-
-        
-             /* 
-         
-            const token = jwt.sign({uid,name,surname,address,mobile,gender,fullname,prefix, dob, photo,dept, term, year,companyId, email,role, password,expdate,expStr }, JWT_KEY, { expiresIn: '100000m' });
-            const CLIENT_URL = 'http://' + req.headers.host;
-      
-            const output = `
-            <h2>Please click on below link to activate your account</h2>
-            <a href="${CLIENT_URL}/records/activate/${token}">click here</a>
-            <h1> User credentials</h1>
-            <p>userID:${uid}</p>
-            <p>password:${password}</p>
-            <p><b>NOTE: </b> The above activation link expires in 1 week.</p>
-            `;
-      
-            const transporter = nodemailer.createTransport({
-              service: 'gmail',
-              auth: {
-                  user: "cashreq00@gmail.com",
-                  pass: "itzgkkqtmchvciik",
-              },
-            });
-            
-      
-            // send mail with defined transport object
-            const mailOptions = {
-                from: '"Admin" <cashreq00@gmail.com>', // sender address
-                to: record.email, // list of receivers
-                subject: "Account Verification ✔", // Subject line
-                html: output, // html body
-            };
-      
-         await   transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                  console.log(error)
-                 
-             req.session.message = {
-               type:'errors',
-               message:'confirmation emails not sent'
-             }
-             
-             res.render('imports/teacher', {message:req.session.message,pro:pro}) 
-         
-          
-                }
-                else {
-                    console.log('Mail sent : %s', info.response);
-                    idNumber++
-                 
-                    User.findByIdAndUpdate(id,{$set:{idNumber:idNumber}},function(err,locs){
-
-                    req.session.message = {
-                      type:'success',
-                      message:'confirmation emails sent'
-                    }     
-                    
-                    res.render('imports/teacher', {message:req.session.message,pro:pro}) 
-                  })
-                }
-            })
-              */
-
+else
 
 
             {
@@ -2512,14 +3663,9 @@ if (errors) {
             
             
             
-                 req.session.message = {
-                   type:'errors',
-                   message:'user id already in use'
-                 }     
-                 
-                    res.render('imports/students', {
-                         message:req.session.message ,pro:pro
-                    }) 
+                  req.flash('danger', 'User already in the system');
+  
+                  //res.redirect('/records/import')
                 
             }
             else
@@ -2562,7 +3708,7 @@ if (errors) {
             user.status = 'owing';
             user.paymentId = 'null';
             user.prefix = prefix;
-            user.photo = "propic.jpg";
+            user.photo = photo;
             user.level = 'null';
             user.pollUrl ='null';
             user.annual = 0;
@@ -2595,6 +3741,14 @@ if (errors) {
             user.stdYearCount = 0
             user.admissionYear = year
             user.password = user.encryptPassword(password)   
+            user.icon = 'null'
+            user.subjectNo = 0
+            user.quizDuration = 0
+            user.inboxNo = 0
+            user.quizNo = 0
+            user.quizBatch = 0
+            user.quizId = 'null'
+            user.testId = 'null'
            
             user.save()
               .then(user =>{
@@ -2612,15 +3766,13 @@ if (errors) {
           }
                    
                     // .catch(err => console.log(err))
-                  }
-                  catch(e){
-                    res.send(e.message)
-                   }
-                    })
+                  
+                
+                    
                   
                   
          
-                  }
+                  
                   
                   
                     
@@ -2628,11 +3780,16 @@ if (errors) {
         
                    
         
-                    
-             
-                }
-      
         
+             
+                })
+                
+                req.flash('success', 'File Successfully!');
+  
+                res.redirect('/records/importTeacher')  
+      
+        }
+      }
   
   })
   
@@ -2641,13 +3798,13 @@ if (errors) {
 
 
     //teacher List
-router.get('/teacherList',isLoggedIn,(req, res) => {
+router.get('/teacherList',isLoggedIn,records,(req, res) => {
   var pro = req.user
   var companyId = req.user.companyId
   User.find({companyId:companyId,role:"teacher"},(err, docs) => {
       if (!err) {
-          res.render("teachers/list", {
-              list: docs, pro:pro
+          res.render("records/list2", {
+              listX: docs, pro:pro
               
           });
       }
@@ -2851,7 +4008,7 @@ router.get('/idEdit',isLoggedIn,records,function(req,res){
 //activate/deactivate users
 
 
-  router.get('/usr/activate/:id',isLoggedIn,function(req,res){
+  router.get('/usr/activate/:id',isLoggedIn,records,function(req,res){
     var count = req.user.count
     var actualCount = req.user.actualCount
     var id = req.params.id
@@ -2871,7 +4028,7 @@ res.redirect('/records/studentList')
   })
 
 
-  router.get('/usr/deactivate/:id',isLoggedIn,function(req,res){
+  router.get('/usr/deactivate/:id',isLoggedIn,records,function(req,res){
     var count = req.user.count
     var actualCount = req.user.actualCount
 
@@ -2887,7 +4044,7 @@ res.redirect('/records/studentList')
 
   //adding departments
 
-router.get('/dept',isLoggedIn, function(req,res){
+router.get('/dept',isLoggedIn,records, function(req,res){
   var pro = req.user
   res.render('subject/dept',{pro:pro})
 })
@@ -2956,7 +4113,7 @@ router.post('/dept',isLoggedIn,  function(req,res){
 
 
 //department List
-router.get('/deptList',isLoggedIn, (req, res) => {
+router.get('/deptList',isLoggedIn,records, (req, res) => {
   var pro = req.user
   var companyId = req.user.companyId
   Dept.find({companyId:companyId},(err, docs) => {
@@ -2971,7 +4128,7 @@ router.get('/deptList',isLoggedIn, (req, res) => {
 
 
  //add subjects
- router.get('/subject',isLoggedIn, function(req,res){
+ router.get('/subject',isLoggedIn,records, function(req,res){
   var pro = req.user
   var companyId = req.user.companyId
   Dept.find({companyId:companyId},function(err,docs){
@@ -2991,6 +4148,7 @@ router.post('/subject',isLoggedIn,records,  function(req,res){
   var dept = req.body.dept
   var code = req.body.code;
   var companyId = req.user.companyId
+  var icon = req.body.icon
  
       req.check('name','Enter Name Of Subject').notEmpty();
       req.check('grade','Enter Grade/Level').notEmpty();
@@ -3030,6 +4188,7 @@ router.post('/subject',isLoggedIn,records,  function(req,res){
        sub.grade = grade;
        sub.dept = dept
       sub.code = code;
+      sub.icon = icon
       sub.companyId = companyId
    
     
@@ -3057,13 +4216,13 @@ router.post('/subject',isLoggedIn,records,  function(req,res){
 })
 
 
-router.get('/subjectList',isLoggedIn, (req, res) => {
+router.get('/subjectList',isLoggedIn,records, (req, res) => {
   var pro = req.user
   var companyId = req.user.companyId
   Subject.find({companyId:companyId},(err, docs) => {
       if (!err) {
           res.render("subject/list", {
-             list:docs, pro:pro
+             listX:docs, pro:pro
             
           });
       }
@@ -3071,7 +4230,7 @@ router.get('/subjectList',isLoggedIn, (req, res) => {
 });
 
 //update subject
-router.get('/subject/:id',function(req,res){
+router.get('/subject/:id',isLoggedIn,records,function(req,res){
      var pro = req.user
   Subject.findById(req.params.id, (err, doc) => {
     if (!err) {
@@ -3218,7 +4377,7 @@ else
     
     
     //update student subject number
-    router.get('/subTotal',isLoggedIn,function(req,res){
+    router.get('/subTotal',isLoggedIn,records,function(req,res){
       var companyId = req.user.companyId
     User.find({companyId:companyId,role:'student'},function(err,docs){
     
@@ -3253,7 +4412,7 @@ else
 //allocate subjects to teachers
 
   
-    router.get('/teacherSubject',isLoggedIn, function(req,res){
+    router.get('/teacherSubject',isLoggedIn,records, function(req,res){
       var pro = req.user
       var companyId = req.user.companyId
       Class1.find({companyId:companyId},function(err,docs){
@@ -3267,7 +4426,7 @@ else
     
     
     
-    router.post('/teacherSubject', isLoggedIn, function(req,res){
+    router.post('/teacherSubject', isLoggedIn,records, function(req,res){
       var pro = req.user
       var companyId = req.user.companyId
     var teacherId, subjectCode, grade, dept, id;
@@ -3275,6 +4434,9 @@ else
     teacherId = req.body.uid;
     
     var subjectName = req.body.subjectName;
+    var icon = req.body.iconXX;
+    var photo = req.body.photoXX;
+    console.log(icon,photo,'whats peasy')
     var arr, arr1
     console.log(teacherName)
     
@@ -3332,6 +4494,8 @@ else
     teacher.subjectCode = 'null';
     teacher.subjectName = subjectName;
     teacher.grade = 0;
+    teacher.photo = photo
+    teacher.icon = icon
     
     teacher.dept ='null';
     teacher.companyId = companyId
@@ -3427,7 +4591,7 @@ else
          };
         
          result.push(obj);
-         console.log('object',obj.id)
+         console.log('object',obj)
        });
   
      }
@@ -3442,6 +4606,7 @@ else
   
   // role admin
   //this routes autopopulates teachers info from the id selected from automplet1
+  /*
   router.post('/autoTS',isLoggedIn,function(req,res){
     var fullname = req.body.code
     var companyId = req.user.companyId
@@ -3450,8 +4615,24 @@ else
    if(docs == undefined){
      res.redirect('/records/autoTS')
    }else
-  
+   console.log(docs[0],'docs[0]')
       res.send(docs[0])
+    })
+  
+  
+  })
+  */
+
+  router.post('/autoTS',isLoggedIn,function(req,res){
+    var id = req.body.code
+    var companyId = req.user.companyId
+   
+    User.findById(id,function(err,doc){
+   if(doc== undefined){
+     res.redirect('/records/autoTS')
+   }else
+   console.log(doc,'docs[0]')
+      res.send(doc)
     })
   
   
@@ -3466,7 +4647,7 @@ else
   
   //autocomplete teacherName & uid
    
-  router.get('/autocompleteSub/',isLoggedIn, function(req, res, next) {
+  router.get('/autocompleteSub/',isLoggedIn,records, function(req, res, next) {
   
     var companyId = req.user.companyId
     var regex= new RegExp(req.query["term"],'i');
@@ -3522,7 +4703,7 @@ else
   
   // role admin
   //this routes autopopulates teachers info from the id selected from automplet1
-  router.post('/autoSub',isLoggedIn,function(req,res){
+  router.post('/autoSub',isLoggedIn,records,function(req,res){
     var name = req.body.code
     var companyId = req.user.companyId
    
@@ -3558,7 +4739,7 @@ else
   
   //update teacher subjectNumber
   //update student subject number
-  router.get('/subTotalX',isLoggedIn,function(req,res){
+  router.get('/subTotalX',isLoggedIn,records,function(req,res){
     var companyId = req.user.companyId
     User.find({companyId:companyId,role:'teacher'},function(err,docs){
     
@@ -3588,7 +4769,7 @@ else
     
   
   
-    router.get('/teacherSubList',isLoggedIn, (req, res) => {
+    router.get('/teacherSubList',isLoggedIn,records, (req, res) => {
        var pro = req.user
        var companyId = req.user.companyId
       TeacherSub.find({companyId:companyId},(err, docs) => {
@@ -3684,10 +4865,12 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
   router.post('/lesson',isLoggedIn,records, function(req,res){
     var pro = req.user
-    var m = moment()
+    var day = req.body.day
+    var m = moment(day)
     var year = m.format('YYYY')
     var month = m.format('MMMM')
-    var day = req.body.day
+   
+    var mformat = m.format("L")
     var fullname = req.user.teacherName;
     var teacherID = req.user.teacherId;
   var teacherName = req.body.teacherName;
@@ -3698,12 +4881,15 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   var start = req.body.start;
   var room = req.body.room
   var finish = req.body.finish
+  var icon = req.body.icon
+  console.log(icon,'icon')
   var term = req.user.term
   var arr1 = []
   var companyId = req.user.companyId
   
-  
-  
+  console.log(moment(start),'start')
+  //clas.start =    m.format("YYYY-MM-DD")+"T"+start;
+  //clas.end =    m.format("YYYY-MM-DD")+"T"+end;
   req.check('teacherName','Enter Teacher Name').notEmpty();
   req.check('teacherId','Enter Teacher ID').notEmpty();
   req.check('subjectName','Enter Subject').notEmpty();
@@ -3712,6 +4898,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   req.check('day','Enter Day').notEmpty();
   req.check('start','Enter Start  Time').notEmpty();
   req.check('finish','Enter Finish Time').notEmpty();
+
   
   
   var errors = req.validationErrors();
@@ -3751,6 +4938,32 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
       })
         }
         else{
+          
+          for(var i =0 ;i<11; i++){
+            console.log(m,'tamama')
+            let days
+            if(i > 0){
+               days = 7
+               console.log(days,'days')
+            }else{
+              days = 0
+              console.log(days,'days')
+            }
+           
+            m.add(days,'days')
+            console.log(m.format("L"),'ehe')
+            let dateValue = m.valueOf()
+            m.format("L")
+            let nformat =   m.format("YYYY-MM-DD")+"T"+start;
+            let nformat2 = m.format("YYYY-MM-DD")+"T"+finish
+
+           // console.log(nformat3,'3333')
+           // let nmoment = moment(nformat)
+            //console.log(nmoment,'ccc')
+            console.log(moment(m.format("YYYY-MM-DD")+"T"+start).diff(moment(m.format("YYYY-MM-DD")+"T"+finish)),'moment')
+           let difference =moment(m.format("YYYY-MM-DD")+"T"+finish).diff(moment(m.format("YYYY-MM-DD")+"T"+start))
+           let duration = moment.duration(difference).asHours()
+  
   
           var lesson = new Lesson();
       
@@ -3758,23 +4971,35 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
           lesson.teacherName = teacherName;
           lesson.teacherId = teacherId;
           lesson.class1 = class1;
+          lesson.icon = icon
+          lesson.dateValue = dateValue
+          lesson.status = 'active'
           lesson.subjectName = subjectName;
           lesson.subjectCode = subjectCode;
           lesson.start= start;
           lesson.finish = finish;
+          lesson.type = 'Class';
+          lesson.mformatStart = nformat
+          lesson.mformatEnd = nformat2
           lesson.time = start +" - "+ finish
+          lesson.duration=duration
+          lesson.mformat = mformat
+          lesson.mformat2 = m.format('L')
           lesson.day = day;
           lesson.room = room
           lesson.term = term;
           lesson.year = year;
           lesson.month = month;
+          lesson.style2 = 'null'
+          lesson.style = 'null'
+          lesson.slide = 0
           lesson.companyId = companyId
        
           
       
         lesson.save()
         .then(less =>{
-          Room.find({companyId:companyId},(err, wocs) => {
+         /* Room.find({companyId:companyId},(err, wocs) => {
             Class1.find({companyId:companyId},function(err,focs){
               arr=focs
             arr1 = wocs
@@ -3785,15 +5010,18 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
          
   res.render('lesson/add-lesson',{message:req.session.message,fullname:fullname, teacherId:teacherID,arr:arr, arr1:arr1,pro:pro})
         })
-      })
+      })*/
          
   
         })
   
   
         }
+       
+      }
       
       })
+      res.redirect('/records/lesson')
     }
     else{
       Room.find({companyId:companyId},(err, wocs) => {
@@ -3824,7 +5052,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
     //role admin
    //this routes autocompletes the fullname of the teacher to be allocated a lesson
-   router.get('/autocompleteLBX/',isLoggedIn, function(req, res, next) {
+   router.get('/autocompleteLBX/',isLoggedIn,records, function(req, res, next) {
    var companyId = req.user.companyId
   
     var regex= new RegExp(req.query["term"],'i');
@@ -3880,7 +5108,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
   // role admin
   //this routes autopopulates teachers info from the id selected from automplet1
-  router.post('/autoLBX',isLoggedIn,function(req,res){
+  router.post('/autoLBX',isLoggedIn,records,function(req,res){
     var code = req.body.code
   console.log(code,'code')
    var companyId = req.user.companyId
@@ -3918,7 +5146,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
     //role admin
    //this routes autocompletes the fullname of the teacher to be allocated a lesson
-   router.get('/autocompleteLB/',isLoggedIn, function(req, res, next) {
+   router.get('/autocompleteLB/',isLoggedIn,records, function(req, res, next) {
     var companyId = req.user.companyId
   
       var regex= new RegExp(req.query["term"],'i');
@@ -3974,7 +5202,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
   // role admin
   //this routes autopopulates teachers info from the id selected from automplet1
-    router.post('/autoLB',isLoggedIn,function(req,res){
+    router.post('/autoLB',isLoggedIn,records,function(req,res){
       var fullname = req.body.code
       var companyId = req.user.companyId
     
@@ -3993,7 +5221,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
     //role admin - lesson batch
    //this routes autocompletes the fullname of the teacher to be allocated a lesson
-   router.get('/autocompleteLBL/',isLoggedIn, function(req, res, next) {
+   router.get('/autocompleteLBL/',isLoggedIn,records, function(req, res, next) {
   
   var companyId = req.user.companyId
     var regex= new RegExp(req.query["term"],'i');
@@ -4049,7 +5277,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
   // role admin
   //this routes autopopulates teachers info from the id selected from automplet1
-  router.post('/autoLBL',isLoggedIn,function(req,res){
+  router.post('/autoLBL',isLoggedIn,records,function(req,res){
     var uid = req.body.code
     var companyId = req.user.companyId
   
@@ -4072,6 +5300,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
   
 
       //student lesson timetable
+      /*
       router.get('/timetable',isLoggedIn, (req, res) => {
         var pro = req.user
         var term = req.user.term
@@ -4089,15 +5318,30 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
             }
         });
       });
+    */
+
+   router.get('/timetable',isLoggedIn,records,(req,res)=>{
+    res.render('records/timetable')
+  })
+  
+  
+  router.get('/examList',isLoggedIn,records,(req,res)=>{
+    res.render('records/timetableExam')
+  })
+  
+  router.get('/events',isLoggedIn,records,(req,res)=>{
+    res.render('records/events')
+  })
+  
+  
     
-    
-      router.get('/addClassRoom',isLoggedIn, (req,res)=>{
+      router.get('/addClassRoom',isLoggedIn,records, (req,res)=>{
         var pro = req.user
         res.render('lesson/room',{pro:pro})
       })
     
     
-      router.post('/addClassRoom', isLoggedIn, (req,res)=>{
+      router.post('/addClassRoom', isLoggedIn,records, (req,res)=>{
         var pro = req.user
         var companyId = req.user.companyId
         var room = req.body.room;
@@ -4177,13 +5421,13 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
     
     //role - all
     //exam timetable
-    router.get('/roomList',isLoggedIn, (req, res) => {
+    router.get('/roomList',isLoggedIn,records, (req, res) => {
       var pro = req.user
       var companyId = req.user.companyId
       Room.find({companyId:companyId},(err, docs) => {
           if (!err) {
               res.render("lesson/roomList", {
-                 list:docs,pro:pro
+                 listX:docs,pro:pro
                 
               });
           }
@@ -4589,7 +5833,7 @@ router.get('/lessonBatch',isLoggedIn,records,function(req,res){
             
         //testing
         
-router.get('/importsT',isLoggedIn,function(req,res){
+router.get('/importsT',isLoggedIn,records,function(req,res){
   var pro = req.user
   res.render('imports/studentsT',{pro:pro})
 })
@@ -4889,7 +6133,7 @@ req.body.password = record.password
     
   //role admin
   //new term fees update
-  router.get('/termInfo',isLoggedIn, function(req,res){
+  router.get('/termInfo',isLoggedIn,records, function(req,res){
     var m = moment()
     var pro = req.user
     var year = m.format('YYYY')
@@ -5173,7 +6417,7 @@ req.body.password = record.password
     
       //role admin
      //this routes autocompletes the fullname of the teacher to be allocated a lesson
-     router.get('/autocompleteXM/',isLoggedIn, function(req, res, next) {
+     router.get('/autocompleteXM/',isLoggedIn,records, function(req, res, next) {
     
       var companyId = req.user.companyId
       var regex= new RegExp(req.query["term"],'i');
@@ -5190,7 +6434,7 @@ req.body.password = record.password
     if(!err){
        if(data && data.length && data.length>0){
          data.forEach(sub=>{
-    
+    console.log(sub,'roman')
           
        
     
@@ -5198,6 +6442,7 @@ req.body.password = record.password
            let obj={
              id:sub._id,
              label: sub.code,
+             
     
          
            /*  name:name,
@@ -5228,12 +6473,12 @@ req.body.password = record.password
     
     // role admin
     //this routes autopopulates teachers info from the id selected from automplet1
-    router.post('/autoXM',isLoggedIn,function(req,res){
-      var code = req.body.code
+    router.post('/autoXM',isLoggedIn,records,function(req,res){
+      var codeX = req.body.codeX
       var companyId = req.user.companyId
     
     
-      Subject.find({companyId:companyId,code:code},function(err,docs){
+      Subject.find({companyId:companyId,code:codeX},function(err,docs){
      if(docs == undefined){
        res.redirect('/records/lesson')
      }else
@@ -5289,6 +6534,7 @@ req.body.password = record.password
     
     //role - all
     //exam timetable
+    /*
     router.get('/examList',isLoggedIn, (req, res) => {
       var pro = req.user
       var companyId = req.user.companyId
@@ -5300,9 +6546,262 @@ req.body.password = record.password
               });
           }
       });
-    });
+    });*/
     
     
+    
+    ///////
+    router.get('/batchSubjectX',isLoggedIn,records,  function(req,res){
+      res.render('records/batchSubjects')
+      })
+      
+      
+      
+      
+      router.post('/batchSubjectX',isLoggedIn,records,  function(req,res){
+      var uid = req.body.uid;
+      var fullname = req.body.fullname;
+      var subjects = req.body.subjects
+      var id = req.user._id
+      var photo = req.body.photo
+      
+      req.check('uid','Enter Student ID').notEmpty();
+      req.check('fullname','Enter Student Fullname').notEmpty();
+    
+      
+      
+      
+      
+      
+      var errors = req.validationErrors();
+       
+      if (errors) {
+        req.session.errors = errors;
+        req.session.success = false;
+        res.render('records/batchSubjects',{ errors:req.session.errors,})
+      
+      }
+      
+      else 
+      
+    User.findOne({'uid':uid})
+      .then(user =>{
+      
+        
+         User.find({uid:uid},function(err,doc){
+           let idX = doc[0]._id
+            console.log(idX)
+            User.findByIdAndUpdate(idX,{$set:{subject:subjects}},function(err,loc){
+        
+                User.findByIdAndUpdate(id,{$set:{subject:subjects,studentId:idX,subjectNo:1,pollUrl2:photo}}, function(err,coc){
+               
+                 
+                })
+                
+            })
+           
+           res.redirect('/records/subX')
+            
+        })
+      
+      
+      })
+      
+      
+      })
+    
+    ///////
+    
+//batch contract autocomplete
+router.get('/autocomplete2/',isLoggedIn,records, function(req, res, next) {
+
+  var regex= new RegExp(req.query["term"],'i');
+  
+  var studentFilter =User.find({uid:regex},{'uid':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+  
+    
+    studentFilter.exec(function(err,data){
+   
+  
+  console.log('data',data)
+  
+  var result=[];
+  
+  if(!err){
+     if(data && data.length && data.length>0){
+       data.forEach(user=>{
+  
+        
+     
+  
+          
+         let obj={
+           id:user._id,
+           label: user.uid,
+  
+      
+       
+         
+          
+  
+           
+         };
+        
+         result.push(obj);
+         console.log('object',obj.id)
+       });
+  
+     }
+   
+     res.jsonp(result);
+     console.log('Result',result)
+    }
+  
+  })
+  
+  });
+  
+  
+  
+  
+  //this routes autopopulates growers info from the growerNumber selected from automplete2
+  router.post('/auto1',isLoggedIn,records,function(req,res){
+  var uid = req.body.code
+  
+  var companyId = req.user.companyId
+  
+ User.find({uid:uid},function(err,docs){
+  if(docs == undefined){
+   res.redirect('/batchContract')
+  }else
+  
+    res.send(docs[0])
+  })
+  
+  
+  })
+  
+  
+  
+  ///////////
+  router.get('/subX',isLoggedIn,records,  function(req,res){
+    var id = req.user._id;
+    var num = req.user.subject;
+    var x = req.user.subjectNo
+    var studentId = req.user.studentId
+    var companyId = req.user.companyId
+
+
+       var pro = req.user
+    
+    if(num == 0){
+    res.redirect('/records/batchSubjectX')
+    }else
+    
+  User.findById(studentId,function(err,docs){
+
+ 
+    res.render('records/gradeX', {user:docs,use:req.user, })
+    })
+    
+    
+    
+    })
+  
+  
+    router.post('/subX',isLoggedIn,records, function(req,res){
+      var subjectNo = req.user.subject
+      var x =req.user.subjectNo
+    var uid = req.body.uid;
+    var subject = req.body.subject;
+    var fullname = req.body.fullname;
+    var class1 = req.body.class1;
+    var grade = req.body.grade;
+    var icon = req.body.icon
+    var photo = req.user.pollUrl2
+    var subjectCode = req.body.subjectCode
+    var companyId = req.user.companyId;
+    
+    var year = 2023
+
+    var id = req.user._id
+   
+    
+    /*
+    Class1.find({class1:classX},function(err,docs){
+    //grade = docs[0].grade
+    console.log(docs,'horror')
+    
+    })
+    */
+    
+    req.check('uid','Enter Student ID ').notEmpty();
+    req.check('subject','Enter Subject').notEmpty();
+    
+
+    
+    
+    var errors = req.validationErrors();
+    
+    if (errors) {
+    
+    
+    req.session.errors = errors;
+    req.session.success = false
+    res.render('records/gradeX',{errors:req.session.errors})
+    
+    
+    }
+    
+  
+    
+    
+    
+    
+      var test = StudentSub();
+      test.studentId = uid;
+      test.subjectName = subject;
+      test.studentName = fullname;
+      test.class1 = class1;
+      test.year = year;
+      test.grade = grade;
+      test.icon = icon
+      test.photo= photo
+      test.subjectCode = subjectCode;
+      test.companyId = companyId
+    
+      
+      test.save()
+      .then(tes =>{
+    
+    
+    
+     
+    
+    
+    if(subjectNo == x){
+      
+      User.findByIdAndUpdate(id,{$set:{subject:0,subjectNo:0, studentId:"null"}}, function(err,docs){
+      
+      
+      })
+      
+      res.redirect('/records/batchSubjectX')
+      
+      
+      }else
+      
+      x++
+      console.log('x',x)
+      User.findByIdAndUpdate(id,{$set:{subjectNo:x}}, function(err,docs){
+      
+      
+      })
+    })
+    
+    
+    res.redirect('/records/subX')
+    })
     
     
     
@@ -5398,8 +6897,8 @@ req.body.password = record.password
         var companyId = req.user.companyId
         Grade.find({companyId:companyId},(err, docs) => {
             if (!err) {
-                res.render("exam/glist", {
-                   list:docs, pro:pro
+                res.render("records/examGrade", {
+                   listX:docs, pro:pro
                   
                 });
             }
@@ -5410,7 +6909,7 @@ req.body.password = record.password
       
       
 //updating user
-router.get('/:id',isLoggedIn, (req, res) => {
+router.get('/:id',isLoggedIn,records, (req, res) => {
   var pro = req.user   
  var arr1 = []
    Class1.find({},function(err,docs){
@@ -5430,7 +6929,7 @@ router.get('/:id',isLoggedIn, (req, res) => {
   });
   });
   
-  router.post('/:id',isLoggedIn,   (req, res) => {
+  router.post('/:id',isLoggedIn, records,  (req, res) => {
   var user = new User();
   var id = req.body._id;
   var name = req.body.name;
@@ -5521,7 +7020,7 @@ router.get('/:id',isLoggedIn, (req, res) => {
     
     
     //update exam grade
-    router.get('/examGrade/:id',function(req,res){
+    router.get('/examGrade/:id',isLoggedIn,records,function(req,res){
       var pro = req.user
       Grade.findById(req.params.id, (err, doc) => {
         if (!err) {
@@ -5593,7 +7092,7 @@ router.get('/:id',isLoggedIn, (req, res) => {
     
     
       // this route is for deleting a subject
-      router.get('/examGrade/delete/:id',isLoggedIn, (req, res) => {
+      router.get('/examGrade/delete/:id',isLoggedIn,records, (req, res) => {
         Grade.findByIdAndRemove(req.params.id, (err, doc) => {
           if (!err) {
               res.redirect('/records/gradeList');
@@ -5607,6 +7106,95 @@ router.get('/:id',isLoggedIn, (req, res) => {
   
 
 
+//notifications
+
+
+
+router.get('/notify',isLoggedIn,records, function(req,res){
+  res.render('notifs')
+})
+
+router.post('/notify',isLoggedIn,records, function(req,res){
+                var m = moment()
+                var year = m.format('YYYY')
+                var numDate = m.valueOf()
+                var date = m.toString()
+                var subject = req.body.subject
+                var message = req.body.message
+                var role = req.user.role
+                var recRole ='clerk'
+                var user = req.user.fullname
+           
+                console.log(role,'role')
+                req.check('subject','Enter Subject').notEmpty();
+                req.check('message','Enter Message').notEmpty();
+              
+               
+                    
+                
+                      
+                   
+                var errors = req.validationErrors();
+                    if (errors) {
+                
+                    
+                      req.session.errors = errors;
+                      req.session.success = false;
+                      res.render('messagesRecords/notifs',{ errors:req.session.errors,})
+                      
+                    
+                  }
+                  else{
+
+              User.find({recRole:recRole},function(err,docs){
+
+                for(var i = 0; i<docs.length;i++){
+
+                  let id = docs[i]._id
+                  var not = new Note();
+                  not.role = role
+                  not.subject = subject;
+                  not.message = message
+                  not.status = 'not viewed';
+                  not.status1 = 'new';
+                  not.user = user;
+                  not.type = 'null'
+                  not.status2 = 'new'
+                  not.status3 = 'new'
+                  not.status4 = 'null'
+                  not.date = date
+                  not.dateViewed = 'null'
+                  not.recId = docs[i]._id
+                  not.recRole = recRole
+                  not.numDate = numDate
+                 
+
+          
+                  
+                  
+               
+
+                  
+                   
+              
+                   
+          
+                  not.save()
+                    .then(user =>{
+                      
+                })
+
+
+                }
+              })
+              
+                 res.redirect('/notify')
+
+              }
+                              
+
+                  
+})
 
 
 
@@ -5618,11 +7206,172 @@ router.get('/:id',isLoggedIn, (req, res) => {
 
 
 
-//testing
 
 
 
 
+
+
+
+
+router.post('/not/:id',isLoggedIn,records,function(req,res){
+  var m = moment()
+  var date = m.toString()
+
+var id = req.params.id
+  Note.find({recId:id},function(err,docs){
+    for(var i = 0; i<docs.length; i++){
+      let nId = docs[i]._id
+
+      Note.findByIdAndUpdate(nId,{$set:{status:'viewed',dateViewed:date}},function(err,locs){
+
+      })
+    }
+
+    res.send('success')
+  })
+})
+
+
+
+
+router.get('/update',isLoggedIn,records,function(req,res){
+var m = moment()
+let n = m.valueOf()
+var id = req.user._id
+
+Note.find({recId:id},function(err,docs){
+
+for(var i = 0; i<docs.length;i++){
+let value = docs[i].numDate
+let num = n - value
+let nId = docs[i]._id
+
+if(num >= 86000000){
+  Note.findByIdAndUpdate(nId,{$set:{status1:'old'}},function(err,nocs){
+
+
+  })
+}
+
+}
+
+
+})
+
+
+
+})
+
+router.get('/nots',isLoggedIn,records, function(req,res){
+  var m = moment();
+var id = req.user._id
+  Note.find({recId:id,status:'viewed'},function(err,docs){
+    for(var i = 0;i<docs.length;i++){
+      let duration =moment(docs[i].dateViewed)
+      let days=m.diff(duration,"days");
+      let nId = docs[i]._id
+console.log(days,'days')
+     if(days > 0){
+Note.findByIdAndUpdate(nId,{$set:{status2:'expired',status1:'old'}},function(err,nocs){
+
+})
+     }
+    }
+  })
+
+
+})
+
+
+
+
+  
+
+
+
+
+
+//autocomplete teacherName & uid
+
+router.get('/autocomplete/',isLoggedIn,records, function(req, res, next) {
+var teacherId = req.user.uid
+var companyId = req.user.companyId
+var regex= new RegExp(req.query["term"],'i');
+
+var uidFilter =TeacherSub.find({companyId:companyId,subjectCode:regex, teacherId:teacherId},{'subjectCode':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+
+
+uidFilter.exec(function(err,data){
+
+
+console.log('data',data)
+
+var result=[];
+
+if(!err){
+if(data && data.length && data.length>0){
+data.forEach(sub=>{
+
+
+
+
+
+let obj={
+ id:sub._id,
+ label: sub.subjectCode
+
+
+/*  name:name,
+ surname:surname,
+ batch:batch*/
+
+
+
+
+
+
+ 
+};
+
+result.push(obj);
+console.log('object',obj.id)
+});
+
+}
+
+res.jsonp(result);
+console.log('Result',result)
+}
+
+})
+
+});
+
+// role admin
+//this routes autopopulates teachers info from the id selected from automplet1
+router.post('/auto',isLoggedIn,records,function(req,res){
+var code = req.body.code
+var teacherId = req.user.uid
+var companyId = req.user.companyId
+console.log(code, 'code')
+TeacherSub.find({companyId:companyId,subjectCode:code, teacherId:teacherId},function(err,docs){
+if(docs == undefined){
+res.redirect('/teacher/auto')
+}else
+
+res.send(docs[0])
+console.log(docs[0])
+})
+
+
+})
+
+
+
+
+
+//register student subjects
 
 
 
@@ -5644,7 +7393,7 @@ router.get('/:id',isLoggedIn, (req, res) => {
     if(req.user.role == 'records'){
       return next()
     }
-    res.render('errors/access')
+    res.redirect('/')
     }  
 
 

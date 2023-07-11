@@ -8,6 +8,9 @@ const Class1 =require('../models/class');
 const Subject =require('../models/subject');
 const Student =require('../models/studentStats');
 const Fees =require('../models/fees');
+var Message = require('../models/message');
+var Recepient = require('../models/recepients');
+var Note = require('../models/note');
 const Num =require('../models/num');
 const Poll2 =require('../models/poll2');
 const Grade =require('../models/grade');
@@ -89,8 +92,10 @@ router.get('/', function (req, res, next) {
   
     else if(req.user.role == 'records')
     res.redirect('/records/stats')
-      else 
-      res.redirect('/student/passRate')
+      else if(req.user.role == 'student')
+      res.redirect('/student/card')
+      else
+      res.redirect('/parent/card')
   
     
   });
@@ -184,8 +189,216 @@ router.post('/addNum',  function(req,res){
 
 
 
+router.get('/offlineMulti',function(req,res){
+  res.render('users/steps2')
+})
 
 
+
+
+router.post('/offlineMulti', function(req,res){
+  var accountType = req.body.account_type;
+  var size = req.body.account_team_size;
+  var accountName = req.body.account_name;
+  var schoolName = req.body.school_name;
+  var schoolType = req.body.school_type;
+  var businessEmail = req.body.business_email
+  var prefix = req.body.prefix;
+  var suffix = req.body.suffix;
+  var adminName = req.body.admin_name;
+  var adminSurname = req.body.admin_surname;
+  var fullname = adminName +" "+ adminSurname
+  var role = 'admin'
+  var email = req.body.business_email
+  var accountNumber,idNumber ;
+  var a = moment();
+  var year = a.format('YYYY')
+
+  var id //= req.body._id
+
+  var password = req.body.password
+var uid
+  
+  
+  Num.find(function(err,docs){
+accountNumber = docs[0].accountNumber
+idNumber=docs[0].idNumber
+id = docs[0]._id
+ uid = prefix + idNumber 
+  })
+  
+
+ 
+
+  
+  
+    Setup.findOne({'schoolName':schoolName})
+    .then(user =>{
+        if(user){ 
+      // req.session.errors = errors
+        //req.success.user = false;
+        
+       req.session.message = {
+         type:'errors',
+         message:'school already in the system'
+       }     
+       
+          res.render('users/steps2', {
+              user:req.body, message:req.session.message 
+          }) 
+        
+  }
+  
+                else  {   
+             
+  
+                   var companyId = accountNumber
+                     
+                          
+                     
+                           
+
+                              
+                  var set = new Setup();
+                  set.accountType = accountType;
+                  set.size = size;
+                  set.accountName = accountName;
+                  set.accountNumber = accountNumber;
+                  set.schoolName = schoolName;
+                  set.schoolType = schoolType;
+                  set.business_email = businessEmail;
+                  set.prefix = prefix;
+                  set.suffix = suffix;
+                  set.name = adminName;
+             
+                  set.surname = adminSurname;
+                  set.password = set.encryptPassword(password)
+
+                
+  
+                  
+                   
+              
+                   
+          
+                  set.save()
+                    .then(user =>{
+                              accountNumber++
+                             
+                              Num.findByIdAndUpdate(id,{$set:{accountNumber:accountNumber}},function(err,locs){
+                             /* req.session.message = {
+                                type:'success',
+                                message:'confirmation email sent'
+                              }   */  
+                              
+                              var user = new User();
+                              user.uid = uid;
+                              user.name = adminName;
+                              user.surname = adminSurname;
+                              user.fullname = fullname;
+                              user.email = email;
+                              user.role = role;
+                              user.prefix = prefix;
+                              user.suffix = suffix;
+                              user.companyId = companyId;
+                              user.schoolName = schoolName;
+                              user.recNumber = 0
+                              user.gender = 'null';
+                              user.dob = 'null';
+                              user.studentId = 'null'
+                              user.teacherName='null'
+                              user.teacherId = 'null'
+                              user.grade = 0;
+                              user.class1 = 'null';
+                              user.mobile = 'null';
+                              user.classLength = 0;
+                              user.classNo = 0
+                              user.studentNum = 0;
+                              user.uidNum = 309;
+                              user.number = accountNumber;
+                              user.idNumber = idNumber;
+                              user.idNumX = idNumber;
+                              user.examDate = 'null';
+                              user.feeStatus = 'null';
+                              user.feesUpdate = 'null';
+                              user.term = 1;
+                              user.amount = 0;
+                              user.receiptNumber = 0;
+                              user.year = year;
+                              user.balance = 0;
+                              user.possibleMark = 0;
+                              user.topic = 'null';
+                              user.balanceCarriedOver = 0;
+                              user.status = 'null';
+                              user.paymentId = 'null';
+                              user.possibleMark = 0;
+                              user.topic = 'null';
+                              user.photo = 'propic.jpg';
+                              user.level = 'null';
+                              user.pollUrl='null'
+                              user.annual =0
+                              user.fees = 0
+                              user.paynow = 0
+                              user.type = 'null';
+                              user.address = 'null';
+                              user.dept = 'null';
+                              user.subject = 0;
+                              user.subjectCode = 'null'
+                              user.subjects = 'null'
+                              user.dept = 'null';
+                              user.expdate=a.valueOf();
+                              user.expStr = a.toString();
+                              user.duration = 0;
+                         
+                              user.status3 = "null"
+                              user.status4 = "null"
+                              user.levelX = "null"
+                              user.pollUrl2 = "null"
+                              user.count=0
+                              user.pollCount = 0
+                              user.actualCount = 0   
+                              user.startYear = year
+                              user.currentYearCount = 0
+                              user.stdYearCount = 0
+                              user.admissionYear = 0  
+                              user.password = user.encryptPassword(password)
+                              user.icon = 'null'
+                              user.subjectNo = 0
+                              user.quizDuration = 0
+                              user.inboxNo = 0
+                              user.quizNo = 0
+                              user.quizBatch = 0
+                              user.quizId = 'null'
+                              user.testId = 'null'
+                              user.save()
+                                .then(user =>{
+                          
+                                    
+                                    
+                                  req.session.message = {
+                                    type:'success',
+                                    message:'Account Registered'
+                                  }  
+                                  res.render('users/login',{message:req.session.message});
+                              
+          
+          
+                            })
+                                }) 
+                              })
+                          }
+                      })
+                     // res.redirect('/multi')
+                 
+                         
+                  
+                  
+                    
+                   
+  })
+  
+  
+  
 
 
 //multi steps
@@ -212,6 +425,7 @@ router.post('/multi', function(req,res){
   var role = 'admin'
   var email = req.body.business_email
   var accountNumber,idNumber ;
+  
 
   var id //= req.body._id
 
@@ -332,10 +546,91 @@ id = docs[0]._id
                                 message:'confirmation email sent'
                               }     
                               
-                                 res.render('users/steps', {
-                                      message:req.session.message 
-                                  
-                                 })
+                                  var user = new User();
+                    user.uid = uid;
+                    user.name = adminName;
+                    user.surname = adminSurname;
+                    user.fullname = fullname;
+                    user.email = email;
+                    user.role = role;
+                    user.prefix = prefix;
+                    user.suffix = suffix;
+                    user.companyId = companyId;
+                    user.schoolName = schoolName;
+                    user.recNumber = 0
+                    user.gender = 'null';
+                    user.dob = 'null';
+                    user.studentId = 'null'
+                    user.teacherName='null'
+                    user.teacherId = 'null'
+                    user.grade = 0;
+                    user.class1 = 'null';
+                    user.mobile = 'null';
+                    user.classLength = 0;
+                    user.classNo = 0
+                    user.studentNum = 0;
+                    user.uidNum = 309;
+                    user.number = accountNumber;
+                    user.idNumber = idNumber;
+                    user.idNumX = idNumber;
+                    user.examDate = 'null';
+                    user.feeStatus = 'null';
+                    user.feesUpdate = 'null';
+                    user.term = 1;
+                    user.amount = 0;
+                    user.receiptNumber = 0;
+                    user.year = year;
+                    user.balance = 0;
+                    user.possibleMark = 0;
+                    user.topic = 'null';
+                    user.balanceCarriedOver = 0;
+                    user.status = 'null';
+                    user.paymentId = 'null';
+                    user.possibleMark = 0;
+                    user.topic = 'null';
+                    user.photo = 'propic.jpg';
+                    user.level = 'null';
+                    user.pollUrl='null'
+                    user.annual =0
+                    user.fees = 0
+                    user.paynow = 0
+                    user.type = 'null';
+                    user.address = 'null';
+                    user.dept = 'null';
+                    user.subject = 0;
+                    user.subjectCode = 'null'
+                    user.subjects = 'null'
+                    user.dept = 'null';
+                    user.expdate=a.valueOf();
+                    user.expStr = a.toString();
+                    user.duration = 0;
+               
+                    user.status3 = "null"
+                    user.status4 = "null"
+                    user.levelX = "null"
+                    user.pollUrl2 = "null"
+                    user.count=0
+                    user.pollCount = 0
+                    user.actualCount = 0   
+                    user.startYear = year
+                    user.currentYearCount = 0
+                    user.stdYearCount = 0
+                    user.admissionYear = 0  
+                    user.password = user.encryptPassword(password)
+                    user.save()
+                      .then(user =>{
+                
+                          
+                          
+                        req.session.message = {
+                          type:'success',
+                          message:'Account Registered'
+                        }  
+                        res.render('users/login',{message:req.session.message});
+                    
+
+
+                  })
                                 }) 
                               })
                           }
@@ -559,7 +854,7 @@ router.post('/forgot',function(req,res){
                       const mailOptions = {
                           from: '"Auth Admin" <cashreq00@gmail.com>', // sender address
                           to: email, // list of receivers
-                          subject: "Account Password Reset: NodeJS Auth ✔", // Subject line
+                          subject: "Account Password Reset: SchoolZoid Auth ✔", // Subject line
                           html: output, // html body
                       };
 
@@ -722,211 +1017,28 @@ router.get('/idUp',isLoggedIn,function(req,res){
   
   })
   
-  res.redirect('/pollCheck')
-  
-  })
-  
-  
-  })
-
-
-
-router.get('/pollCheck',isLoggedIn,function(req,res){
-  const { Paynow } = require("paynow");
-  // Create instance of Paynow class
-  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
-  var m = moment()
-  var a = moment()
-  var curr = a.valueOf()
-  var sett = new Date()
-  var expdate = req.user.expdate
-  var currdate = sett.getTime()
-  var set =moment(); 
-  var stt = req.user.expStr;
-  
-  var set2 = moment(stt)
-  console.log(set2,'what')
-  var year = m.format('YYYY')
-  var month = m.format('MMMM')
-  var companyId = req.user.companyId
- var id = req.user._id
-var pollUrl = req.user.pollUrl2
-var duration = req.user.duration
-var count = req.user.actualCount
-var pollCount = req.user.pollCount
-console.log(pollCount,'PollCount')
-console.log(count,'Count')
-
-
-if(pollUrl == "null"){
-
   res.redirect('/classCheck')
-}
-
-else{
-
-
-
-if(pollCount <= count){
-  console.log('front')
-paynow.pollTransaction(pollUrl).then(transaction => {
   
-  if(transaction.status === 'paid') {
-    console.log('yess')
-
-
+  })
   
-   
-    if(expdate>curr){
-      set2.add(duration,"months")
-      User.find({companyId:companyId}, function(err,docs){
-        // console.log(docs)
-        
-       for(var i =0;i<docs.length;i++){
-         User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set2.valueOf(), expStr:set2.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:pollCount}},function(err,locs){
-        
-          
-         })
-       }
-    
-   
-           
-      res.redirect('/classCheck')
-     })
-     
-    }
-    else if(expdate<curr){
-      set.add(duration,"months")
-      
-      User.find({companyId:companyId}, function(err,docs){
-         // console.log(docs)
-        for(var i =0;i<docs.length;i++){
-          User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set.valueOf(), expStr:set.toString(),status3:'activate', status4:'deactivate',  pollUrl2:'null',count:pollCount}},function(err,locs){
-           // console.log(locs)
-            
-              
-           
-          })
-        }
-       
-            
-        res.redirect('/classCheck')
-      
-      
-      })
-
-    }
-  }
-})
-}else{
-  res.redirect('pollCheckX')
-}
-
-
-}
-})
-    
-    
   
-
-  
-
-
-
-  
-
-    
-  
-    
-
-
-
-
-
-
-router.get('/pollCheckX',isLoggedIn,function(req,res){
-const { Paynow } = require("paynow");
-  // Create instance of Paynow class
-  let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
-  var m = moment()
-  var a = moment()
-  var curr = a.valueOf()
-  var sett = new Date()
-  var expdate = req.user.expdate
-  var currdate = sett.getTime()
-  var set =moment(); 
-  var stt = req.user.expStr;
-  
-  var set2 = moment(stt)
-  console.log(set2,'what')
-  var year = m.format('YYYY')
-  var month = m.format('MMMM')
-  var companyId = req.user.companyId
- var id = req.user._id
-var pollUrl = req.user.pollUrl2
-var duration = req.user.duration
-var count = req.user.actualCount
-var pollCount = req.user.pollCount
-console.log(pollCount,'PollCount')
-console.log(count,'Count')
-
-if(pollUrl == 'null'){
-  res.redirect('/classCheck')
-}
-paynow.pollTransaction(pollUrl).then(transaction => {
-  
-  if(transaction.status === 'paid') {
-    console.log('zvaita wena')
-
-    if(expdate > curr){
-
-    console.log('wadiii')
-    set2.add(duration,"months")
-    User.find({companyId:companyId}, function(err,docs){
-      // console.log(docs)
-      
-     for(var i =0;i<count;i++){
-       User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set2.valueOf(), expStr:set2.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:pollCount}},function(err,locs){
-      
-        
-       })
-     }
-
-         
-    res.redirect('/classCheck')
-   })
-   
-  }
-  else if(expdate < curr){
-
-    set.add(duration,"months")
-    
-    User.find({companyId:companyId}, function(err,docs){
-       // console.log(docs)
-      for(var i =0;i<count;i++){
-        User.findByIdAndUpdate(docs[i]._id,{$set:{expdate:set.valueOf(), expStr:set.toString(),status3:'activate', status4:'deactivate', pollUrl2:'null',count:pollCount}},function(err,locs){
-         // console.log(locs)
-          
-            
-         
-        })
-      }
-    
-          
-    res.redirect('/classCheck')
-    })
-    }
-
-  }
-
   })
 
 
 
-})
 
 
-router.get('/classCheck',isLoggedIn,function(req,res){
+  
+
+    
+  
+    
+
+
+
+
+
+router.get('/classCheck',isLoggedIn,adminX,function(req,res){
   var companyId = req.user.companyId
   Class1.find({companyId:companyId},function(err,docs){
 
@@ -977,7 +1089,7 @@ let id = focs[i]._id
 })
 })
 
-router.get('/std',isLoggedIn,function(req,res){
+router.get('/std',isLoggedIn,adminX,function(req,res){
   var companyId = req.user.companyId
   var m = moment()
   var year = m.format('YYYY')
@@ -1263,7 +1375,7 @@ User.findOneAndUpdate({_id:req.body._id},req.body,
 
 //Monthly Income Stats
 
-router.get('/adminMonthInc', isLoggedIn,  function(req,res){
+router.get('/adminMonthInc', isLoggedIn,adminX,  function(req,res){
   var term = req.user.term
   var m = moment()
   var year = m.format('YYYY')
@@ -1347,7 +1459,7 @@ router.get('/adminMonthInc', isLoggedIn,  function(req,res){
 
 
 
-router.get('/adminMonthExp', isLoggedIn,  function(req,res){
+router.get('/adminMonthExp', isLoggedIn,adminX,  function(req,res){
   var term = req.user.term
   var m = moment()
   var year = m.format('YYYY')
@@ -1431,7 +1543,7 @@ router.get('/adminMonthExp', isLoggedIn,  function(req,res){
 
 
 
-router.get('/adminDashInc',isLoggedIn,function(req,res){
+router.get('/adminDashInc',isLoggedIn,adminX,function(req,res){
   var term = req.user.term
   var m = moment()
   var year = m.format('YYYY')
@@ -1531,7 +1643,7 @@ router.get('/adminDashInc',isLoggedIn,function(req,res){
 
 
 
-router.get('/adminDashExp',isLoggedIn,function(req,res){
+router.get('/adminDashExp',isLoggedIn,adminX,function(req,res){
 
   let arrX = []
   let totalX
@@ -1595,7 +1707,7 @@ for(var q = 0;q<hods.length; q++){
 
 //Exam Pass Rate
 
-router.get('/passRate',isLoggedIn, function(req,res){
+router.get('/passRate',isLoggedIn,adminX, function(req,res){
   var totalStudents, students, passRate
   var m = moment()
   var year = m.format('YYYY')
@@ -1603,7 +1715,7 @@ router.get('/passRate',isLoggedIn, function(req,res){
   var companyId = req.user.companyId
 
 
-  Pass.find({ companyId:companyId,year:year},function(err,docs){
+  Pass.find({ companyId:companyId,year:year,type:'Final Exam'},function(err,docs){
 
     TestX.find({ companyId:companyId,term:term,year:year,type:'Final Exam'},function(err,hods){
 
@@ -1629,13 +1741,16 @@ router.get('/passRate',isLoggedIn, function(req,res){
     
   Pass.find({ companyId:companyId,year:year},function(err,docs){
  var idX = docs[0]._id;
-    TestX.find({companyId:companyId,term:term,year:year},function(err,hods){
+    TestX.find({companyId:companyId,term:term,year:year,type:'Final Exam'},function(err,hods){
 
       TestX.find({companyId:companyId,term:term,year:year, result:'pass', type:'Final Exam'},function(err,lods){
 
       totalStudents = hods.length;
       students = lods.length
-      passRate = students / totalStudents * 100
+      console.log(students,totalStudents,'%%%%%%%')
+      let pRate = students / totalStudents * 100
+      passRate = Math.round(pRate)
+      passRate.toFixed(2)
 
       if(term == 1){
  
@@ -1673,16 +1788,16 @@ res.redirect('/passRateX')
 
 //Class Test
 
-router.get('/passRateX',isLoggedIn, function(req,res){
+router.get('/passRateX',isLoggedIn,adminX, function(req,res){
   var totalStudents, students, passRate;
   var m = moment()
   var year = m.format('YYYY')
   var term = req.user.term
   var companyId = req.user.companyId
 
-  PassX.find({companyId:companyId,year:year},function(err,docs){
+  PassX.find({companyId:companyId,year:year,type3:'class'},function(err,docs){
 
-    TestX.find({companyId:companyId,term:term,year:year,type:'Class Test'},function(err,hods){
+    TestX.find({companyId:companyId,term:term,year:year,type:'class'},function(err,hods){
 
   
     if(docs.length == 0 && hods.length == 0){
@@ -1707,14 +1822,16 @@ router.get('/passRateX',isLoggedIn, function(req,res){
   PassX.find({companyId:companyId,year:year},function(err,docs){
  var idX = docs[0]._id;
  console.log('class testX',idX)
-    TestX.find({companyId:companyId,term:term,year:year},function(err,hods){
+    TestX.find({companyId:companyId,term:term,year:year, type3:'class'},function(err,hods){
 
-      TestX.find({companyId:companyId,term:term,year:year, result:'pass', type:'Class Test'},function(err,lods){
+      TestX.find({companyId:companyId,term:term,year:year, result:'pass', type3:'class'},function(err,lods){
 
       totalStudents = hods.length;
       students = lods.length
-      passRate = students / totalStudents * 100
-
+   
+      let pRate = students / totalStudents * 100
+      passRate = Math.round(pRate)
+      passRate.toFixed(2)
       console.log('pass Rate68', passRate)
 
       if(term == 1){
@@ -1763,7 +1880,7 @@ res.redirect('/adminGender')
 //student gender
 
 
-router.get('/adminGender',isLoggedIn,function(req,res){
+router.get('/adminGender',isLoggedIn,adminX,function(req,res){
   var term = req.user.term
   var m = moment()
   var year = m.format('YYYY')
@@ -1848,14 +1965,1272 @@ router.get('/adminGender',isLoggedIn,function(req,res){
 
 //dashboard
 
-router.get('/dash',isLoggedIn, function(req,res){
- var pro = req.user
-  res.render('dashboard/index',{pro:pro})
+router.get('/dash',isLoggedIn,adminX, function(req,res){
+  var pro = req.user
+  const arr = []
+  var arr2 = []
+const m = moment();
+var term = req.user.term
+var year = m.format('YYYY')
+ var id =req.user._id
+ Recepient.find({recepientId:id,statusCheck:'not viewed'},function(err,rocs){
+  let lgt = rocs.length
+  var gt = lgt > 0
+
+      console.log(req.user._id)
+      console.log(req.user.email)
+        Note.find({recId:req.user._id},function(err,docs){
+         // console.log(docs,'docs')
+       for(var i = 0;i<docs.length;i++){
+
+       
+         let date = docs[i].date
+         let id = docs[i]._id
+         let timeX = moment(date)
+         let timeX2 =timeX.fromNow()
+         console.log(timeX2,'timex2')
+
+         Note.findByIdAndUpdate(id,{$set:{status4:timeX2}},function(err,locs){
+
+         
+         
+        // Format relative time using negative value (-1).
+
+          
+        })
+      }
+
+      Note.find({recId:req.user._id,status1:'new'},function(err,flocs){
+        var les 
+     
+        Note.find({recId:req.user._id,status:'not viewed'},function(err,jocs){
+         les = jocs.length > 0
+      
+        for(var i = flocs.length - 1; i>=0; i--){
+    
+          arr.push(flocs[i])
+        }
+     
+
+        TestX.find({year:year,term:term},function(err,qocs) {
+          for(var i = 0;i<qocs.length;i++){
+            //size = docs.length
+    
+              
+             if(arr2.length > 0 && arr2.find(value => value.subject == qocs[i].subject)){
+                    console.log('true')
+                   arr2.find(value => value.subject == qocs[i].subject).percentage += qocs[i].percentage;
+                   arr2.find(value => value.subject == qocs[i].subject).size++;
+                  }else{
+                    arr2.push(qocs[i])
+                    let subject = qocs[i].subject
+                    
+                      //element.size = 0
+                      if(arr2.find(value => value.subject == subject)){
+                 
+                       
+                             arr2.find(value => value.subject == subject).size++;
+               
+                      }
+                      //element.size = element.size + 1
+                        
+                   
+                        }
+      
+          
+          }
+          let result = arr2.map(function(element){
+            element.percentage  = element.percentage / element.size
+       
+            let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+            console.log(element.mark,'mark')
+            if(element.percentage < 50){
+              element.color = "progress-bar bg-danger"
+            }else{
+              element.color = "progress-bar bg-success"
+            }
+          })
+       
+        res.render('dashboard/index',{pro:pro,list:arr,listX:arr2, les:les,gt:gt })
+        })
+      })
+      })
+      })
+
+    })
+
+
  
 })
 
 
+ //notifications & messages
+
+ router.post('/dashChartXX3',isLoggedIn,adminX,function(req,res){
+                     
+  var term = req.user.term
+
+ 
+ 
+  var m = moment()
+  var year = m.format('YYYY')
+  var arr = []
+  var id = req.user._id
+
+  
+
+
+
+  TestX.find({year:year,term:term,},function(err,docs) {
+    for(var i = 0;i<docs.length;i++){
+   
+  
+        
+       if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+              
+             arr.find(value => value.class1 == docs[i].class1).percentage += docs[i].percentage;
+             arr.find(value => value.class1 == docs[i].class1).size++
+             //console.log(arr,i)
+            
+            }else{
+              arr.push(docs[i])
+              let class1= docs[i].class1
+              
+                //element.size = 0
+                if(arr.find(value => value.class1 == class1)){
+           
+                 
+                       arr.find(value => value.class1 == class1).size++;
+         
+                }
+                //element.size = element.size + 1
+                  
+             
+                  }
+        
+        }
+        let result = arr.map(function(element){
+          console.log(element.percentage,element.size,element.subject,'mark0')
+          element.percentage = element.percentage / element.size
+          console.log(element.percentage,element.size,'markX')
+
+          let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+         
+        })
+   // console.log(arr,'arr')
+    res.send(arr)
+  })
+
+})
+
+
+ 
+
+
+ router.get('/msgUpdate',isLoggedIn,adminX,function(req,res){
+  var id = req.user._id
+  var arr = []
+  Recepient.find({recepientId:id},function(err,docs){
+//  
+  if(docs.length > 0){
+    for(var i = 0; i<docs.length;i++){
+    let msgId = docs[0].msgId
+    Message.find({msgId:msgId},function(err,tocs){
+      if(tocs.length >= 1){
+        arr.push(tocs[0])
+      }
+      let size = arr.length
+      console.log(size,'size')
+      User.findByIdAndUpdate(id,{$set:{inboxNo:size}},function(err,locs){
+  
+      })
+    
+    })
+  }
+  }
+  
+  })
+  })
+  
+  router.get('/sentUpdate',isLoggedIn,adminX,function(req,res){
+    var id = req.user._id
+    Message.find({senderId:id},function(err,docs){
+      let size = docs.length
+      User.findByIdAndUpdate(id,{$set:{sent:size}},function(err,nocs){
+  
+      })
+    })
+  })
+  
+
+
+
+
+
+
+
+
+
+
+
+
+ router.get('/msgX',isLoggedIn,adminX,function(req,res){
+  var id = req.user.id
+  var list = []
+  var num
+Recepient.find({recepientId :id},function(err,nocs){
+
+for(var i = 0 ; i<nocs.length;i++){
+
+let recId = nocs[i].msgId
+
+  Message.find({status:'reply',msgId:recId},function(err,docs){
+    for(var i = 0; i<docs.length;i++){
+      let date = docs[i].date
+      let Vid = docs[i]._id
+      let timeX = moment(date)
+      let timeX2 =timeX.fromNow()
+      let timeX3 =timeX.format("LLL")
+      console.log(timeX2,'timex2')
+
+
+      Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+
+      
+      
+     // Format relative time using negative value (-1).
+
+       
+     })
+    }
+
+  
+  })
+}
+
+res.redirect('/msg')
+})
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+router.get('/msg',isLoggedIn,adminX,function(req,res){
+var id = req.user.id
+const list2 =[]
+const list = []
+var num = req.user.inboxNo
+var sent = req.user.sent
+var pro = req.user
+
+Recepient.find({recepientId :id, status:'active', statusXX:'null'},function(err,klocs){
+
+//var recFilter =Recepient.find({recepientId :id}).sort({"numDate":-1});
+//recFilter.exec(function(err,klocs){
+for(var c = 0 ; c <klocs.length;c++){
+
+let recIdX = klocs[c].msgId
+
+      Message.find({status:'reply',msgId:recIdX},function(err,  docs){
+
+       // var bookFilter =Message.find({status:'reply',msgId:recIdX}).sort({"numDate":-1});
+
+
+// bookFilter.exec(function(err,docs){
+
+console.log(docs.length,'mainstream')
+
+let x = docs.length - 1
+for(var i = x ;i>=0; i--){
+console.log(i,'b')
+if(docs[i].senderId !=id){
+//console.log(docs[i],'black skinhead')
+
+list.push(docs[i])
+list.sort((x, y) =>  y.numDate - x.numDate)
+console.log(list,'list yacho')
+
+
+}
+
+num  = docs.length
+}
+})  
+
+//})
+
+}
+res.render('messages/inbox',{list:list, num:num,sent:sent,pro:pro})
+})
+
+})
+
+
+
+
+
+//on click dashboard icon & msg redirect
+router.post('/msg/:id',isLoggedIn,adminX,function(req,res){
+var m = moment()
+var date = m.toString()
+
+var id = req.params.id
+Recepient.find({recepientId:id},function(err,docs){
+  for(var i = 0; i<docs.length; i++){
+    let nId = docs[i]._id
+
+    Recepient.findByIdAndUpdate(nId,{$set:{statusCheck:'viewed'}},function(err,locs){
+
+      
+    })
+  }
+
+  res.send('success')
+})
+})
+
+
+router.get('/sentXX',isLoggedIn,adminX,function(req,res){
+var id = req.user.id
+var list = []
+var num
+
+
+Message.find({senderId:id},function(err,docs){
+for(var i = 0; i<docs.length;i++){
+  let date = docs[i].date
+  let Vid = docs[i]._id
+  let timeX = moment(date)
+  let timeX2 =timeX.fromNow()
+  let timeX3 =timeX.format("LLL")
+  console.log(timeX2,'timex2')
+
+
+  Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+
+
+
+   
+ })
+}
+res.redirect('/sent')
+})
+
+})
+
+
+
+
+
+router.get('/sent',isLoggedIn,adminX,function(req,res){
+var id = req.user.id
+const list2 =[]
+const list = []
+var num = req.user.inboxNo
+var sent = req.user.sent
+var pro = req.user
+Message.find({senderId :id},function(err,docs){
+
+
+
+console.log(docs.length,'mainstream')
+if(docs.length > 1){
+
+let x = docs.length - 1
+for(var i = x ;i>=0; i--){
+console.log(i,'b')
+
+//console.log(docs[i],'black skinhead')
+
+list.push(docs[i])
+list.sort((x, y) =>  y.numDate - x.numDate)
+console.log(list,'list yacho')
+
+
+
+
+
+num  = docs.length
+}
+
+}else if(docs.length == 1){
+
+list.push(docs[0])
+console.log(list,'list')
+}else{
+console.log('inquisition')
+}
+//})
+
+
+res.render('messages/sent',{list:list, num:num,sent:sent,pro:pro})
+})
+
+})
+
+
+
+router.get('/archiveXX',adminX,isLoggedIn,function(req,res){
+var id = req.user.id
+var list = []
+var num
+
+Recepient.find({recepientId :id, status:'active', statusXX:'yes', archive:'yes'},function(err,klocs){
+
+for(var c = 0 ; c <klocs.length;c++){
+
+  let recIdX = klocs[c].msgId
+
+        Message.find({msgId:recIdX},function(err,  docs){
+for(var i = 0; i<docs.length;i++){
+  let date = docs[i].date
+  let Vid = docs[i]._id
+  let timeX = moment(date)
+  let timeX2 =timeX.fromNow()
+  let timeX3 =timeX.format("LLL")
+  console.log(timeX2,'timex2')
+
+
+  Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+
+  
+  
+ // Format relative time using negative value (-1).
+
+   
+ })
+}
+})
+}
+res.redirect('/archive')
+
+})
+
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.get('/archive',isLoggedIn,adminX,function(req,res){
+var id = req.user.id
+const list2 =[]
+const list = []
+var num = req.user.inboxNo
+var sent = req.user.sent
+var pro = req.user
+
+Recepient.find({recepientId :id, status:'active', statusXX:'yes', archive:'yes'},function(err,klocs){
+
+for(var c = 0 ; c <klocs.length;c++){
+
+let recIdX = klocs[c].msgId
+
+      Message.find({msgId:recIdX},function(err,  docs){
+
+console.log(docs.length,'mainstream')
+if(docs.length > 1){
+
+let x = docs.length - 1
+for(var i = x ;i>=0; i--){
+console.log(i,'b')
+
+//console.log(docs[i],'black skinhead')
+
+list.push(docs[i])
+list.sort((x, y) =>  y.numDate - x.numDate)
+console.log(list,'list yacho')
+
+
+
+
+
+num  = docs.length
+}
+
+}else{
+
+list.push(docs[0])
+console.log(list,'list')
+}
+//})
+})
+}      
+
+res.render('messages/sent',{list:list, num:num,sent:sent,pro:pro})
      
+})
+
+})
+
+
+
+
+router.post('/marked',isLoggedIn,adminX,function(req,res){
+let code = req.body.code
+console.log(code,'code')
+let id = req.user.id
+Recepient.find({ msgId:code, recepientId:id },function(err,docs){
+let nId = docs[0]._id
+if(docs[0].statusX == 'unmarked'){
+Recepient.findByIdAndUpdate(nId,{$set:{statusX:'marked'}},function(err,nocs){
+
+})
+}else{
+Recepient.findByIdAndUpdate(nId,{$set:{statusX:'unmarked'}},function(err,nocs){
+
+})
+
+}
+
+})
+})
+
+router.post('/archiveX',isLoggedIn,adminX,function(req,res){
+
+let id = req.user.id
+Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+
+for(var i = 0; i<docs.length;i++){
+
+
+Recepient.findByIdAndUpdate(docs[i]._id,{$set:{archive:'yes',statusXX:'yes'}},function(err,nocs){
+
+})
+
+}
+
+res.send(docs)
+})
+})
+
+
+
+router.post('/readX',isLoggedIn,adminX,function(req,res){
+
+let id = req.user.id
+Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+
+for(var i = 0; i<docs.length;i++){
+
+
+Recepient.findByIdAndUpdate(docs[i]._id,{$set:{read:'yes',statusXX:'yes'}},function(err,nocs){
+
+})
+
+}
+
+res.send(docs)
+})
+})
+
+
+
+
+
+
+
+
+router.post('/delete',isLoggedIn,adminX,function(req,res){
+
+let id = req.user.id
+Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+
+for(var i = 0; i<docs.length;i++){
+
+
+Recepient.findByIdAndUpdate(docs[i]._id,{$set:{status:'deleted',statusXX:'yes'}},function(err,nocs){
+
+})
+
+}
+
+res.send(docs)
+})
+})
+
+
+router.get('/compose',isLoggedIn,adminX,  function(req,res){
+  var num = req.user.inboxNo
+  var pro = req.user
+  var sent = req.user.sent
+  res.render('messages/compose',{num:num,sent:sent,pro:pro})
+})
+
+
+router.post('/userX',isLoggedIn,adminX,function(req,res){
+  var id =req.user._id
+  var arr = []
+  User.find({},function(err,docs){
+    console.log(docs.length,'length')
+    for(var i = 0; i< docs.length;i++){
+if(docs[i]._id != id){
+console.log(docs[i]._id,'success')
+arr.push(docs[i])
+}else
+console.log(docs[i]._id,'failed')
+
+    }
+    res.send(arr)
+  })
+})
+
+
+
+router.post('/dataX',isLoggedIn,adminX,function(req,res){
+var m = moment()
+var year = m.format('YYYY')
+var numDate = m.valueOf()
+var date = m.toString()
+var senderId = req.user._id
+var senderName = req.user.fullname
+var senderPhoto = req.user.photo
+var senderEmail = req.user.email
+
+var uid = req.user._id
+
+
+
+console.log(req.body['code[]'])
+let code = req.body['code[]']
+var sub = req.body.code1
+let msg = req.body.code2
+
+
+
+var ms = new Message()
+
+ms.senderId = senderId
+ms.senderName = senderName
+ms.senderPhoto = senderPhoto
+ms.senderEmail = senderEmail
+ms.msgId = 'null'
+ms.msg = msg
+ms.status = 'reply'
+ms.status4 = 'null'
+ms.status5 = 'null'
+
+ms.type = 'original'
+ms.subject = sub
+ms.numDate = numDate
+ms.date = date
+
+ms.save().then(ms=>{
+
+Message.findByIdAndUpdate(ms._id,{$set:{msgId:ms._id}},function(err,nocs){
+
+})
+for(var i = 0;i<code.length - 1;i++){
+  User.findById(code[i],function(err,doc){
+ 
+  let recepientName = doc.fullname
+  let recepientId = doc._id
+  let recepientEmail = doc.email
+  let msgId = ms._id
+  Recepient.find({msgId:ms._id,recepientId:recepientId},function(err,tocs){
+    let size = tocs.length
+ 
+
+    if(tocs.length == 0){
+      let rec = new Recepient()
+
+    
+     
+      rec.msgId = msgId
+      rec.recepientName = recepientName
+      rec.recepientId= recepientId
+      rec.numDate = numDate
+      rec.status = 'active'
+      rec.statusX = 'unmarked'
+      rec.statusXX ='null'
+      rec.statusCheck = 'not viewed'
+      rec.read = 'null'
+      rec.archive = 'null'
+      rec.recepientEmail = recepientEmail
+      rec.save()
+
+    }
+   
+
+  })
+})
+}
+res.send(code)
+})
+
+
+
+
+
+})
+
+router.get('/reply/:id', isLoggedIn,adminX, function(req,res){
+var id = req.params.id
+var uid = req.user._id
+console.log(id,'id')
+var arr = []
+var num = req.user.inboxNumber
+var sent = req.user.sent
+Message.find({msgId:id},function(err,tocs){
+console.log(tocs,'tocs')
+arr.push(tocs[0].senderEmail)
+let sub = tocs[0].subject
+Message.find({msgId:id,status:'reply'},function(err,docs){
+Recepient.find({msgId:id},function(err,nocs){
+for(var i = 0; i<nocs.length;i++){
+console.log(nocs[i].recepientEmail,'email')
+arr.push(nocs[i].recepientEmail)
+
+
+let date = nocs[i].date
+let Vid = nocs[i]._id
+let timeX = moment(date)
+let timeX2 =timeX.fromNow()
+let timeX3 =timeX.format("LLL")
+console.log(timeX2,'timex2')
+
+
+Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+
+
+
+// Format relative time using negative value (-1).
+
+
+})
+
+}
+console.log(arr,'arr')
+
+res.render('messages/reply',{list:docs,id:id, arr:arr, subject:sub,num:num,sent:sent})
+})
+
+})
+})
+})
+
+
+
+router.post('/reply/:id', isLoggedIn,adminX, function(req,res){
+var m = moment()
+var year = m.format('YYYY')
+var numDate = m.valueOf()
+var id = req.params.id
+var senderId = req.user._id
+var senderName = req.user.fullname
+var senderEmail = req.user.email
+var sub = req.body.compose_subject
+let msg = 'vocal tone'
+
+Message.findById({msgId:id},function(err,docs){
+
+
+
+
+
+
+var ms = new Message()
+
+ms.senderId = senderId
+ms.senderName = senderName
+ms.senderEmail = senderEmail
+ms.msgId = id
+ms.msg = msg
+ms.status = 'reply'
+ms.status4 = 'null'
+ms.status5 = 'null'
+ms.type = 'reply'
+ms.numDate = numDate
+ms.subject = sub
+ms.date = date
+
+ms.save().then(ms=>{
+console.log(ms._id,'msgId')
+
+
+
+let date = ms.date
+let Vid = ms._id
+let timeX = moment(date)
+let timeX2 =timeX.fromNow()
+let timeX3 =timeX.format("LLL")
+console.log(timeX2,'timex2')
+
+
+Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+
+
+
+// Format relative time using negative value (-1).
+
+
+})
+
+})
+
+
+
+})
+
+
+
+
+
+})
+
+
+
+
+router.post('/replyX/:id',isLoggedIn,adminX,function(req,res){
+console.log(req.body.code1,'code1')
+console.log(req.body['compose_to[]'],'compose_to')
+let code = req.body.code1
+var sub = req.body.code1
+let id = req.params.id
+var arr = []
+Message.find({msgId:id,},function(err,tocs){
+console.log(tocs)
+arr.push(tocs[0].senderId)
+
+Recepient.find({msgId:id},function(err,nocs){
+for(var i = 0; i<nocs.length;i++){
+console.log(nocs[i].recepientId,'email')
+arr.push(nocs[i].recepientId)
+
+}
+
+
+res.send(arr)
+})
+
+})
+
+})
+
+
+router.post('/replyX2/:id',isLoggedIn,adminX,function(req,res){
+var m = moment()
+var year = m.format('YYYY')
+var numDate = m.valueOf()
+var date = m.toString()
+var msgId = req.params.id
+var senderId = req.user._id
+var senderName = req.user.fullname
+var senderPhoto = req.user.photo
+var senderEmail = req.user.email
+
+var uid = req.user._id
+
+
+
+console.log(req.body['code[]'])
+let code = req.body['code[]']
+var sub = req.body.code1
+let msg = req.body.code2
+
+
+
+var ms = new Message()
+
+ms.senderId = senderId
+ms.senderName = senderName
+ms.senderPhoto = senderPhoto
+ms.senderEmail = senderEmail
+ms.msgId = msgId
+ms.msg = msg
+ms.status = 'reply'
+ms.status4 = 'null'
+ms.status5 = 'null'
+ms.type = 'reply'
+ms.numDate = numDate
+ms.subject = sub
+ms.date = date
+
+ms.save().then(ms=>{
+
+
+for(var i = 0;i<code.length - 1;i++){
+  User.findById(code[i],function(err,doc){
+ 
+  let recepientName = doc.fullname
+  let recepientId = doc._id
+  let recepientEmail = doc.email
+  
+  Recepient.find({msgId:msgId,recepientId:recepientId},function(err,tocs){
+    let size = tocs.length
+ 
+
+    if(tocs.length == 0){
+      let rec = new Recepient()
+
+    
+     
+      rec.msgId = msgId
+      rec.recepientName = recepientName
+      rec.recepientId= recepientId
+      rec.numDate = numDate
+      rec.status = 'active'
+      rec.statusX = 'unmarked'
+      rec.statusXX = 'null'
+      rec.read = 'null'
+      rec.statusCheck = 'not viewed'
+      rec.archive = 'null'
+      rec.recepientEmail = recepientEmail
+      rec.save()
+    }else{
+      Recepient.findByIdAndUpdate(tocs[0]._id,{$set:{statusCheck:"not viewed"}},function(err,locs){
+
+
+
+        // Format relative time using negative value (-1).
+        
+         
+        })
+
+    }
+   
+
+  })
+})
+}
+
+let date = ms.date
+let Vid = ms._id
+let timeX = moment(date)
+let timeX2 =timeX.fromNow()
+let timeX3 =timeX.format("LLL")
+console.log(timeX2,'timex2')
+
+
+Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+
+
+
+// Format relative time using negative value (-1).
+
+
+})
+res.send(code)
+})
+
+
+})
+
+
+
+router.post('/replyX3/:id',isLoggedIn,adminX,function(req,res){
+var m = moment()
+var year = m.format('YYYY')
+var numDate = m.valueOf()
+var date = m.toString()
+var msgId = req.params.id
+var senderId = req.user._id
+var senderName = req.user.fullname
+var senderPhoto = req.user.photo
+var senderEmail = req.user.email
+
+var uid = req.user._id
+
+
+
+console.log(req.body['code[]'])
+let code = req.body['code[]']
+var sub = req.body.code1
+let msg = req.body.code2
+
+
+
+var ms = new Message()
+
+ms.senderId = senderId
+ms.senderName = senderName
+ms.senderPhoto = senderPhoto
+ms.senderEmail = senderEmail
+ms.msgId = msgId
+ms.msg = msg
+ms.status = 'reply'
+ms.status4 = 'null'
+ms.status5 = 'null'
+ms.type = 'reply'
+ms.numDate = numDate
+ms.subject = sub
+ms.date = date
+
+ms.save().then(ms=>{
+
+
+for(var i = 0;i<code.length - 1;i++){
+  User.findById(code[i],function(err,doc){
+ 
+  let recepientName = doc.fullname
+  let recepientId = doc._id
+  let recepientEmail = doc.email
+
+  Recepient.find({msgId:msgId,recepientId:recepientId},function(err,tocs){
+    let size = tocs.length
+ 
+
+    if(tocs.length == 0){
+      let rec = new Recepient()
+
+    
+     
+      rec.msgId = msgId
+      rec.recepientName = recepientName
+      rec.recepientId= recepientId
+      rec.numDate = numDate
+      rec.status = 'active'
+      rec.statusX = 'unmarked'
+      rec.statusXX = 'null'
+      rec.statusCheck = 'not viewed'
+      rec.read = 'null'
+      rec.archive = 'null'
+      rec.recepientEmail = recepientEmail
+      rec.save()
+
+    } else{
+
+    Recepient.findByIdAndUpdate(tocs[0]._id,{$set:{statusCheck:"not viewed"}},function(err,locs){
+
+
+
+      // Format relative time using negative value (-1).
+      
+       
+      })
+    }
+   
+
+  })
+})
+}
+
+let date = ms.date
+let Vid = ms._id
+let timeX = moment(date)
+let timeX2 =timeX.fromNow()
+let timeX3 =timeX.format("LLL")
+console.log(timeX2,'timex2')
+
+
+Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+
+
+
+// Format relative time using negative value (-1).
+
+
+})
+res.send(code)
+
+})
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.get('/notify',isLoggedIn,adminX, function(req,res){
+res.render('notifs')
+})
+
+router.post('/notify',isLoggedIn,adminX, function(req,res){
+            var m = moment()
+            var year = m.format('YYYY')
+            var numDate = m.valueOf()
+            var date = m.toString()
+            var photo = req.user.photo
+            var subject = req.body.subject
+            var message = req.body.message
+            var role = req.user.role
+            var recRole ='clerk'
+            var user = req.user.fullname
+       
+            console.log(role,'role')
+            req.check('subject','Enter Subject').notEmpty();
+            req.check('message','Enter Message').notEmpty();
+          
+           
+                
+            
+                  
+               
+            var errors = req.validationErrors();
+                if (errors) {
+            
+                
+                  req.session.errors = errors;
+                  req.session.success = false;
+                  res.render('notifs',{ errors:req.session.errors,})
+                  
+                
+              }
+              else{
+
+          User.find({recRole:recRole},function(err,docs){
+
+            for(var i = 0; i<docs.length;i++){
+
+              let id = docs[i]._id
+              var not = new Note();
+              not.role = role
+              not.subject = subject;
+              not.message = message
+              not.status = 'not viewed';
+              not.status1 = 'new';
+              not.user = user;
+              not.type = 'null'
+              not.status2 = 'new'
+              not.status3 = 'new'
+              not.status4 = 'null'
+              not.date = date
+              not.dateViewed = 'null'
+              not.recId = docs[i]._id
+              not.recRole = recRole
+              not.photo = photo
+              not.numDate = numDate
+             
+
+      
+              
+              
+           
+
+              
+               
+          
+               
+      
+              not.save()
+                .then(user =>{
+                  
+            })
+
+
+            }
+          })
+          
+             res.redirect('/notify')
+
+          }
+                          
+
+              
+})
+
+
+
+router.post('/not/:id',isLoggedIn,adminX,function(req,res){
+var m = moment()
+var date = m.toString()
+
+var id = req.params.id
+Note.find({recId:id},function(err,docs){
+for(var i = 0; i<docs.length; i++){
+  let nId = docs[i]._id
+
+  Note.findByIdAndUpdate(nId,{$set:{status:'viewed',dateViewed:date}},function(err,locs){
+
+  })
+}
+
+res.send('success')
+})
+})
+
+
+
+
+router.get('/update',isLoggedIn,adminX,function(req,res){
+var m = moment()
+let n = m.valueOf()
+var id = req.user._id
+
+Note.find({recId:id},function(err,docs){
+
+for(var i = 0; i<docs.length;i++){
+let value = docs[i].numDate
+let num = n - value
+let nId = docs[i]._id
+
+if(num >= 86000000){
+Note.findByIdAndUpdate(nId,{$set:{status1:'old'}},function(err,nocs){
+
+
+})
+}
+
+}
+
+
+})
+
+
+
+})
+
+router.get('/nots',isLoggedIn,adminX, function(req,res){
+var m = moment();
+var id = req.user._id
+Note.find({recId:id,status:'viewed'},function(err,docs){
+for(var i = 0;i<docs.length;i++){
+  let duration =moment(docs[i].dateViewed)
+  let days=m.diff(duration,"days");
+  let nId = docs[i]._id
+console.log(days,'days')
+ if(days > 0){
+Note.findByIdAndUpdate(nId,{$set:{status2:'expired',status1:'old'}},function(err,nocs){
+
+})
+ }
+}
+})
+
+
+})    
 
 
 
@@ -1864,7 +3239,7 @@ router.get('/dash',isLoggedIn, function(req,res){
 //passChart
 
 
-router.post('/passChart',isLoggedIn,function(req,res){
+router.post('/passChart',isLoggedIn,adminX,function(req,res){
   var m = moment()
   var year = m.format('YYYY')
   var term = req.user.term
@@ -1882,7 +3257,7 @@ router.post('/passChart',isLoggedIn,function(req,res){
       })
 
 //passChartX
-      router.post('/passChartX',isLoggedIn,function(req,res){
+      router.post('/passChartX',isLoggedIn,adminX,function(req,res){
         var m = moment()
         var year = m.format('YYYY')
         var term = req.user.term
@@ -1900,7 +3275,7 @@ router.post('/passChart',isLoggedIn,function(req,res){
             })
 
 //genderChart
-      router.post('/genChart',isLoggedIn,function(req,res){
+      router.post('/genChart',isLoggedIn,adminX,function(req,res){
        var companyId = req.user.companyId
               Gender.find({companyId:companyId},function(err,docs){
                 if(docs == undefined){
@@ -1922,7 +3297,7 @@ router.post('/passChart',isLoggedIn,function(req,res){
 //stats
 
 
-            router.post('/statChart',isLoggedIn,function(req,res){
+            router.post('/statChart',isLoggedIn,adminX,function(req,res){
               var m = moment()
               var year = m.format('YYYY')
               var companyId = req.user.companyId
@@ -1945,7 +3320,7 @@ router.post('/passChart',isLoggedIn,function(req,res){
 
 //Income Chart for School terms
 
-            router.post('/incomeChart',isLoggedIn, function(req,res){
+            router.post('/incomeChart',isLoggedIn,adminX, function(req,res){
               var m = moment()
               var year = m.format('YYYY')
               var companyId = req.user.companyId
@@ -1963,7 +3338,7 @@ router.post('/passChart',isLoggedIn,function(req,res){
 
 
 
-                  router.post('/incomeChart99',isLoggedIn, function(req,res){
+                  router.post('/incomeChart99',isLoggedIn,adminX, function(req,res){
                     var m = moment()
                     var year = m.format('YYYY')
                     var count = req.user.currentYearCount
@@ -1984,7 +3359,7 @@ router.post('/passChart',isLoggedIn,function(req,res){
           
           
      //feesMonthIncomeChart             
-          router.post('/feesChart',isLoggedIn, function(req,res){
+          router.post('/feesChart',isLoggedIn,adminX, function(req,res){
               var m = moment()
               var year = m.format('YYYY')
               var companyId = req.user.companyId
@@ -2004,7 +3379,7 @@ router.post('/passChart',isLoggedIn,function(req,res){
 
                        
      //expenseMonthIncomeChart             
-          router.post('/expenseChart',isLoggedIn, function(req,res){
+          router.post('/expenseChart',isLoggedIn,adminX, function(req,res){
             var m = moment()
             var year = m.format('YYYY')
             var companyId = req.user.companyId
@@ -2022,7 +3397,704 @@ router.post('/passChart',isLoggedIn,function(req,res){
                 })
 
 
+router.get('/analytics',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  Subject.find(function(err,docs){
+    Class1.find(function(err,locs){
 
+ 
+    res.render('admin/classAn',{listX:docs,arr1:locs,pro:pro})
+  })
+})
+})
+
+
+
+router.get('/appraisal',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  User.find({role:'teacher'},function(err,docs){
+    res.render('admin/list5',{listX:docs,pro:pro})
+  })
+ 
+})
+router.get('/teacherAnalytics/:id',isLoggedIn,adminX,function(req,res){
+  console.log(req.params.id,'iiiiii')
+  var pro = req.user
+  User.findById(req.params.id,function(err,voc){
+    if(voc){
+
+
+   
+   let uid = voc.uid
+   let fullname = voc.fullname
+  
+  Class1.find(function(err,locs){
+    TeacherSub.find({teacherId:uid},function(err,docs){
+
+
+      res.render('admin/teacherAn',{arr1:locs,listX:docs,fullname:fullname,uid:uid,pro:pro})
+    })
+  })
+}
+  })
+
+  })
+
+
+router.post('/dashChartA1',isLoggedIn,adminX,function(req,res){
+  var uid = req.user.uid
+  var size
+
+  var m = moment()
+  var year = m.format('YYYY')
+  var arr = []
+  var id = req.user._id
+  TeacherSub.find({teacherId:uid},function(err,locs){
+    if(locs){
+      let subjectCode = locs[0].subjectCode
+      let term = req.user.term
+    StudentSub.find({subjectCode:subjectCode},function(err,noc){
+      if(noc){
+        let studentId = noc[0].studentId
+     
+    
+  
+   
+  
+    
+  console.log(subjectCode,term,'outa here')
+  
+  
+    TestX.find({year:year,subjectCode:subjectCode,uid:studentId,term:term},function(err,docs) {
+     // console.log(docs,'docs')
+      for(var i = 0;i<docs.length;i++){
+  size = docs.length
+     
+          
+         if(arr.length > 0 && arr.find(value => value.topic == docs[i].topic)){
+                console.log('true')
+               arr.find(value => value.topic == docs[i].topic).percentage += docs[i].percentage;
+               arr.find(value => value.topic == docs[i].topic).size++;
+              }else{
+                arr.push(docs[i])
+                let topic = docs[i].topic
+                
+                  //element.size = 0
+                  if(arr.find(value => value.topic == topic)){
+             
+                   
+                         arr.find(value => value.topic == topic).size++;
+           
+                  }
+                  //element.size = element.size + 1
+                    
+               
+                    }
+      
+      }
+    let result = arr.map(function(element){
+      element.mark = element.mark / element.size
+      console.log(element.mark,'mark')
+      let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+    })
+      //console.log(arr,'arr')
+     res.send(arr)
+    })
+  }
+  })
+}
+  })
+  })
+
+
+
+
+
+
+
+  
+  router.post('/dashChart1',isLoggedIn,adminX,function(req,res){
+                     
+    var term = req.user.term
+    
+   
+   
+    var m = moment()
+    var year = m.format('YYYY')
+    var arr = []
+    var id = req.user._id
+  
+    
+  
+  
+  
+    TestX.find({year:year,term:term,type:'Class Test'},function(err,docs) {
+      for(var i = 0;i<docs.length;i++){
+        size = docs.length
+     
+          
+         if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+                console.log('true')
+               arr.find(value => value.class1 == docs[i].class1).percentage += docs[i].percentage;
+               arr.find(value => value.class1 == docs[i].class1).size++;
+              }else{
+                arr.push(docs[i])
+                let class1 = docs[i].class1
+                
+                  //element.size = 0
+                  if(arr.find(value => value.class1 == class1)){
+             
+                   
+                         arr.find(value => value.class1 == class1).size++;
+           
+                  }
+                  //element.size = element.size + 1
+                    
+               
+                    }
+      
+          
+          }
+          let result = arr.map(function(element){
+            element.mark = element.mark / element.size
+            console.log(element.mark,'mark')
+            let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+          })
+      //console.log(arr,'arr')
+     res.send(arr)
+    })
+  
+  })
+
+  router.post('/dashChart4',adminX,isLoggedIn,function(req,res){
+    var uid = req.user.uid
+   
+  
+     Subject.find(function(err,locs){
+  
+    
+  
+    if(locs){
+      let subjectCode = locs[0].name
+   
+   
+    var m = moment()
+    var year = m.format('YYYY')
+    var arr = []
+    var id = req.user._id
+    var term= req.user.term
+    
+  
+  
+  
+    TestX.find({year:year,term:term,subject:subjectCode},function(err,docs) {
+      if(docs){
+  
+  
+      for(var i = 0;i<docs.length;i++){
+        size = docs.length
+     
+          
+         if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+                console.log('true')
+               arr.find(value => value.class1 == docs[i].class1).percentage += docs[i].percentage;
+               arr.find(value => value.class1 == docs[i].class1).size++;
+              }else{
+                arr.push(docs[i])
+                let class1 = docs[i].class1
+                
+                  //element.size = 0
+                  if(arr.find(value => value.class1 == class1)){
+             
+                   
+                         arr.find(value => value.class1 == class1).size++;
+           
+                  }
+                  //element.size = element.size + 1
+                    
+               
+                    }
+      
+      
+      }
+      let result = arr.map(function(element){
+        element.mark = element.mark / element.size
+        console.log(element.mark,'mark')
+        let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+      })
+      //console.log(arr,'arr')
+     res.send(arr)
+    }
+    })
+  }
+  })
+  })
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //////////////
+  router.post('/dashChart05',isLoggedIn,adminX,function(req,res){
+    var uid = req.user.uid
+    var size
+
+    var m = moment()
+    var year = m.format('YYYY')
+    var arr = []
+    var id = req.user._id
+    var term = req.user.term
+
+     Class1.find(function(err,locs){
+       if(locs){
+         let class1 = locs[0].class1
+      
+ 
+    
+    
+      TestX.find({year:year,class1:class1,term:term},function(err,docs) {
+       // console.log(docs,'docs')
+        for(var i = 0;i<docs.length;i++){
+    size = docs.length
+       
+            
+           if(arr.length > 0 && arr.find(value => value.month == docs[i].month)){
+                  console.log('true')
+                 arr.find(value => value.month == docs[i].month).percentage += docs[i].percentage;
+                 arr.find(value => value.month == docs[i].month).size++;
+                }else{
+                  arr.push(docs[i])
+                  let month = docs[i].month
+                  
+                    //element.size = 0
+                    if(arr.find(value => value.month== month)){
+               
+                     
+                           arr.find(value => value.month == month).size++;
+             
+                    }
+                    //element.size = element.size + 1
+                      
+                 
+                      }
+        
+        
+        }
+      let result = arr.map(function(element){
+        element.mark = element.mark / element.size
+        console.log(element.mark,'mark')
+        let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+      })
+        //console.log(arr,'arr')
+       res.send(arr)
+      })
+    }
+  })
+ 
+  
+    })
+    
+
+
+    router.post('/dashChart06',isLoggedIn,adminX,function(req,res){
+      var uid = req.user.uid
+      var size
+
+      var m = moment()
+      var year = m.format('YYYY')
+      var arr = []
+      var id = req.user._id
+      var term = req.user.term
+  
+       Subject.find({},function(err,locs){
+         if(locs){
+           let subjectCode = locs[0].code
+       
+   
+      
+      
+        TestX.find({year:year,subjectCode:subjectCode,term:term},function(err,docs) {
+          //console.log(docs,'docs')
+          for(var i = 0;i<docs.length;i++){
+      size = docs.length
+         
+              
+             if(arr.length > 0 && arr.find(value => value.month == docs[i].month)){
+                    console.log('true')
+                   arr.find(value => value.month == docs[i].month).percentage += docs[i].percentage;
+                   arr.find(value => value.month == docs[i].month).size++;
+                  }else{
+                    arr.push(docs[i])
+                    let month = docs[i].month
+                    
+                      //element.size = 0
+                      if(arr.find(value => value.month== month)){
+                 
+                       
+                             arr.find(value => value.month == month).size++;
+               
+                      }
+                      //element.size = element.size + 1
+                        
+                   
+                        }
+          
+          }
+        let result = arr.map(function(element){
+          element.percentage = element.percentage / element.size
+          console.log(element.mark,'mark')
+          let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+        })
+          //console.log(arr,'arr')
+         res.send(arr)
+        })
+      }
+    })
+   
+      })
+
+
+
+
+      
+  router.post('/dashChart7',isLoggedIn,adminX,function(req,res){
+    var uid = req.user.uid
+   
+  
+     Subject.find(function(err,locs){
+  
+    
+  
+    if(locs){
+      let subjectCode = locs[0].name
+   
+   
+    var m = moment()
+    var year = m.format('YYYY')
+    var arr = []
+    var id = req.user._id
+    var term= req.user.term
+    
+  
+  
+  
+    TestX.find({year:year,term:term,subject:subjectCode},function(err,docs) {
+      if(docs){
+  
+  
+      for(var i = 0;i<docs.length;i++){
+        size = docs.length
+     
+          
+         if(arr.length > 0 && arr.find(value => value.topic == docs[i].topic)){
+                console.log('true')
+               arr.find(value => value.topic == docs[i].topic).percentage += docs[i].percentage;
+               arr.find(value => value.topic == docs[i].topic).size++;
+              }else{
+                arr.push(docs[i])
+                let topic = docs[i].topic
+                
+                  //element.size = 0
+                  if(arr.find(value => value.topic == topic)){
+             
+                   
+                         arr.find(value => value.topic == topic).size++;
+           
+                  }
+                  //element.size = element.size + 1
+                    
+               
+                    }
+      }
+      let result = arr.map(function(element){
+        element.percentage = element.percentage / element.size
+        console.log(element.mark,'mark')
+        let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+      })
+      //console.log(arr,'arr')
+     res.send(arr)
+    }
+    })
+  }
+  })
+  })
+  
+
+
+  router.post('/dashChart8',isLoggedIn,adminX,function(req,res){
+    var uid = req.body.uid
+    var size
+  console.log(uid,'uid')
+    var m = moment()
+    var year = m.format('YYYY')
+    var arr = []
+    var id = req.user._id
+    var term = req.user.term
+   
+     
+    
+      
+  
+    
+    
+      TestX.find({year:year,teacherId:uid,term:term},function(err,docs) {
+        if(docs){
+
+        
+        //console.log(docs,'docs')
+        for(var i = 0;i<docs.length;i++){
+    size = docs.length
+       
+            
+           if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+                  console.log('true')
+                 arr.find(value => value.class1 == docs[i].class1).percentage += docs[i].percentage;
+                 arr.find(value => value.class1 == docs[i].class1).size++;
+                }else{
+                  arr.push(docs[i])
+                  let class1 = docs[i].class1
+                  
+                    //element.size = 0
+                    if(arr.find(value => value.class1 == class1)){
+               
+                     
+                           arr.find(value => value.class1 == class1).size++;
+             
+                    }
+                    //element.size = element.size + 1
+                      
+                 
+                      }
+        
+        }
+      let result = arr.map(function(element){
+        element.percentage = element.percentage / element.size
+        console.log(element.mark,'mark')
+        let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+      })
+        //console.log(arr,'arr')
+       res.send(arr)
+      }
+      })
+   
+    })
+  
+  
+  
+  
+  
+    router.post('/dashChart9',isLoggedIn,adminX,function(req,res){
+      var uid = req.body.uid
+      var size
+    console.log(uid,'uid')
+      var m = moment()
+      var year = m.format('YYYY')
+      var arr = []
+      var id = req.user._id
+      var term = req.user.term
+     
+       
+      
+        
+    
+      
+      
+        TestX.find({year:year,teacherId:uid,term:term},function(err,docs) {
+          if(docs){
+
+          
+          //console.log(docs,'docs')
+          for(var i = 0;i<docs.length;i++){
+      size = docs.length
+         
+              
+             if(arr.length > 0 && arr.find(value => value.subject == docs[i].subject)){
+                    console.log('true')
+                   arr.find(value => value.subject == docs[i].subject).percentage += docs[i].percentage;
+                   arr.find(value => value.subject == docs[i].subject).size++;
+                  }else{
+                    arr.push(docs[i])
+                    let subject = docs[i].subject
+                    
+                      //element.size = 0
+                      if(arr.find(value => value.subject == subject)){
+                 
+                       
+                             arr.find(value => value.subject == subject).size++;
+               
+                      }
+                      //element.size = element.size + 1
+                        
+                   
+                        }
+          }
+          let result = arr.map(function(element){
+            element.percentage = element.percentage / element.size
+            console.log(element.mark,'mark')
+            let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+          })
+          //console.log(arr,'arr')
+         res.send(arr)
+        }
+        })
+     
+      })
+    
+    
+    
+  
+
+      router.post('/dashChartX',isLoggedIn,adminX,function(req,res){
+        var uid = req.body.uid
+        var size
+  
+        var m = moment()
+        var year = m.format('YYYY')
+        var arr = []
+        var id = req.user._id
+       
+        TeacherSub.find({teacherId:uid},function(err,tocs){
+          if(tocs){
+
+      
+         let subjectCode = tocs[0].subjectCode
+        var term = req.user.term
+          
+
+        
+        
+          TestX.find({year:year,teacherId:uid,term:term,subjectCode:subjectCode,type3:'class'},function(err,docs) {
+
+            if(docs){
+
+           
+            //console.log(docs,'docs')
+            for(var i = 0;i<docs.length;i++){
+        size = docs.length
+           
+                
+               if(arr.length > 0 && arr.find(value => value.topic == docs[i].topic)){
+                      console.log('true')
+                     arr.find(value => value.topic == docs[i].topic).percentage += docs[i].percentage;
+                     arr.find(value => value.topic == docs[i].topic).size++;
+                    }else{
+                      arr.push(docs[i])
+                      let topic = docs[i].topic
+                      
+                        //element.size = 0
+                        if(arr.find(value => value.topic == topic)){
+                   
+                         
+                               arr.find(value => value.topic == topic).size++;
+                 
+                        }
+                        //element.size = element.size + 1
+                          
+                     
+                          }
+            
+            }
+            let result = arr.map(function(element){
+              element.percentage = element.percentage / element.size
+              console.log(element.mark,'mark')
+              let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+            })
+            //console.log(arr,'arr')
+           res.send(arr)
+           }
+          })
+        }
+      })
+        })
+        
+
+
+
+
+        router.post('/dashChartXI',isLoggedIn,adminX,function(req,res){
+          var uid = req.body.uid
+          var size
+    
+          var m = moment()
+          var year = m.format('YYYY')
+          var arr = []
+          var id = req.user._id
+          var term = req.user.term
+      
+           
+          
+       
+          
+          
+            TestX.find({year:year,teacherId:uid,term:term,type3:'class'},function(err,docs) {
+              if(docs){
+
+              
+              //console.log(docs,'docs')
+              for(var i = 0;i<docs.length;i++){
+          size = docs.length
+             
+                  
+                 if(arr.length > 0 && arr.find(value => value.month == docs[i].month)){
+                        console.log('true')
+                       arr.find(value => value.month == docs[i].month).percentage += docs[i].percentage;
+                       arr.find(value => value.month == docs[i].month).size++;
+                      }else{
+                        arr.push(docs[i])
+                        let month = docs[i].month
+                        
+                          //element.size = 0
+                          if(arr.find(value => value.month== month)){
+                     
+                           
+                                 arr.find(value => value.month == month).size++;
+                   
+                          }
+                          //element.size = element.size + 1
+                            
+                       
+                            }
+              }
+            let result = arr.map(function(element){
+              element.percentage = element.percentage / element.size
+              let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+            })
+              //console.log(arr,'arr')
+             res.send(arr)
+            }
+            })
+        
+          })
+          
 
 //landing page
 router.get('/land',function(req,res){
@@ -2036,9 +4108,689 @@ router.get('/land',function(req,res){
 })
 
 
+
+
+router.post('/dashChartP2',isLoggedIn,adminX,function(req,res){
+                     
+  var term = req.body.term
+  let type = req.body.type
+ 
+ console.log(term,type,'faya')
+  var m = moment()
+  var year = m.format('YYYY')
+  var arr = []
+  var id = req.user._id
+
+  
+
+
+
+  TestX.find({year:year,term:term,type:type,type3:'class'},function(err,docs) {
+    if(docs){
+
+   
+    for(var i = 0;i<docs.length;i++){
+      size = docs.length
+   
+        
+       if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+              console.log('true')
+             arr.find(value => value.class1 == docs[i].class1).percntage += docs[i].percentage;
+             arr.find(value => value.class1 == docs[i].class1).size++;
+            
+            }else{
+              arr.push(docs[i])
+              let class1 = docs[i].class1
+              
+                //element.size = 0
+                if(arr.find(value => value.class1 == class1)){
+           
+                 
+                       arr.find(value => value.class1 == class1).size++;
+         
+                }
+                //element.size = element.size + 1
+                  
+             
+                  }
+    
+        
+        }
+        let result = arr.map(function(element){
+          element.percentage = element.percentage / element.size
+          let num = Math.round(element.percentage)
+          num.toFixed(2)
+          element.percentage =num
+        })
+    //console.log(arr,'arr')
+   res.send(arr)
+  }
+  })
+
+})
+
+
+
+
+
+
+router.post('/dashChartP4',isLoggedIn,adminX,function(req,res){
+                     
+  var term = req.body.term
+  let name = req.body.name
+ 
+ 
+  var m = moment()
+  var year = m.format('YYYY')
+  var arr = []
+  var id = req.user._id
+
+  
+
+
+
+  TestX.find({year:year,term:term,subject:name,type3:'class'},function(err,docs) {
+    if(docs){
+
+
+    for(var i = 0;i<docs.length;i++){
+      size = docs.length
+   
+        
+       if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+              console.log('true')
+             arr.find(value => value.class1 == docs[i].class1).percentage += docs[i].percentage;
+             arr.find(value => value.class1 == docs[i].class1).size++;
+            }else{
+              arr.push(docs[i])
+              let class1 = docs[i].class1
+              
+                //element.size = 0
+                if(arr.find(value => value.class1 == class1)){
+           
+                 
+                       arr.find(value => value.class1 == class1).size++;
+         
+                }
+                //element.size = element.size + 1
+                  
+             
+                  }
+    
+        
+        }
+        let result = arr.map(function(element){
+          element.percentage = element.percentage / element.size
+          let num = Math.round(element.percentage)
+          num.toFixed(2)
+          element.percentage =num
+        })
+    //console.log(arr,'arr')
+   res.send(arr)
+  }
+  })
+
+})
+
+
+
+              
+
+router.post('/dashChartP05',isLoggedIn,adminX,function(req,res){
+
+  var size
+
+  var m = moment()
+  var year = m.format('YYYY')
+  var arr = []
+  var id = req.user._id
+  var term = req.body.term
+  var class1 = req.body.class1
+
+   
+  
+
+  
+  
+    TestX.find({year:year,term:term,class1:class1,type3:'class'},function(err,docs) {
+      //console.log(docs,'docs')
+      for(var i = 0;i<docs.length;i++){
+  size = docs.length
+     
+          
+         if(arr.length > 0 && arr.find(value => value.month == docs[i].month)){
+                console.log('true')
+               arr.find(value => value.month == docs[i].month).percentage += docs[i].percentage;
+               arr.find(value => value.month == docs[i].month).size++;
+              }else{
+                arr.push(docs[i])
+                let month = docs[i].month
+                
+                  //element.size = 0
+                  if(arr.find(value => value.month == month)){
+             
+                   
+                         arr.find(value => value.month == month).size++;
+           
+                  }
+                  //element.size = element.size + 1
+                    
+               
+                    }
+      
+          
+          }
+          let result = arr.map(function(element){
+            element.percentage = element.percentage / element.size
+            let num = Math.round(element.percentage)
+            num.toFixed(2)
+            element.percentage =num
+          })
+      //console.log(arr,'arr')
+     res.send(arr)
+    })
+
+  })
+  
+  router.post('/dashChartP06',isLoggedIn,adminX,function(req,res){
+    var uid = req.user.uid
+    var size
+
+    var m = moment()
+    var year = m.format('YYYY')
+    var arr = []
+    var id = req.user._id
+    var term = req.body.term
+    var subjectCode = req.body.subject
+
+
+     
+ 
+    
+    
+      TestX.find({year:year,subjectCode:subjectCode,term:term,type3:'class'},function(err,docs) {
+        //console.log(docs,'docs')
+        for(var i = 0;i<docs.length;i++){
+    size = docs.length
+       
+            
+           if(arr.length > 0 && arr.find(value => value.month == docs[i].month)){
+                  console.log('true')
+                 arr.find(value => value.month == docs[i].month).percentage += docs[i].percentage;
+                 arr.find(value => value.month == docs[i].month).size++;
+                }else{
+                  arr.push(docs[i])
+                  let month = docs[i].month
+                  
+                    //element.size = 0
+                    if(arr.find(value => value.month == month)){
+               
+                     
+                           arr.find(value => value.month == month).size++;
+             
+                    }
+                    //element.size = element.size + 1
+                      
+                 
+                      }
+        
+            
+            }
+            let result = arr.map(function(element){
+              element.percentage = element.percentage / element.size
+              let num = Math.round(element.percentage)
+              num.toFixed(2)
+              element.percentage =num
+            })
+        //console.log(arr,'arr')
+       res.send(arr)
+      })
+  
+ 
+    })
+    
+
+
+    router.post('/dashChartP7',isLoggedIn,adminX,function(req,res){
+                     
+      var term = req.body.term
+      let name = req.body.name
+     
+     
+      var m = moment()
+      var year = m.format('YYYY')
+      var arr = []
+      var id = req.user._id
+    
+      
+    
+    
+    
+      TestX.find({year:year,term:term,subject:name,type3:'class'},function(err,docs) {
+        if(docs){
+    
+    
+        for(var i = 0;i<docs.length;i++){
+          size = docs.length
+       
+            
+           if(arr.length > 0 && arr.find(value => value.topic == docs[i].topic)){
+                  console.log('true')
+                 arr.find(value => value.topic == docs[i].topic).percentage += docs[i].percentage;
+                 arr.find(value => value.topic == docs[i].topic).size++;
+              
+                }else{
+                  arr.push(docs[i])
+                  let topic = docs[i].topic
+                  
+                    //element.size = 0
+                    if(arr.find(value => value.topic == topic)){
+               
+                     
+                           arr.find(value => value.topic == topic).size++;
+             
+                    }
+                    //element.size = element.size + 1
+                      
+                 
+                      }
+        
+            
+            }
+            let result = arr.map(function(element){
+              element.percentage = element.percentage / element.size
+              let num = Math.round(element.percentage)
+              num.toFixed(2)
+              element.percentage =num
+            })
+        //console.log(arr,'arr')
+       res.send(arr)
+      }
+      })
+    
+    })
+    
+    
+
+
+    
+
+
+    router.post('/dashChartP8',isLoggedIn,adminX,function(req,res){
+     
+      var term = req.body.term
+  
+     var uid = req.body.uid
+     console.log(term,uid,'ccc')
+      var m = moment()
+      var year = m.format('YYYY')
+      var arr = []
+      var id = req.user._id
+    
+      
+    
+    
+    
+      TestX.find({year:year,teacherId:uid,term:term,type3:'class'},function(err,docs) {
+        for(var i = 0;i<docs.length;i++){
+          size = docs.length
+       
+            
+           if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+                  console.log('true')
+                 arr.find(value => value.class1 == docs[i].class1).percentage += docs[i].percentage;
+                 arr.find(value => value.class1 == docs[i].class1).size++;
+                }else{
+                  arr.push(docs[i])
+                  let class1 = docs[i].class1
+                  
+                    //element.size = 0
+                    if(arr.find(value => value.class1 == class1)){
+               
+                     
+                           arr.find(value => value.class1 == class1).size++;
+             
+                    }
+                    //element.size = element.size + 1
+                      
+                 
+                      }
+                    
+            
+            }
+            let result = arr.map(function(element){
+              element.percentage = element.percentage / element.size
+              let num = Math.round(element.percentage)
+              num.toFixed(2)
+              element.percentage =num
+            })
+        
+      
+        //console.log(arr,'arr')
+       res.send(arr)
+      })
+    
+    })
+
+
+
+
+    router.post('/dashChartP9',isLoggedIn,adminX,function(req,res){
+     
+      var term = req.body.term
+  
+     var uid = req.body.uid
+     console.log(term,uid,'ccc')
+      var m = moment()
+      var year = m.format('YYYY')
+      var arr = []
+      var id = req.user._id
+    
+      
+    
+    
+    
+      TestX.find({year:year,teacherId:uid,term:term,type3:'class'},function(err,docs) {
+        for(var i = 0;i<docs.length;i++){
+          size = docs.length
+       
+            
+           if(arr.length > 0 && arr.find(value => value.subject == docs[i].subject)){
+                  console.log('true')
+                 arr.find(value => value.subject == docs[i].subject).percentage += docs[i].percentage;
+                 arr.find(value => value.subject == docs[i].subject).size++;
+            
+                }else{
+                  arr.push(docs[i])
+                  let subject = docs[i].subject
+                  
+                    //element.size = 0
+                    if(arr.find(value => value.subject == subject)){
+               
+                     
+                           arr.find(value => value.subject == subject).size++;
+             
+                    }
+                    //element.size = element.size + 1
+                      
+                 
+                      }
+        
+            
+            }
+            let result = arr.map(function(element){
+              element.percentage = element.percentage / element.size
+              let num = Math.round(element.percentage)
+              num.toFixed(2)
+              element.percentage =num
+            })
+        //console.log(arr,'arr')
+       res.send(arr)
+      })
+    
+    })
+
+
+    router.post('/dashChartPX',isLoggedIn,adminX,function(req,res){
+      var subjectCode = req.body.subjectCode
+      var term = req.body.term
+      var class1 = req.body.class1
+     
+     
+      var m = moment()
+      var year = m.format('YYYY')
+      var arr = []
+      var id = req.user._id
+    
+      
+    
+    
+    
+      TestX.find({year:year,subjectCode:subjectCode,class1:class1,term:term,type3:'class'},function(err,docs) {
+        if(docs){
+
+    
+        for(var i = 0;i<docs.length;i++){
+          size = docs.length
+       
+            
+           if(arr.length > 0 && arr.find(value => value.topic == docs[i].topic)){
+                  console.log('true')
+                 arr.find(value => value.topic == docs[i].topic).percentage += docs[i].percentage;
+                 arr.find(value => value.topic == docs[i].topic).size++;
+                
+                }else{
+                  arr.push(docs[i])
+                  let topic = docs[i].topic
+                  
+                    //element.size = 0
+                    if(arr.find(value => value.topic == topic)){
+               
+                     
+                           arr.find(value => value.topic == topic).size++;
+             
+                    }
+                    //element.size = element.size + 1
+                      
+                 
+                      }
+        
+            
+            }
+          }
+            let result = arr.map(function(element){
+              element.percentage = element.percentage / element.size
+              let num = Math.round(element.percentage)
+              num.toFixed(2)
+              element.percentage =num
+            })
+        //console.log(arr,'arr')
+       res.send(arr)
+      })
+    
+    })
+    
+    
+
+
+
+    router.post('/dashChartPXI',isLoggedIn,adminX,function(req,res){
+      var uid = req.body.uid
+      var size
+
+      var m = moment()
+      var year = m.format('YYYY')
+      var arr = []
+      var id = req.user._id
+      var term = req.body.term
+  
+       
+      
+   
+      
+      
+        TestX.find({year:year,teacherId:uid,term:term,type3:'class'},function(err,docs) {
+         // console.log(docs,'docs')
+          for(var i = 0;i<docs.length;i++){
+      size = docs.length
+         
+              
+             if(arr.length > 0 && arr.find(value => value.month == docs[i].month)){
+                    console.log('true')
+                   arr.find(value => value.month == docs[i].month).percentage += docs[i].percentage;
+                   arr.find(value => value.month == docs[i].month).size++;
+                  }else{
+                    arr.push(docs[i])
+                    let month = docs[i].month
+                    
+                      //element.size = 0
+                      if(arr.find(value => value.month == month)){
+                 
+                       
+                             arr.find(value => value.month == month).size++;
+               
+                      }
+                      //element.size = element.size + 1
+                        
+                   
+                        }
+          
+              
+              }
+              let result = arr.map(function(element){
+                element.percentage = element.percentage / element.size
+                let num = Math.round(element.percentage)
+                num.toFixed(2)
+                element.percentage =num
+              })
+          //console.log(arr,'arr')
+         res.send(arr)
+        })
+    
+      })
+
+
+
+
+
+      
+
+
+      router.post('/classChart',isLoggedIn,adminX,function(req,res){
+        var uid = req.user.uid
+        var size
+        var companyId = req.user.companyId
+        var m = moment()
+        var year = m.format('YYYY')
+        var arr = []
+        var id = req.user._id
+      
+           
+          
+        
+         
+    
+        
+        
+          User.find({role:'student'},function(err,docs) {
+            //console.log(docs,'docs')
+            for(var i = 0;i<docs.length;i++){
+        size = docs.length
+           
+                
+               if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+                      console.log('true')
+                     arr.find(value => value.class1 == docs[i].class1).classNo++
+                    }else{
+                      arr.push(docs[i])
+                      let class1 = docs[i].class1
+                      
+                        //element.size = 0
+                        if(arr.find(value => value.class1 == class1)){
+                   
+                         
+                               arr.find(value => value.class1 == class1).classNo++;
+                 
+                        }
+                        //element.size = element.size + 1
+                          
+                     
+                          }
+            
+            }
+         
+           // console.log(arr,'ndamama')
+           res.send(arr)
+          })
+      
+        })
+        
+    
+    
+router.get('/line',function(req,res){
+  res.render('dashboard/basic-range-area')
+})
+      
+//autocomplete teacherName & uid
+
+router.get('/autocompleteSubC',isLoggedIn,adminX, function(req, res, next) {
+
+  var companyId = req.user.companyId
+  var regex= new RegExp(req.query["term"],'i');
+  
+  var uidFilter =Subject.find({companyId:companyId,code:regex,},{'code':1}).sort({"updated_at":-1}).sort({"created_at":-1}).limit(20);
+  
+  
+  uidFilter.exec(function(err,data){
+  
+  
+  console.log('data',data)
+  
+  var result=[];
+  
+  if(!err){
+  if(data && data.length && data.length>0){
+  data.forEach(sub=>{
+  
+  
+  
+  
+  let obj={
+   id:sub._id,
+   label: sub.code
+  
+  
+  /*  name:name,
+   surname:surname,
+   batch:batch*/
+  
+  
+  
+  
+  
+  
+   
+  };
+  
+  result.push(obj);
+  console.log('object',obj.id)
+  });
+  
+  }
+  
+  res.jsonp(result);
+  console.log('Result',result)
+  }
+  
+  })
+  
+  });
+  
+  // role admin
+  //this routes autopopulates teachers info from the id selected from automplet1
+  router.post('/autoSubC',isLoggedIn,adminX,function(req,res){
+  var code = req.body.code
+
+  var companyId = req.user.companyId
+  console.log(code, 'code')
+ Subject.find({companyId:companyId,code:code, },function(err,docs){
+  if(docs == undefined){
+  res.redirect('/teacher/auto')
+  }else
+  
+  res.send(docs[0])
+  console.log(docs[0])
+  })
+  
+  
+  })
+  
+  
+  
+
  
 //adding staff
-router.get('/addStaff',isLoggedIn, function(req,res){
+router.get('/addStaff',isLoggedIn,adminX, function(req,res){
     var actualCount = req.user.actualCount
     var count = req.user.count
     var pro = req.user
@@ -2061,9 +4813,223 @@ res.render('admin/staff',{pro:pro,uid1:uid, title:title,readonly})
   
 })
 
+router.get('/addStaffOffline',isLoggedIn,adminX, function(req,res){
+  var actualCount = req.user.actualCount
+  var count = req.user.count
+  var pro = req.user
+  var prefix = req.user.prefix
+  var idNum = req.user.idNumber
+idNum++
+  var uid = prefix + idNum
+  var title
+  var readonly 
+  if(actualCount < count){
+    title = "Add Staff"
+    readonly = ""
+    res.render('admin/staff2',{pro:pro,uid1:uid, title:title,readonly})
+  }
+else
+title = "You've Reached Maximum Users Limit"
+readonly = 'readonly'
+res.render('admin/staff2',{pro:pro,uid1:uid, title:title,readonly})
 
 
-              router.post('/addStaff',isLoggedIn, function(req, res, next) {
+})
+
+router.post('/addStaffOffline',isLoggedIn,adminX, function(req, res, next) {
+  var pro = req.user
+  var uid = req.body.uid;
+  var name = req.body.name;
+  var surname = req.body.surname;
+  var fullname = name +" "+ surname
+  var mobile = req.body.mobile;
+  var gender = req.body.gender;
+  var dob = req.body.dob;
+  var role = req.body.role;
+  var password = req.body.password;
+  var term = req.user.term
+  var year = req.user.year
+  var email = req.body.email
+  var prefix = req.user.prefix
+  var suffix = req.user.suffix
+ var expdate = req.user.expdate
+ var expStr = req.user.expStr
+ var companyId= req.user.companyId
+var id =   req.user._id
+var schoolName = req.user.schoolName
+var count = req.user.count
+var actualCount = req.user.actualCount
+var duration = req.user.duration
+
+var idNumber = req.user.idNumber
+var prefix1 = req.user.prefix
+var idNum1 = req.user.idNumber
+var idNumX = req.user.idNumX
+var uid1 = prefix1 + idNum1
+ 
+  req.check('name','Enter Name').notEmpty();
+  req.check('surname','Enter Surname').notEmpty();
+  req.check('email','Enter email').notEmpty().isEmail();
+  req.check('dob','Enter Date Of Birth').notEmpty();
+  req.check('uid','Enter Student ID').notEmpty();
+  req.check('gender','Enter Gender').notEmpty();
+  req.check('role', 'Enter Role').notEmpty();
+  req.check('mobile', 'Enter Phone Number').notEmpty();
+  req.check('password', 'Password do not match').isLength({min: 4}).equals(req.body.confirmPassword);
+      
+    
+ 
+     
+  var errors = req.validationErrors();
+      if (errors) {
+        
+        req.session.errors = errors;
+        req.session.success = false;
+        res.render('admin/staff2',{user:req.body, errors:req.session.errors,pro:pro,uid1:uid1
+    
+  })
+}
+     {
+        User.findOne({'uid':uid})
+        .then(user =>{
+            if(user){ 
+          // req.session.errors = errors
+            //req.success.user = false;
+           req.session.message = {
+             type:'errors',
+             message:'User ID already in use'
+           }     
+         
+              res.render('admin/staff2', {
+                  user:req.body, message:req.session.message,uid1:uid1 
+              }) 
+      }
+      
+    
+       
+              else {
+          
+                
+                actualCount++
+                idNumber++ 
+                actualCount + 1
+                let idNumQ = idNumber + 1
+                let uid9 = prefix + idNumQ
+                User.findByIdAndUpdate(id,{$set:{idNumber:idNumber,actualCount:actualCount}},function(err,ocs){
+                  var user = new User();
+                                    user.uid = uid;
+                                    user.name = name;
+                                    user.surname = surname;
+                                    user.fullname = fullname;
+                                    user.email = email;
+                                    user.role = role;
+                                    user.prefix = prefix;
+                                    user.suffix = suffix;
+                                    user.companyId = companyId;
+                                    user.gender = gender;
+                                    user.dob = dob;
+                                    user.mobile= mobile;
+                                    user.studentId = 'null'
+                                    user.teacherName='null'
+                                    user.teacherId = 'null'
+                                    user.grade = 0;
+                                    user.idNumber= idNumber;
+                                    user.idNumX = idNumX;
+                                    user.class1 = 'null';
+                                    user.mobile = mobile;
+                                    user.classLength = 0;
+                                    user.classNo = 0
+                                    user.studentNum = 0;
+                                    user.uidNum = 309;
+                                    user.number = 0;
+                                    user.schoolName=schoolName
+                                    user.examDate = 'null';
+                                    user.feeStatus = 'null';
+                                    user.feesUpdate = 'null';
+                                    user.term = term;
+                                    user.amount = 0;
+                                    user.receiptNumber = 0;
+                                    user.possibleMark = 0;
+                                    user.topic = 'null';
+                                    user.year = year;
+                                    user.recNumber = 0;
+                                    user.balance = 0;
+                                    user.balanceCarriedOver = 0;
+                                    user.status = 'null';
+                                    user.paymentId = 'null';
+                                    user.role1 = 'staff'
+                                    user.photo = 'propic.jpg';
+                                    user.level = 'null';
+                                    user.pollUrl='null'
+                                    user.annual =0
+                                    user.fees = 0
+                                    user.paynow = 0
+                                    user.type = 'null';
+                                    user.address = 'null';
+                                    user.dept = 'null';
+                                    user.subject = 0;
+                                    user.subjectCode = 'null'
+                                    user.subjects = 'null'
+                                    user.dept = 'null';
+                                    user.expdate=expdate;
+                                    user.expStr = expStr; 
+                                    user.duration = duration;   
+                                    user.levelX = 'null';
+                                    user.status4 = 'null';
+                                    user.status3 = "null"
+                                    user.pollUrl2 = "null"
+                                    user.count= count
+                                    user.pollCount = 0
+                                    user.actualCount = actualCount   
+                                    user.startYear = year
+                                    user.currentYearCount = 0
+                                    user.stdYearCount = 0
+                                    user.admissionYear = 0  
+                                    user.password = user.encryptPassword(password)
+                                    user.icon = 'null'
+                                    user.subjectNo = 0
+                                    user.quizDuration = 0
+                                    user.inboxNo = 0
+                                    user.quizNo= 0
+                                    user.quizBatch =0
+                                    user.quizId = 'null'
+                                    user.testId = 'null'
+                                    user.save()
+                                      .then(user =>{
+                                       
+                                      
+                                          
+                                        req.session.message = {
+                                          type:'success',
+                                          message:'Account Registered'
+                                        }  
+                                        res.render('admin/staff',{message:req.session.message,uid1:uid9,pro:pro
+                                        })
+                                      })
+                 
+                 
+                })
+                 
+                   
+              }
+          })
+    
+      }
+            
+      
+    })
+    
+    
+       
+    
+      
+      
+    
+        
+    
+        
+    
+              router.post('/addStaff',isLoggedIn,adminX, function(req, res, next) {
                 var pro = req.user
                 var uid = req.body.uid;
                 var name = req.body.name;
@@ -2323,6 +5289,14 @@ res.render('admin/staff',{pro:pro,uid1:uid, title:title,readonly})
                                     user.stdYearCount = 0
                                     user.admissionYear = 0  
                                     user.password = user.encryptPassword(password)
+                                    user.icon = 'null'
+                                    user.subjectNo = 0
+                                    user.quizDuration = 0
+                                    user.inboxNo = 0
+                                    user.quizNo= 0
+                                    user.quizBatch =0
+                                    user.quizId = 'null'
+                                    user.testId = 'null'
                                     user.save()
                                       .then(user =>{
                                        
@@ -2342,17 +5316,1534 @@ res.render('admin/staff',{pro:pro,uid1:uid, title:title,readonly})
                               });
                             }
                   });
+              router.get('/classListX',isLoggedIn,adminX,function(req,res){
+                var pro = req.user
+                Class1.find(function(err,docs){
+                  res.render('admin/classes',{listX:docs,pro:pro})
+                })
               
+              })
 
+
+
+              router.get('/class/:id',isLoggedIn,adminX,function(req,res,next){
+                var id = req.params.id
+                var pro = req.user
+          Class1.findById(id,function(err,doc){
+            let class1 = doc.class1
+            User.find({class1:class1},function(err,docs){
+              res.render('admin/classStudents',{listX:docs,pro:pro})
+            
+            })
+          })
+                //var successMsg = req.flash('success')[0]
+              
+                
+              })
+
+router.get('/files',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  Class1.find(function(err,docs){
+    res.render('admin/folders',{listX:docs,pro:pro})
+
+  })
+
+})
+
+
+
+
+router.get('/teachersFiles',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  User.find({role:"teacher"},function(err,docs){
+    res.render('admin/folders2',{listX:docs,pro:pro})
+
+  })
+
+})
+
+
+router.get('/subjectFile/:id',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  var id = req.params.id
+  var arr = []
+  User.findById(id,function(err,doc){
+    if(doc){
+
+   
+    let uid = doc.uid
+    let teacherName = doc.fullname
+    TeacherSub.find({teacherId:uid},function(err,docs){
+      for(var i = 0;i<docs.length;i++){
+        
+     
+          
+         if(arr.length > 0 && arr.find(value => value.subjectName == docs[i].subjectName)){
+                console.log('true')
+               arr.find(value => value.subjectName == docs[i].subjectName).year += docs[i].year;
+
+              }else{
+      arr.push(docs[i])
+  
+ 
+              }
+      
+          
+          }
+
+          res.render('admin/fileSubjects2',{listX:arr,pro:pro,id:id,teacherName:teacherName})
+
+    })
+  }
+  })
+})
+
+
+
+
+router.get('/teacherClass/:id',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  var id = req.params.id
+  var arr = []
+  TeacherSub.findById(id,function(err,doc){
+    if(doc){
+
+   
+    let subjectCode = doc.subjectCode
+    let uid = doc.teacherId
+    let subject = doc.subjectName
+    let teacherName = doc.teacherName
+    User.find({uid:uid},function(err,ocs){
+
+    
+    let id2 = ocs[0]._id
+    StudentSub.find({subjectCode:subjectCode},function(err,docs){
+      for(var i = 0;i<docs.length;i++){
+        
+     
+          
+         if(arr.length > 0 && arr.find(value => value.class1 == docs[i].class1)){
+                console.log('true')
+               arr.find(value => value.class1 == docs[i].class1).year += docs[i].year;
+
+              }else{
+      arr.push(docs[i])
+  
+ 
+              }
+      
+          
+          }
+
+          res.render('admin/fileClass2',{listX:arr,pro:pro,id:id,id2:id2,subject:subject,teacherName:teacherName})
+
+    })
+  })
+}
+  })
+})
+
+
+router.get('/teacherClassAssignment/:id',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  var id = req.params.id
+StudentSub.findById(id,function(err,doc){
+  if(doc){
+  let class1 = doc.class1
+  let subjectCode = doc.subjectCode
+  let subject = doc.subjectName
+
+  TeacherSub.find({subjectCode:subjectCode},function(err,hocs){
+let teacherId = hocs[0].teacherId
+let id3 = hocs[0]._id
+let teacherName = hocs[0].teacherName
+  User.find({uid:teacherId},function(err,nocs){
+    let id2 = nocs[0]._id
+ User.findByIdAndUpdate(id2,{$set:{class1:class1}},function(err,voc){
+
+
+
+    res.render('admin/fileAssgt2',{id:id,pro:pro,id2:id2,id3:id3,teacherName:teacherName,subject:subject,class1:class1})
+  })
+})
+  })
+}
+})
+})
+
+router.get('/teacherClassTest/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  var term = req.user.term
+  var year = 2023
+  var pro = req.user
+  StudentSub.findById(id,function(err,doc){
+    if(doc){
+
+   
+    let class1 = doc.class1
+    let studentSubId = doc._id
+    let subjectCode = doc.subjectCode
+    let subjectName = doc.subjectName
+    TeacherSub.find({subjectCode:subjectCode},function(err,poc){
+      let teacherId =poc[0].teacherId
+      let teacherSubId = poc[0]._id
+      let teacherName = poc[0].teacherName
+      User.find({uid:teacherId},function(err,zocs){
+        let userId = zocs[0]._id
+        let class1 = zocs[0].class1
+     
+ 
+  
+ 
+    Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Class Test'},function(err,locs){
+      
+      res.render('admin/assgtX1',{listX:locs,pro:pro,userId:userId,studentSubId:studentSubId,teacherSubId:teacherSubId,id:id,
+        subjectName:subjectName,teacherName:teacherName,class1:class1})
+    })
+  })
+
+  
+})
+}
+})
+  
+  })
+  
+
+
+  
+router.post('/teacherClassTest/:id',isLoggedIn,adminX,function(req,res){
+  var pro =req.user
+var id = req.params.id
+  var date = req.body.date
+  var arr = []
+  var term = req.user.term
+var teacherId = req.user.uid
+var n = moment()
+var year = n.format('YYYY')
+  
+  var m = moment(date)
+
+ 
+
+  console.log(date.split('-')[0])
+  var startDate = date.split('-')[0]
+  var endDate = date.split('-')[1]
+   var startValueA = moment(startDate)
+   var startValueB=startValueA.subtract(1,"days");
+   var startValue = moment(startValueB).valueOf()
+
+   var endValueA = moment(endDate)
+   var endValueB = endValueA.add(1,"days");
+   var endValue= moment(endValueB).valueOf()
+  console.log(startValue,endValue,'output')
+
+  StudentSub.findById(id,function(err,doc){
+    if(doc){
+
+   
+    let class1 = doc.class1
+    let studentSubId = doc._id
+    let subjectCode = doc.subjectCode
+    let subjectName = doc.subjectName
+    TeacherSub.find({subjectCode:subjectCode},function(err,poc){
+      let teacherId =poc[0].teacherId
+      let teacherSubId = poc[0]._id
+      let teacherName = poc[0].teacherName
+      User.find({uid:teacherId},function(err,zocs){
+        let userId = zocs[0]._id
+        let class1 = zocs[0].class1
+
+  Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Class Test'},function(err, docs){
+console.log(docs,'777')
+    if(docs){
+
+
+    for(var i = 0;i<docs.length;i++){
+      let sdate = docs[i].dateValue
+      if(sdate >= startValue && sdate <= endValue){
+arr.push(docs[i])
+console.log(arr,'arr333')
+      }
+    }
+  }
+      
+    console.log(arr,'arr')
+        res.render("admin/assgtX1", {
+          listX:arr,pro:pro,userId:userId,studentSubId:studentSubId,teacherSubId:teacherSubId,id:id,
+        subjectName:subjectName,teacherName:teacherName,class1:class1
+          
+        });
+    
+});
+    
+  })
+    })
+  }
+  })
+})
+
+  router.get('/teacherClassAssignment2/:id',isLoggedIn,adminX,function(req,res){
+    var id = req.params.id
+    var term = req.user.term
+    var year = 2023
+    var pro = req.user
+    StudentSub.findById(id,function(err,doc){
+         if(doc){
+
+        
+      let studentSubId = doc._id
+      let subjectCode = doc.subjectCode
+      let subject = doc.subjectName
+      TeacherSub.find({subjectCode:subjectCode},function(err,poc){
+        let teacherId =poc[0].teacherId
+        let teacherSubId = poc[0]._id
+        User.find({uid:teacherId},function(err,zocs){
+          let userId = zocs[0]._id
+          let class1 = zocs[0].class1
+          let teacherName = zocs[0].fullname
+      
+      Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Class Assignment'},function(err,locs){
+        
+        res.render('admin/assgtX2',{listX:locs,pro:pro,userId:userId,studentSubId:studentSubId,teacherSubId:teacherSubId,
+          class1:class1,teacherName:teacherName,subject:subject,id:id
+        })
+      })
+    
+    })
+    
+  })
+}
+  })
+    
+    })
+
+ 
+    router.post('/teacherClassAssignment2/:id',isLoggedIn,adminX,function(req,res){
+      var pro =req.user
+    var id = req.params.id
+      var date = req.body.date
+      var arr = []
+      var term = req.user.term
+   
+    var n = moment()
+    var year = n.format('YYYY')
+      
+      var m = moment(date)
+    
+     
+    
+      console.log(date.split('-')[0])
+      var startDate = date.split('-')[0]
+      var endDate = date.split('-')[1]
+       var startValueA = moment(startDate)
+       var startValueB=startValueA.subtract(1,"days");
+       var startValue = moment(startValueB).valueOf()
+    
+       var endValueA = moment(endDate)
+       var endValueB = endValueA.add(1,"days");
+       var endValue= moment(endValueB).valueOf()
+      console.log(startValue,endValue,'output')
+    
+      StudentSub.findById(id,function(err,doc){
+        if(doc){
+    
+          let studentSubId = doc._id
+          let subjectCode = doc.subjectCode
+          let subject = doc.subjectName
+          TeacherSub.find({subjectCode:subjectCode},function(err,poc){
+            let teacherId =poc[0].teacherId
+            let teacherSubId = poc[0]._id
+            User.find({uid:teacherId},function(err,zocs){
+              let userId = zocs[0]._id
+              let class1 = zocs[0].class1
+              let teacherName = zocs[0].fullname
+          
+          Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Class Assignment'},function(err,docs){
+    console.log(docs,'777')
+        if(docs){
+    
+    
+        for(var i = 0;i<docs.length;i++){
+          let sdate = docs[i].dateValue
+          if(sdate >= startValue && sdate <= endValue){
+    arr.push(docs[i])
+    console.log(arr,'arr333')
+          }
+        }
+      }
+          
+        console.log(arr,'arr')
+            res.render("admin/assgtX2", {
+              listX:arr,pro:pro,userId:userId,studentSubId:studentSubId,teacherSubId:teacherSubId,
+              class1:class1,teacherName:teacherName,subject:subject,id:id
+              
+            });
+        
+    });
+        
+      })
+        })
+      }
+      })
+    })
+    
+
+    router.get('/teacherFinalExam/:id',isLoggedIn,adminX,function(req,res){
+      var id = req.params.id
+      var term = req.user.term
+      var year = 2023
+      var pro = req.user
+      StudentSub.findById(id,function(err,doc){
+        if(doc){
+
+      
+        let class1 = doc.class1
+        let studentSubId = doc._id
+        let subjectCode = doc.subjectCode
+        let subject = doc.subjectName
+        TeacherSub.find({subjectCode:subjectCode},function(err,poc){
+          let teacherId =poc[0].teacherId
+          let teacherSubId = poc[0]._id
+          let teacherName = poc[0].teacherName
+          User.find({uid:teacherId},function(err,zocs){
+            let userId = zocs[0]._id
+            let class1 = zocs[0].class1
+
+      
+       
+        Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Exam'},function(err,locs){
+          
+          res.render('admin/assgtX3',{listX:locs,pro:pro,userId:userId,studentSubId:studentSubId,teacherSubId:teacherSubId,
+          teacherName:teacherName,class1:class1,subject:subject,id:id})
+        
+      })
+      })
+      
+    })
+      }
+    })
+      
+      })
+
+
+      router.post('/teacherFinalExam/:id',isLoggedIn,adminX,function(req,res){
+        var pro =req.user
+      var id = req.params.id
+        var date = req.body.date
+        var arr = []
+        var term = req.user.term
+
+      var n = moment()
+      var year = n.format('YYYY')
+        
+        var m = moment(date)
+      
+       
+      
+        console.log(date.split('-')[0])
+        var startDate = date.split('-')[0]
+        var endDate = date.split('-')[1]
+         var startValueA = moment(startDate)
+         var startValueB=startValueA.subtract(1,"days");
+         var startValue = moment(startValueB).valueOf()
+      
+         var endValueA = moment(endDate)
+         var endValueB = endValueA.add(1,"days");
+         var endValue= moment(endValueB).valueOf()
+        console.log(startValue,endValue,'output')
+      
+        StudentSub.findById(id,function(err,doc){
+          if(doc){
+      
+            let studentSubId = doc._id
+            let subjectCode = doc.subjectCode
+            let subject = doc.subjectName
+            TeacherSub.find({subjectCode:subjectCode},function(err,poc){
+              let teacherId =poc[0].teacherId
+              let teacherSubId = poc[0]._id
+              User.find({uid:teacherId},function(err,zocs){
+                let userId = zocs[0]._id
+                let class1 = zocs[0].class1
+                let teacherName = zocs[0].fullname
+            
+            Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Exam'},function(err,docs){
+      console.log(docs,'777')
+          if(docs){
+      
+      
+          for(var i = 0;i<docs.length;i++){
+            let sdate = docs[i].dateValue
+            if(sdate >= startValue && sdate <= endValue){
+      arr.push(docs[i])
+      console.log(arr,'arr333')
+            }
+          }
+        }
+            
+          console.log(arr,'arr')
+              res.render("admin/assgtX3", {
+                listX:arr,pro:pro,userId:userId,studentSubId:studentSubId,teacherSubId:teacherSubId,
+                teacherName:teacherName,class1:class1,subject:subject,id:id
+                
+              });
+          
+      });
+          
+        })
+          })
+        }
+        })
+      })
+      
+
+      router.get('/teacherViewTest/:id',isLoggedIn,adminX,function(req,res){
+        var id = req.params.id
+        var pro = req.user
+      Test.findById(id,function(err,loc){
+        if(loc){
+
+      
+        let teacherId = loc.teacherId
+        let teacherName = loc.teacherName
+        let subjectCode = loc.subjectCode
+      let subject = loc.subject
+    
+        console.log(teacherId,'teacherId')
+     User.find({uid:teacherId},function(err,cok){
+       let user = cok[0]._id
+        
+       User.findById(user,function(err,doc){
+    let uid = doc.uid
+     let userId = doc._id
+     let class1 = doc.class1
+     TeacherSub.find({teacherId:uid,subjectCode:subjectCode},function(err,locs){
+       let teacherSubId = locs[0]._id
+   
+       StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+         let studentSubId = tocs[0]._id
+       TestX.find({quizId:id},function(err,docs){
+
+     
+      res.render('admin/assgtList',{listX:docs,userId:userId,teacherSubId:teacherSubId,studentSubId:studentSubId,pro:pro,id:id,subject:subject,teacherName:teacherName,
+      class1:class1})
+        })
+      })
+    })
+    })
+    })
+  }
+      })
+    })
+
+
+    router.post('/teacherViewTest/:id',isLoggedIn,adminX,function(req,res){
+      var pro =req.user
+    var id = req.params.id
+      var date = req.body.date
+      var arr = []
+      var term = req.user.term
+
+    var n = moment()
+    var year = n.format('YYYY')
+      
+      var m = moment(date)
+    
+     
+    
+      console.log(date.split('-')[0])
+      var startDate = date.split('-')[0]
+      var endDate = date.split('-')[1]
+       var startValueA = moment(startDate)
+       var startValueB=startValueA.subtract(1,"days");
+       var startValue = moment(startValueB).valueOf()
+    
+       var endValueA = moment(endDate)
+       var endValueB = endValueA.add(1,"days");
+       var endValue= moment(endValueB).valueOf()
+      console.log(startValue,endValue,'output')
+    
+      Test.findById(id,function(err,loc){
+        if(loc){
+
+      
+        let teacherId = loc.teacherId
+        let teacherName = loc.teacherName
+        let subjectCode = loc.subjectCode
+      let subject = loc.subject
+    
+        console.log(teacherId,'teacherId')
+     User.find({uid:teacherId},function(err,cok){
+       let user = cok[0]._id
+        
+       User.findById(user,function(err,doc){
+    let uid = doc.uid
+     let userId = doc._id
+     let class1 = doc.class1
+     TeacherSub.find({teacherId:uid,subjectCode:subjectCode},function(err,locs){
+       let teacherSubId = locs[0]._id
+   
+       StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+         let studentSubId = tocs[0]._id
+         TestX.find({quizId:id},function(err,docs){
+    console.log(docs,'777')
+        if(docs){
+    
+    
+        for(var i = 0;i<docs.length;i++){
+          let sdate = docs[i].dateValue
+          if(sdate >= startValue && sdate <= endValue){
+    arr.push(docs[i])
+    console.log(arr,'arr333')
+          }
+        }
+      }
+          
+        console.log(arr,'arr')
+            res.render("admin/assgtList", {
+              listX:docs,userId:userId,teacherSubId:teacherSubId,studentSubId:studentSubId,pro:pro,id:id,subject:subject,teacherName:teacherName,
+              class1:class1
+              
+            });
+        
+    });
+        
+      })
+    })
+  })
+        })
+      }
+      })
+    })
+    
+
+    router.get('/teacherViewAssignments/:id',isLoggedIn,adminX,function(req,res){
+      var id = req.params.id
+      var pro = req.user
+    Test.findById(id,function(err,loc){
+      if(loc){
+
+   
+      let teacherId = loc.teacherId
+      let teacherName = loc.teacherName
+      let subjectCode = loc.subjectCode
+    let subject = loc.subject
+  
+      console.log(teacherId,'teacherId')
+   User.find({uid:teacherId},function(err,cok){
+     let user = cok[0]._id
+      
+     User.findById(user,function(err,doc){
+  let uid = doc.uid
+   let userId = doc._id
+   let class1 = doc.class1
+   TeacherSub.find({teacherId:uid,subjectCode:subjectCode},function(err,locs){
+     let teacherSubId = locs[0]._id
+ 
+     StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+       let studentSubId = tocs[0]._id
+     TestX.find({quizId:id},function(err,docs){
+
+   
+    res.render('admin/assgtList2',{listX:docs,userId:userId,teacherSubId:teacherSubId,studentSubId:studentSubId,pro:pro,id:id,subject:subject,teacherName:teacherName,
+    class1:class1})
+      })
+    })
+  })
+  })
+  })
+}
+    })
+  })
+
+
+  
+  router.post('/teacherViewAssignments/:id',isLoggedIn,adminX,function(req,res){
+    var pro =req.user
+  var id = req.params.id
+    var date = req.body.date
+    var arr = []
+    var term = req.user.term
+
+  var n = moment()
+  var year = n.format('YYYY')
+    
+    var m = moment(date)
+  
+   
+  
+    console.log(date.split('-')[0])
+    var startDate = date.split('-')[0]
+    var endDate = date.split('-')[1]
+     var startValueA = moment(startDate)
+     var startValueB=startValueA.subtract(1,"days");
+     var startValue = moment(startValueB).valueOf()
+  
+     var endValueA = moment(endDate)
+     var endValueB = endValueA.add(1,"days");
+     var endValue= moment(endValueB).valueOf()
+    console.log(startValue,endValue,'output')
+  
+    Test.findById(id,function(err,loc){
+      if(loc){
+
+    
+      let teacherId = loc.teacherId
+      let teacherName = loc.teacherName
+      let subjectCode = loc.subjectCode
+    let subject = loc.subject
+  
+      console.log(teacherId,'teacherId')
+   User.find({uid:teacherId},function(err,cok){
+     let user = cok[0]._id
+      
+     User.findById(user,function(err,doc){
+  let uid = doc.uid
+   let userId = doc._id
+   let class1 = doc.class1
+   TeacherSub.find({teacherId:uid,subjectCode:subjectCode},function(err,locs){
+     let teacherSubId = locs[0]._id
+ 
+     StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+       let studentSubId = tocs[0]._id
+       TestX.find({quizId:id},function(err,docs){
+  console.log(docs,'777')
+      if(docs){
+  
+  
+      for(var i = 0;i<docs.length;i++){
+        let sdate = docs[i].dateValue
+        if(sdate >= startValue && sdate <= endValue){
+  arr.push(docs[i])
+  console.log(arr,'arr333')
+        }
+      }
+    }
+        
+      console.log(arr,'arr')
+          res.render("admin/assgtList2", {
+            listX:docs,userId:userId,teacherSubId:teacherSubId,studentSubId:studentSubId,pro:pro,id:id,subject:subject,teacherName:teacherName,
+            class1:class1
+            
+          });
+      
+  });
+      
+    })
+  })
+})
+      })
+    }
+    })
+  })
+  
+
+
+  
+  router.get('/teacherViewExam/:id',isLoggedIn,adminX,function(req,res){
+    var id = req.params.id
+    var pro = req.user
+  Test.findById(id,function(err,loc){
+    if(loc){
+
+   
+    let teacherId = loc.teacherId
+    let teacherName = loc.teacherName
+    let subjectCode = loc.subjectCode
+  let subject = loc.subject
+
+    console.log(teacherId,'teacherId')
+ User.find({uid:teacherId},function(err,cok){
+   let user = cok[0]._id
+    
+   User.findById(user,function(err,doc){
+let uid = doc.uid
+ let userId = doc._id
+ let class1 = doc.class1
+ TeacherSub.find({teacherId:uid,subjectCode:subjectCode},function(err,locs){
+   let teacherSubId = locs[0]._id
+
+   StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+     let studentSubId = tocs[0]._id
+   TestX.find({quizId:id},function(err,docs){
+
+ 
+  res.render('admin/assgtList3',{listX:docs,userId:userId,teacherSubId:teacherSubId,studentSubId:studentSubId,pro:pro,id:id,subject:subject,teacherName:teacherName,
+  class1:class1})
+    })
+  })
+})
+})
+})
+}
+  })
+})
+
+
+
+router.post('/teacherViewExam/:id',isLoggedIn,adminX,function(req,res){
+  var pro =req.user
+var id = req.params.id
+  var date = req.body.date
+  var arr = []
+  var term = req.user.term
+
+var n = moment()
+var year = n.format('YYYY')
+  
+  var m = moment(date)
+
+ 
+
+  console.log(date.split('-')[0])
+  var startDate = date.split('-')[0]
+  var endDate = date.split('-')[1]
+   var startValueA = moment(startDate)
+   var startValueB=startValueA.subtract(1,"days");
+   var startValue = moment(startValueB).valueOf()
+
+   var endValueA = moment(endDate)
+   var endValueB = endValueA.add(1,"days");
+   var endValue= moment(endValueB).valueOf()
+  console.log(startValue,endValue,'output')
+
+  Test.findById(id,function(err,loc){
+    if(loc){
+
+  
+    let teacherId = loc.teacherId
+    let teacherName = loc.teacherName
+    let subjectCode = loc.subjectCode
+  let subject = loc.subject
+
+    console.log(teacherId,'teacherId')
+ User.find({uid:teacherId},function(err,cok){
+   let user = cok[0]._id
+    
+   User.findById(user,function(err,doc){
+let uid = doc.uid
+ let userId = doc._id
+ let class1 = doc.class1
+ TeacherSub.find({teacherId:uid,subjectCode:subjectCode},function(err,locs){
+   let teacherSubId = locs[0]._id
+
+   StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+     let studentSubId = tocs[0]._id
+     TestX.find({quizId:id},function(err,docs){
+console.log(docs,'777')
+    if(docs){
+
+
+    for(var i = 0;i<docs.length;i++){
+      let sdate = docs[i].dateValue
+      if(sdate >= startValue && sdate <= endValue){
+arr.push(docs[i])
+console.log(arr,'arr333')
+      }
+    }
+  }
+      
+    console.log(arr,'arr')
+        res.render("admin/assgtList3", {
+          listX:docs,userId:userId,teacherSubId:teacherSubId,studentSubId:studentSubId,pro:pro,id:id,subject:subject,teacherName:teacherName,
+          class1:class1
+          
+        });
+    
+});
+    
+  })
+})
+})
+    })
+  }
+  })
+})
+
+
+
+router.get('/classSubjects/:id',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  var id = req.params.id
+  var arr = []
+  Class1.findById(id,function(err,doc){
+    if(doc){
+
+   
+    let name = doc.class1
+    StudentSub.find({class1:name},function(err,docs){
+      for(var i = 0;i<docs.length;i++){
+        
+     
+          
+         if(arr.length > 0 && arr.find(value => value.subjectName == docs[i].subjectName)){
+                console.log('true')
+               arr.find(value => value.subjectName == docs[i].subjectName).year += docs[i].year;
+
+              }else{
+      arr.push(docs[i])
+  
+ 
+              }
+      
+          
+          }
+
+          res.render('admin/fileSubjects',{listX:arr,pro:pro,id:id,class1:name})
+
+    })
+  }
+  })
+})
 //staff List
+
+router.get('/classAssignment/:id',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  var userId = req.user._id
+  var id = req.params.id
+StudentSub.findById(id,function(err,doc){
+  if(doc){
+
+ 
+  let class1 = doc.class1
+  let subjectCode = doc.subjectCode
+  let subject = doc.subjectName
+
+  Class1.find({class1:class1},function(err,nocs){
+    let classId = nocs[0]._id
+ 
+
+    res.render('admin/fileAssgt',{studentSubId:id,pro:pro,classId:classId,class1:class1,subject:subject})
+  })
+}
+  })
+})
+
+
+router.get('/classTest/:id',isLoggedIn,adminX,function(req,res){
+var id = req.params.id
+var term = req.user.term
+var year = 2023
+var pro = req.user
+StudentSub.findById(id,function(err,doc){
+  if(doc){
+
+  
+  let class1 = doc.class1
+  let id1 = doc._id
+  let subject = doc.subjectName
+  let subjectCode = doc.subjectCode
+  Class1.find({class1:class1},function(err,kocs){
+
+  let id2 = kocs[0]._id
+  Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Class Test'},function(err,locs){
+    
+    res.render('admin/assgt1',{listX:locs,pro:pro,studentSubId:id,id1:id1,classId:id2,class1:class1,subject:subject,id:id})
+  })
+})
+}
+})
+
+
+
+})
+
+
+
+  
+router.post('/classTest/:id',isLoggedIn,adminX,function(req,res){
+  var pro =req.user
+var id = req.params.id
+  var date = req.body.date
+  var arr = []
+  var term = req.user.term
+
+var n = moment()
+var year = n.format('YYYY')
+  
+  var m = moment(date)
+
+ 
+
+  console.log(date.split('-')[0])
+  var startDate = date.split('-')[0]
+  var endDate = date.split('-')[1]
+   var startValueA = moment(startDate)
+   var startValueB=startValueA.subtract(1,"days");
+   var startValue = moment(startValueB).valueOf()
+
+   var endValueA = moment(endDate)
+   var endValueB = endValueA.add(1,"days");
+   var endValue= moment(endValueB).valueOf()
+  console.log(startValue,endValue,'output')
+  StudentSub.findById(id,function(err,doc){
+    if(doc){
+  
+    
+    let class1 = doc.class1
+    let id1 = doc._id
+    let subject = doc.subjectName
+    let subjectCode = doc.subjectCode
+    Class1.find({class1:class1},function(err,kocs){
+  
+    let id2 = kocs[0]._id
+    Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Class Test'},function(err,docs){
+console.log(docs,'777')
+    if(docs){
+
+
+    for(var i = 0;i<docs.length;i++){
+      let sdate = docs[i].dateValue
+      if(sdate >= startValue && sdate <= endValue){
+arr.push(docs[i])
+console.log(arr,'arr333')
+      }
+    }
+  }
+      
+    console.log(arr,'arr')
+        res.render("admin/assgt1", {
+          listX:arr,pro:pro,studentSubId:id,id1:id1,classId:id2,class1:class1,subject:subject
+          
+        });
+      })
+});
+    
+
+  }
+  })
+})
+
+
+router.get('/classAssgt/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  var term = req.user.term
+  var year = 2023
+  var pro = req.user
+  StudentSub.findById(id,function(err,doc){
+    if(doc){
+
+   
+    let class1 = doc.class1
+    let id1 = doc._id
+    let subjectCode = doc.subjectCode
+    Class1.find({class1:class1},function(err,kocs){
+  
+    let id2 = kocs[0]._id
+    Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Class Assignment'},function(err,locs){
+      
+      res.render('admin/assgt2',{listX:locs,pro:pro,id1:id1,id2:id2,id:id})
+    })
+  })
+}
+  })
+   
+  
+  })
+
+  router.post('/classTest/:id',isLoggedIn,adminX,function(req,res){
+    var pro =req.user
+  var id = req.params.id
+    var date = req.body.date
+    var arr = []
+    var term = req.user.term
+  
+  var n = moment()
+  var year = n.format('YYYY')
+    
+    var m = moment(date)
+  
+   
+  
+    console.log(date.split('-')[0])
+    var startDate = date.split('-')[0]
+    var endDate = date.split('-')[1]
+     var startValueA = moment(startDate)
+     var startValueB=startValueA.subtract(1,"days");
+     var startValue = moment(startValueB).valueOf()
+  
+     var endValueA = moment(endDate)
+     var endValueB = endValueA.add(1,"days");
+     var endValue= moment(endValueB).valueOf()
+    console.log(startValue,endValue,'output')
+    StudentSub.findById(id,function(err,doc){
+      if(doc){
+    
+      
+      let class1 = doc.class1
+      let id1 = doc._id
+      let subject = doc.subjectName
+      let subjectCode = doc.subjectCode
+      Class1.find({class1:class1},function(err,kocs){
+    
+      let id2 = kocs[0]._id
+      Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Class Assignment'},function(err,docs){
+  console.log(docs,'777')
+      if(docs){
+  
+  
+      for(var i = 0;i<docs.length;i++){
+        let sdate = docs[i].dateValue
+        if(sdate >= startValue && sdate <= endValue){
+  arr.push(docs[i])
+  console.log(arr,'arr333')
+        }
+      }
+    }
+        
+      console.log(arr,'arr')
+          res.render("admin/assgt2", {
+            listX:arr,pro:pro,id1:id1,id2:id2,id:id
+            
+          });
+        })
+  });
+      
+  
+    }
+    })
+  })
+  
+
+
+
+  
+router.get('/finalExam/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  var term = req.user.term
+  var year = 2023
+  var pro = req.user
+  StudentSub.findById(id,function(err,doc){
+    if(doc){
+
+  
+    let class1 = doc.class1
+    let id1 = doc._id
+    let subjectCode = doc.subjectCode
+    Class1.find({class1:class1},function(err,kocs){
+  
+    let id2 = kocs[0]._id
+    Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Exam'},function(err,locs){
+      
+      res.render('admin/assgt3',{listX:locs,pro:pro,id1:id1,id2:id2,id:id})
+    })
+  })
+
+}
+  })
+  
+  
+  
+  })
+
+
+
+  router.post('/finalExam/:id',isLoggedIn,adminX,function(req,res){
+    var pro =req.user
+  var id = req.params.id
+    var date = req.body.date
+    var arr = []
+    var term = req.user.term
+  
+  var n = moment()
+  var year = n.format('YYYY')
+    
+    var m = moment(date)
+  
+   
+  
+    console.log(date.split('-')[0])
+    var startDate = date.split('-')[0]
+    var endDate = date.split('-')[1]
+     var startValueA = moment(startDate)
+     var startValueB=startValueA.subtract(1,"days");
+     var startValue = moment(startValueB).valueOf()
+  
+     var endValueA = moment(endDate)
+     var endValueB = endValueA.add(1,"days");
+     var endValue= moment(endValueB).valueOf()
+    console.log(startValue,endValue,'output')
+    StudentSub.findById(id,function(err,doc){
+      if(doc){
+    
+      
+      let class1 = doc.class1
+      let id1 = doc._id
+      let subject = doc.subjectName
+      let subjectCode = doc.subjectCode
+      Class1.find({class1:class1},function(err,kocs){
+    
+      let id2 = kocs[0]._id
+      Test.find({class1:class1,subjectCode:subjectCode,term:term,year:year,type:'Exam'},function(err,docs){
+  console.log(docs,'777')
+      if(docs){
+  
+  
+      for(var i = 0;i<docs.length;i++){
+        let sdate = docs[i].dateValue
+        if(sdate >= startValue && sdate <= endValue){
+  arr.push(docs[i])
+  console.log(arr,'arr333')
+        }
+      }
+    }
+        
+      console.log(arr,'arr')
+      res.render('admin/assgt3',{listX:arr,pro:pro,id1:id1,id2:id2,id:id})
+        })
+  });
+      
+  
+    }
+    })
+  })
+  
+
+
+
+
+
+  router.get('/viewClassTest/:id',isLoggedIn,adminX,function(req,res){
+    var id = req.params.id
+    var pro = req.user
+  Test.findById(id,function(err,loc){
+        if(loc){
+
+       
+    let subjectCode = loc.subjectCode
+  let subject = loc.subject
+  let class1 = loc.class1
+console.log(subjectCode,subject,'yaita')
+  
+ Class1.find({class1:class1},function(err,cok){
+   let classId = cok[0]._id
+    
+ 
+ 
+
+   StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+     let studentSubId = tocs[0]._id
+   TestX.find({quizId:id},function(err,docs){
+
+ 
+  res.render('admin/assgtListC1',{listX:docs,studentSubId:studentSubId,pro:pro,id:id,subject:subject,classId:classId,
+  class1:class1})
+    })
+  })
+})
+}  
+})
+
+})
+
+
+
+
+
+router.post('/viewClassTest/:id',isLoggedIn,adminX,function(req,res){
+  var pro =req.user
+var id = req.params.id
+  var date = req.body.date
+  var arr = []
+  var term = req.user.term
+
+var n = moment()
+var year = n.format('YYYY')
+  
+  var m = moment(date)
+
+ 
+
+  console.log(date.split('-')[0])
+  var startDate = date.split('-')[0]
+  var endDate = date.split('-')[1]
+   var startValueA = moment(startDate)
+   var startValueB=startValueA.subtract(1,"days");
+   var startValue = moment(startValueB).valueOf()
+
+   var endValueA = moment(endDate)
+   var endValueB = endValueA.add(1,"days");
+   var endValue= moment(endValueB).valueOf()
+  console.log(startValue,endValue,'output')
+
+  Test.findById(id,function(err,loc){
+    if(loc){
+
+   
+let subjectCode = loc.subjectCode
+let subject = loc.subject
+let class1 = loc.class1
+console.log(subjectCode,subject,'yaita')
+
+Class1.find({class1:class1},function(err,cok){
+let classId = cok[0]._id
+
+
+
+
+StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+ let studentSubId = tocs[0]._id
+TestX.find({quizId:id},function(err,docs){
+console.log(docs,'777')
+    if(docs){
+
+
+    for(var i = 0;i<docs.length;i++){
+      let sdate = docs[i].dateValue
+      if(sdate >= startValue && sdate <= endValue){
+arr.push(docs[i])
+console.log(arr,'arr333')
+      }
+    }
+  }
+      
+    console.log(arr,'arr')
+    res.render('admin/assgtListC1',{listX:arr,studentSubId:studentSubId,pro:pro,id:id,subject:subject,classId:classId,
+      class1:class1})
+    
+
+    
+ 
+})
+})
+    })
+  }
+  })
+})
+
+
+  
+
+  router.get('/viewClassAssignments/:id',isLoggedIn,adminX,function(req,res){
+    var id = req.params.id
+    var pro = req.user
+  Test.findById(id,function(err,loc){
+   if(loc){
+
+ 
+    let subjectCode = loc.subjectCode
+  let subject = loc.subject
+  let class1 = loc.class1
+
+  
+ Class1.find({class1:class1},function(err,cok){
+   let classId = cok[0]._id
+    
+ 
+ 
+
+   StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+     let studentSubId = tocs[0]._id
+   TestX.find({quizId:id},function(err,docs){
+
+ 
+  res.render('admin/assgtListC2',{listX:docs,studentSubId:studentSubId,pro:pro,id:id,subject:subject,classId:classId,
+  class1:class1})
+    })
+  })
+})
+}
+})
+
+})
+
+
+router.post('/viewClassAssignments/:id',isLoggedIn,adminX,function(req,res){
+  var pro =req.user
+var id = req.params.id
+  var date = req.body.date
+  var arr = []
+  var term = req.user.term
+
+var n = moment()
+var year = n.format('YYYY')
+  
+  var m = moment(date)
+
+ 
+
+  console.log(date.split('-')[0])
+  var startDate = date.split('-')[0]
+  var endDate = date.split('-')[1]
+   var startValueA = moment(startDate)
+   var startValueB=startValueA.subtract(1,"days");
+   var startValue = moment(startValueB).valueOf()
+
+   var endValueA = moment(endDate)
+   var endValueB = endValueA.add(1,"days");
+   var endValue= moment(endValueB).valueOf()
+  console.log(startValue,endValue,'output')
+
+  Test.findById(id,function(err,loc){
+    if(loc){
+
+   
+let subjectCode = loc.subjectCode
+let subject = loc.subject
+let class1 = loc.class1
+console.log(subjectCode,subject,'yaita')
+
+Class1.find({class1:class1},function(err,cok){
+let classId = cok[0]._id
+
+
+
+
+StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+ let studentSubId = tocs[0]._id
+TestX.find({quizId:id},function(err,docs){
+console.log(docs,'777')
+    if(docs){
+
+
+    for(var i = 0;i<docs.length;i++){
+      let sdate = docs[i].dateValue
+      if(sdate >= startValue && sdate <= endValue){
+arr.push(docs[i])
+console.log(arr,'arr333')
+      }
+    }
+  }
+      
+    console.log(arr,'arr')
+ 
+    res.render('admin/assgtListC2',{listX:arr,studentSubId:studentSubId,pro:pro,id:id,subject:subject,classId:classId,
+      class1:class1})
+    
+
+    
+ 
+})
+})
+    })
+  }
+  })
+})
+
+
+  
+
+
+
+
+router.get('/viewExam/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  var pro = req.user
+Test.findById(id,function(err,loc){
+ if(loc){
+
+
+  let subjectCode = loc.subjectCode
+let subject = loc.subject
+let class1 = loc.class1
+
+
+Class1.find({class1:class1},function(err,cok){
+ let classId = cok[0]._id
+  
+
+
+
+ StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+   let studentSubId = tocs[0]._id
+ TestX.find({quizId:id},function(err,docs){
+
+
+res.render('admin/assgtListC3',{listX:docs,studentSubId:studentSubId,pro:pro,id:id,subject:subject,classId:classId,
+class1:class1})
+  })
+})
+})
+}
+})
+
+})
+
+
+
+
+
+router.post('/viewExam/:id',isLoggedIn,adminX,function(req,res){
+  var pro =req.user
+var id = req.params.id
+  var date = req.body.date
+  var arr = []
+  var term = req.user.term
+
+var n = moment()
+var year = n.format('YYYY')
+  
+  var m = moment(date)
+
+ 
+
+  console.log(date.split('-')[0])
+  var startDate = date.split('-')[0]
+  var endDate = date.split('-')[1]
+   var startValueA = moment(startDate)
+   var startValueB=startValueA.subtract(1,"days");
+   var startValue = moment(startValueB).valueOf()
+
+   var endValueA = moment(endDate)
+   var endValueB = endValueA.add(1,"days");
+   var endValue= moment(endValueB).valueOf()
+  console.log(startValue,endValue,'output')
+
+  Test.findById(id,function(err,loc){
+    if(loc){
+
+   
+let subjectCode = loc.subjectCode
+let subject = loc.subject
+let class1 = loc.class1
+console.log(subjectCode,subject,'yaita')
+
+Class1.find({class1:class1},function(err,cok){
+let classId = cok[0]._id
+
+
+
+
+StudentSub.find({subjectCode:subjectCode,class1:class1},function(err,tocs){
+ let studentSubId = tocs[0]._id
+TestX.find({quizId:id},function(err,docs){
+console.log(docs,'777')
+    if(docs){
+
+
+    for(var i = 0;i<docs.length;i++){
+      let sdate = docs[i].dateValue
+      if(sdate >= startValue && sdate <= endValue){
+arr.push(docs[i])
+console.log(arr,'arr333')
+      }
+    }
+  }
+      
+    console.log(arr,'arr')
+ 
+    res.render('admin/assgtListC3',{listX:arr,studentSubId:studentSubId,pro:pro,id:id,subject:subject,classId:classId,
+      class1:class1})
+    
+
+    
+ 
+})
+})
+    })
+  }
+  })
+})
+
+
 
 router.get('/staffList',isLoggedIn,adminX,(req, res) => {
 var pro = req.user
 var companyId = req.user.companyId
 User.find({companyId:companyId,role1:"staff"},(err, docs) => {
     if (!err) {
-        res.render("admin/slist", {
-            list: docs, pro:pro
+        res.render("admin/list3", {
+            listX: docs, pro:pro
             
         });
     }
@@ -2375,8 +6866,8 @@ var pro = req.user
 var companyId = req.user.companyId
 User.find({companyId:companyId,role:"student"},(err, docs) => {
     if (!err) {
-        res.render("admin/stdlist", {
-            list: docs,pro:pro 
+        res.render("admin/list1", {
+            listX: docs,pro:pro 
             
         });
     }
@@ -2388,7 +6879,7 @@ User.find({companyId:companyId,role:"student"},(err, docs) => {
 
 
    //view profile
-   router.get('/student/:id',isLoggedIn,function(req,res){
+   router.get('/student/:id',isLoggedIn,adminX,function(req,res){
     var pro = req.user
     User.findById(req.params.id, (err, doc) => {
       if (!err) {
@@ -2411,7 +6902,7 @@ User.find({companyId:companyId,role:"student"},(err, docs) => {
 
 //role student
 
-router.get('/profile',isLoggedIn,function(req,res){
+router.get('/profile',isLoggedIn,adminX,function(req,res){
  
 var pro = req.user
 res.render('admin/overview',{pro:pro})
@@ -2419,7 +6910,7 @@ res.render('admin/overview',{pro:pro})
 
 })
 
-router.post('/profile',isLoggedIn,upload.single('file'),function(req,res){
+router.post('/profile',isLoggedIn,adminX,upload.single('file'),function(req,res){
 
 
 
@@ -2464,8 +6955,8 @@ var pro = req.user
 var companyId = req.user.companyId
 User.find({companyId:companyId,role:"teacher"},(err, docs) => {
     if (!err) {
-        res.render("admin/tList", {
-            list: docs, pro:pro
+        res.render("admin/list2", {
+            listX: docs, pro:pro
             
         });
     }
@@ -2477,7 +6968,7 @@ User.find({companyId:companyId,role:"teacher"},(err, docs) => {
 
 
 //teacher results exams
-router.get('/tstats',isLoggedIn,function(req,res){
+router.get('/tstats',isLoggedIn,adminX,function(req,res){
  var pro = req.user                      
 var m = moment()
 var year = m.format('YYYY')
@@ -2499,7 +6990,7 @@ TeacherExamRate.find({companyId:companyId,year:year,  type:"Final Exam"},functio
 
 
 //teacher results class test
-router.get('/cstats',isLoggedIn,function(req,res){
+router.get('/cstats',isLoggedIn,adminX,function(req,res){
  var pro = req.user                      
 var m = moment()
 var year = m.format('YYYY')
@@ -2521,7 +7012,7 @@ TeacherExamRate.find({companyId:companyId,year:year,   type:"Class Test"},functi
 
 
 //student results
-router.get('/results',isLoggedIn, (req, res) => {
+router.get('/results',isLoggedIn,adminX, (req, res) => {
   var pro = req.user
   var uid= req.user.uid
   var companyId = req.user.companyId
@@ -2537,7 +7028,7 @@ router.get('/results',isLoggedIn, (req, res) => {
   
   
   //student results - final exam
-  router.get('/examResults',isLoggedIn, (req, res) => {
+  router.get('/examResults',isLoggedIn,adminX, (req, res) => {
     var pro = req.user
   var uid= req.user.uid
   var companyId = req.user.companyId
@@ -2553,7 +7044,7 @@ router.get('/results',isLoggedIn, (req, res) => {
   
 
 
-router.get('/subscriptions',isLoggedIn,function(req,res){
+router.get('/subscriptions',isLoggedIn,adminX,function(req,res){
   var pro = req.user
 
   Subscriptions.find({},(err, docs) => {
@@ -2563,7 +7054,7 @@ router.get('/subscriptions',isLoggedIn,function(req,res){
   })
 })
 //subscription packages
-router.get('/subX1',isLoggedIn, function(req,res){
+router.get('/subX1',isLoggedIn,adminX, function(req,res){
   res.render('accounts/subscriptions1')
 })
 
@@ -2572,7 +7063,7 @@ router.get('/addSub',function(req,res){
   res.render('accounts/subs',{pro:pro})
 })
 //startup Q
-router.get('/startup',isLoggedIn,function(req,res){
+router.get('/startup',isLoggedIn, adminX,function(req,res){
 
   // Create instance of Paynow class
   let paynow = new Paynow(14808, "e351cf17-54bc-4549-81f2-b66feed63768");
@@ -2642,7 +7133,7 @@ res.redirect('/subscriptions')
 })
 
 //startup A
-router.get('/startupA',isLoggedIn,function(req,res){
+router.get('/startupA',isLoggedIn,adminX,function(req,res){
   var m = moment()
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
@@ -2709,7 +7200,7 @@ res.redirect('/subscriptions')
 
 
 //advanced Q
-router.get('/advanced',isLoggedIn, function(req,res){
+router.get('/advanced',isLoggedIn,adminX, function(req,res){
   var m = moment()
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
@@ -2776,7 +7267,7 @@ res.redirect('/subscriptions')
 })
 
 //advanced A
-router.get('/advancedA',isLoggedIn, function(req,res){
+router.get('/advancedA',isLoggedIn,adminX, function(req,res){
   var m = moment()
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
@@ -2842,7 +7333,7 @@ res.redirect('/subscriptions')
 })
 
 //enterprise Q
-router.get('/enterprise',isLoggedIn, function(req,res){
+router.get('/enterprise',isLoggedIn,adminX, function(req,res){
   var m = moment()
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
@@ -2908,7 +7399,7 @@ res.redirect('/subscriptions')
 })
 
 //enterprise A
-router.get('/enterpriseA',isLoggedIn, function(req,res){
+router.get('/enterpriseA',isLoggedIn,adminX, function(req,res){
   var m = moment()
   var companyId = req.user.companyId;
   var schoolName = req.user.schoolName;
@@ -3095,9 +7586,82 @@ else{
 
 
 
+router.get('/userList',isLoggedIn,adminX,function(req,res){
+  var pro = req.user
+  User.find(function(err,docs){
+  res.render('users/list',{listX:docs,pro:pro})
+})
+})
 
 
-router.get('/listSub',isLoggedIn, (req, res) => {
+router.get('/studentSubjects/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  console.log(id,'idd')
+  var pro = req.user
+  User.findById(id,function(err,doc){
+    let uid = doc.uid
+
+    StudentSub.find({studentId:uid},function(err,locs){
+      res.render('users/subjects',{listX:locs,pro:pro,doc:doc,id:id})
+    })
+  })
+ 
+})
+
+router.get('/profile/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  var pro = req.user
+  User.findById(id,function(err,doc){
+    
+ 
+  //var pro = req.user
+  res.render('admin/overview3',{doc:doc,id:id,pro:doc})
+  
+})
+  })
+router.get('/studentProfile/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  var pro = req.user
+  User.findById(id,function(err,doc){
+    
+ 
+  //var pro = req.user
+  res.render('admin/overview2',{doc:doc,id:id,pro:pro})
+  
+})
+  })
+  
+
+
+
+  
+router.get('/teacherSubjects/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  console.log(id,'idd')
+  var pro = req.user
+  User.findById(id,function(err,doc){
+    let uid = doc.uid
+
+    TeacherSub.find({studentId:uid},function(err,locs){
+      res.render('users/subjects2',{listX:locs,pro:pro,doc:doc,id:id})
+    })
+  })
+ 
+})
+
+
+router.get('/teacherProfile/:id',isLoggedIn,adminX,function(req,res){
+  var id = req.params.id
+  User.findById(id,function(err,doc){
+    pro = req.user
+ 
+  //var pro = req.user
+  res.render('admin/overview3',{pro:pro,id:id,doc:doc})
+  
+})
+  })
+
+router.get('/listSub',isLoggedIn,adminX, (req, res) => {
   var pro = req.user  
   Subscriptions.find( (err, doc) => {
       if (!err) {
@@ -3115,7 +7679,7 @@ router.get('/listSub',isLoggedIn, (req, res) => {
 
 
 
-  router.get('/subsPoll',isLoggedIn, (req, res) => {
+  router.get('/subsPoll',isLoggedIn,adminX, (req, res) => {
     var pro = req.user 
     var companyId = req.user.companyId 
     var set = moment()
@@ -3258,7 +7822,7 @@ router.get('/remX',function(req,res){
 */
 
 
-router.get('/deptList',isLoggedIn, (req, res) => {
+router.get('/deptList',isLoggedIn,adminX, (req, res) => {
 var pro = req.user
 var companyId = req.user.companyId
 Dept.find({companyId:companyId},(err, docs) => {
@@ -3271,7 +7835,7 @@ Dept.find({companyId:companyId},(err, docs) => {
 });
 });
 
-router.get('/cList',isLoggedIn, (req, res) => {
+router.get('/cList',isLoggedIn,adminX, (req, res) => {
 var pro = req.user
 var companyId = req.user.companyId
 Class1.find({companyId:companyId},(err, docs) => {
@@ -3346,7 +7910,7 @@ res.redirect('/subTotal')
 
 
 //update student subject number
-router.get('/subTotal',isLoggedIn,function(req,res){
+router.get('/subTotal',isLoggedIn,adminX,function(req,res){
   var companyId = req.user.companyId
 User.find({companyId:companyId,role:'student'},function(err,docs){
 
@@ -3381,7 +7945,7 @@ res.redirect('/adminDash')
 
 
 
-router.get('/teacherSubject',isLoggedIn, function(req,res){
+router.get('/teacherSubject',isLoggedIn,adminX, function(req,res){
   var pro = req.user
   var companyId = req.user.companyId
 Class1.find({companyId:companyId},function(err,docs){
@@ -3395,7 +7959,7 @@ res.render('teachers/subjects',{arr1:arr1, arr:arr, pro:pro})
 
 
 
-router.post('/teacherSubject', isLoggedIn, function(req,res){
+router.post('/teacherSubject', isLoggedIn,adminX, function(req,res){
 var teacherId, subjectCode, grade, dept, id;
 var teacherName = req.body.teacherName;
 teacherId = req.body.uid;
@@ -3516,7 +8080,7 @@ res.render('teachers/subjects',{message:req.session.message, arr:arr, arr1:arr1,
 
 //autocomplete teacherName & uid
 
-router.get('/autocompleteTS/',isLoggedIn, function(req, res, next) {
+router.get('/autocompleteTS/',isLoggedIn,adminX, function(req, res, next) {
 
 var companyId = req.user.companyId
 var regex= new RegExp(req.query["term"],'i');
@@ -3572,7 +8136,7 @@ if(!err){
 
 // role admin
 //this routes autopopulates teachers info from the id selected from automplet1
-router.post('/autoTS',isLoggedIn,function(req,res){
+router.post('/autoTS',isLoggedIn,adminX,function(req,res){
 var fullname = req.body.code
 var companyId = req.user.companyId
 
@@ -3597,7 +8161,7 @@ if(docs == undefined){
 
 //autocomplete teacherName & uid
 
-router.get('/autocompleteSub/',isLoggedIn, function(req, res, next) {
+router.get('/autocompleteSub/',isLoggedIn,adminX, function(req, res, next) {
 var companyId = req.user.companyId
 
 var regex= new RegExp(req.query["term"],'i');
@@ -3653,7 +8217,7 @@ if(!err){
 
 // role admin
 //this routes autopopulates teachers info from the id selected from automplet1
-router.post('/autoSub',isLoggedIn,function(req,res){
+router.post('/autoSub',isLoggedIn,adminX,function(req,res){
 var name = req.body.code
 var companyId = req.user.companyId
 
@@ -3676,244 +8240,10 @@ if(docs == undefined){
 
 
 
-router.get('/mess',isLoggedIn, function(req,res){
-  res.render('admin/message')
-})
-
-router.post('/mess',isLoggedIn, function(req,res){
-
-  const message = req.body.message
-  var companyId = req.user.companyId
-  var subject = req.body.subject
-
-
-
-  User.find({role:"teacher",companyId:companyId},function(err,docs){
-for(var i = 0; i<docs.length;i++){
-
-  let email = docs[i].email
-  
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: "cashreq00@gmail.com",
-        pass: "itzgkkqtmchvciik",
-    },
-  });
-  
-  const output = `
-  <h2>${subject}</h2>
-  <br>
-  <p> ${message}</p>
- 
-  `;
-
-  // send mail with defined transport object
-  const mailOptions = {
-      from: '"Admin" <cashreq00@gmail.com>', // sender address
-      to: email, // list of receivers
-      subject: "Account Verification ✔", // Subject line
-      html: output, // html body
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error)
-      
-   req.session.message = {
-     type:'errors',
-     message:'confirmation email not sent'
-   }
- 
-   res.render('admin/message',{message:req.session.message,pro:pro
-   })
-
-
-      }
-      else {
-
-       
-          console.log('Mail sent : %s', info.response);
-          req.session.message = {
-            type:'success',
-            message:'confirmation email sent'
-          }     
-         
-          res.render('admin/message',{message:req.session.message,pro:pro
-          })
-        
-         
-           
-      }
-    
-    })
-  }
-  })
-})
-
-
-
-
-router.get('/messX',isLoggedIn, function(req,res){
-  res.render('admin/message1')
-})
-
-router.post('/messX',isLoggedIn, function(req,res){
-
-  const message = req.body.message
-  var companyId = req.user.companyId
-  var subject = req.body.subject
-
-
-
-  User.find({role:"students",companyId:companyId},function(err,docs){
-for(var i = 0; i<docs.length;i++){
-
-  let email = docs[i].email
-  
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: "cashreq00@gmail.com",
-        pass: "itzgkkqtmchvciik",
-    },
-  });
-  
-  const output = `
-  <h2>${subject}</h2>
-  <br>
-  <p> ${message}</p>
- 
-  `;
-
-  // send mail with defined transport object
-  const mailOptions = {
-      from: '"Admin" <cashreq00@gmail.com>', // sender address
-      to: email, // list of receivers
-      subject: "Account Verification ✔", // Subject line
-      html: output, // html body
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error)
-      
-   req.session.message = {
-     type:'errors',
-     message:'confirmation email not sent'
-   }
- 
-   res.render('admin/message1',{message:req.session.message,pro:pro
-   })
-
-
-      }
-      else {
-
-       
-          console.log('Mail sent : %s', info.response);
-          req.session.message = {
-            type:'success',
-            message:'confirmation email sent'
-          }     
-         
-          res.render('admin/message1',{message:req.session.message,pro:pro
-          })
-        
-         
-           
-      }
-    
-    })
-  }
-  })
-})
-
-
-
-
-router.get('/messXX',isLoggedIn, function(req,res){
-  res.render('admin/message2')
-})
-
-router.post('/messXX',isLoggedIn, function(req,res){
-
-  const message = req.body.message
-  var companyId = req.user.companyId
-  var subject = req.body.subject
-
-
-
-  User.find({role:"all",companyId:companyId},function(err,docs){
-for(var i = 0; i<docs.length;i++){
-
-  let email = docs[i].email
-  
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: "cashreq00@gmail.com",
-        pass: "itzgkkqtmchvciik",
-    },
-  });
-  
-  const output = `
-  <h2>${subject}</h2>
-  <br>
-  <p> ${message}</p>
- 
-  `;
-
-  // send mail with defined transport object
-  const mailOptions = {
-      from: '"Admin" <cashreq00@gmail.com>', // sender address
-      to: email, // list of receivers
-      subject: "Account Verification ✔", // Subject line
-      html: output, // html body
-  };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error)
-      
-   req.session.message = {
-     type:'errors',
-     message:'confirmation email not sent'
-   }
- 
-   res.render('admin/message2',{message:req.session.message,pro:pro
-   })
-
-
-      }
-      else {
-
-       
-          console.log('Mail sent : %s', info.response);
-          req.session.message = {
-            type:'success',
-            message:'confirmation email sent'
-          }     
-         
-          res.render('admin/message2',{message:req.session.message,pro:pro
-          })
-        
-         
-           
-      }
-    
-    })
-  }
-  })
-})
-
-
-
-
 
 //update teacher subjectNumber
 //update student subject number
-router.get('/subTotalX',isLoggedIn,function(req,res){
+router.get('/subTotalX',isLoggedIn,adminX,function(req,res){
   var companyId = req.user.companyId
 User.find({companyId:companyId,role:'teacher'},function(err,docs){
 
@@ -4086,6 +8416,7 @@ FeesUpdate.find({companyId:companyId,term:term, year:year},(err, docs) => {
 
 
 //student lesson timetable
+/*
 router.get('/timetable',isLoggedIn, (req, res) => {
   var term = req.user.term
   var arr= []
@@ -4096,25 +8427,49 @@ router.get('/timetable',isLoggedIn, (req, res) => {
       arr.push(docs[i].start)
     }
       if (!err) {
-          res.render("admin/timetableAdmin", {
+          res.render("admin/timetable", {
              list:docs,arr:arr,pro:pro
             
           });
       }
   });
 });
+*/
 
 
+router.post('/lessonChart',isLoggedIn,adminX,function(req,res){
+  var uid = req.user.uid
+  var class1 = req.user.class1
+  var arr = []
+ Lesson.find(function(err,docs){
+
+    
+    res.send(docs)
+   
+  })
+
+})
 
 
+router.get('/timetable',isLoggedIn,adminX,(req,res)=>{
+  res.render('admin/timetable')
+})
 
 
+router.get('/examList',isLoggedIn,adminX,(req,res)=>{
+  res.render('admin/timetableExam')
+})
+
+router.get('/events',isLoggedIn,adminX,(req,res)=>{
+  res.render('admin/events')
+})
 
 
 
 
 //role - all
 //exam timetable
+/*
 router.get('/examList',isLoggedIn, (req, res) => {
 var pro = req.user
 var companyId = req.user.companyId
@@ -4127,7 +8482,7 @@ Exam.find({companyId:companyId},(err, docs) => {
     }
 });
 });
-
+*/
 
 
 
@@ -4139,7 +8494,7 @@ Exam.find({companyId:companyId},(err, docs) => {
 
 //role - admin
 //grade List
-router.get('/gradeList',isLoggedIn,adminX, (req, res) => {
+/*router.get('/gradeList',isLoggedIn,adminX, (req, res) => {
 var pro = req.user
 var companyId = req.user.companyId
   Grade.find({companyId:companyId},(err, docs) => {
@@ -4150,15 +8505,26 @@ var companyId = req.user.companyId
           });
       }
   });
-});
+});*/
+
+router.get('/gradeList',isLoggedIn,adminX, (req, res) => {
+  var pro = req.user
+  var companyId = req.user.companyId
+    Grade.find({companyId:companyId},(err, docs) => {
+        if (!err) {
+            res.render("admin/examGrades", {
+               listX:docs, pro:pro
+              
+            });
+        }
+    });
+  });
 
 
 
 
 
-
-
-    router.get('/feesRecords',isLoggedIn, (req, res) => {
+    router.get('/feesRecords',isLoggedIn,adminX, (req, res) => {
 var pro = req.user
 var companyId = req.user.companyId
       Fees.find({companyId:companyId},(err, docs) => {
@@ -4172,6 +8538,182 @@ var companyId = req.user.companyId
     });
     
 
+//notifications
+
+
+
+router.get('/notify',isLoggedIn,adminX, function(req,res){
+  res.render('notifs')
+})
+
+router.post('/notify',isLoggedIn,adminX, function(req,res){
+                var m = moment()
+                var year = m.format('YYYY')
+                var numDate = m.valueOf()
+                var date = m.toString()
+                var subject = req.body.subject
+                var message = req.body.message
+                var role = req.user.role
+                var recRole ='clerk'
+                var user = req.user.fullname
+           
+                console.log(role,'role')
+                req.check('subject','Enter Subject').notEmpty();
+                req.check('message','Enter Message').notEmpty();
+              
+               
+                    
+                
+                      
+                   
+                var errors = req.validationErrors();
+                    if (errors) {
+                
+                    
+                      req.session.errors = errors;
+                      req.session.success = false;
+                      res.render('notifs',{ errors:req.session.errors,})
+                      
+                    
+                  }
+                  else{
+
+              User.find({recRole:recRole},function(err,docs){
+
+                for(var i = 0; i<docs.length;i++){
+
+                  let id = docs[i]._id
+                  var not = new Note();
+                  not.role = role
+                  not.subject = subject;
+                  not.message = message
+                  not.status = 'not viewed';
+                  not.status1 = 'new';
+                  not.user = user;
+                  not.type = 'null'
+                  not.status2 = 'new'
+                  not.status3 = 'new'
+                  not.status4 = 'null'
+                  not.date = date
+                  not.dateViewed = 'null'
+                  not.recId = docs[i]._id
+                  not.recRole = recRole
+                  not.numDate = numDate
+                 
+
+          
+                  
+                  
+               
+
+                  
+                   
+              
+                   
+          
+                  not.save()
+                    .then(user =>{
+                      
+                })
+
+
+                }
+              })
+              
+                 res.redirect('/notify')
+
+              }
+                              
+
+                  
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.post('/not/:id',function(req,res){
+  var m = moment()
+  var date = m.toString()
+
+var id = req.params.id
+  Note.find({recId:id},function(err,docs){
+    for(var i = 0; i<docs.length; i++){
+      let nId = docs[i]._id
+
+      Note.findByIdAndUpdate(nId,{$set:{status:'viewed',dateViewed:date}},function(err,locs){
+
+      })
+    }
+
+    res.send('success')
+  })
+})
+
+
+
+
+router.get('/update',isLoggedIn,adminX,function(req,res){
+var m = moment()
+let n = m.valueOf()
+var id = req.user._id
+
+Note.find({recId:id},function(err,docs){
+
+for(var i = 0; i<docs.length;i++){
+let value = docs[i].numDate
+let num = n - value
+let nId = docs[i]._id
+
+if(num >= 86000000){
+  Note.findByIdAndUpdate(nId,{$set:{status1:'old'}},function(err,nocs){
+
+
+  })
+}
+
+}
+
+
+})
+
+
+
+})
+
+router.get('/nots',isLoggedIn,adminX, function(req,res){
+  var m = moment();
+var id = req.user._id
+  Note.find({recId:id,status:'viewed'},function(err,docs){
+    for(var i = 0;i<docs.length;i++){
+      let duration =moment(docs[i].dateViewed)
+      let days=m.diff(duration,"days");
+      let nId = docs[i]._id
+console.log(days,'days')
+     if(days > 0){
+Note.findByIdAndUpdate(nId,{$set:{status2:'expired',status1:'old'}},function(err,nocs){
+
+})
+     }
+    }
+  })
+
+
+})
 
 
 
@@ -4194,7 +8736,7 @@ var companyId = req.user.companyId
 
 
 
-router.get('/expenseList',isLoggedIn, (req, res) => {
+router.get('/expenseList',isLoggedIn,adminX, (req, res) => {
 var pro = req.user
 var companyId = req.user.companyId
 Expenses.find({companyId:companyId},(err, docs) => {
@@ -4340,7 +8882,7 @@ function adminX(req,res,next){
   if(req.user.role == "admin"){
     return next()
   }
-  res.render('errors/access')
+  res.redirect('/')
   }  
 
 

@@ -2,6 +2,284 @@ var labels1= []
 var labels3= []
 var labels4= []
 let labels99 = []
+var colorPalette = ['#00D8B6','#008FFB',  '#FEB019', '#FF4560', '#775DD0']
+$.ajax({
+   
+    dataType: 'json',
+    type: 'POST',
+    url: "/records/statChart",
+    success: function(data) {
+    console.log(data)
+     for (var i = 0;i<data.length;i++){
+        labels1.push(data[i].students)
+        labels1.push(data[i].teachers)
+        labels1.push(data[i].depts)
+        labels1.push(data[i].class1)
+
+       
+   
+     }
+
+     let labels2 =  ['Students', 'Teachers', 'Departments', 'Classes'];
+var options = {
+    chart: {
+        height: 350,
+        type: 'bar',
+    },
+    dataLabels: {
+        enabled: false
+    },
+    series: [{
+        name: 'Stats',
+        data: labels1
+    }],
+    
+    title: {
+        text: 'Ajax Example',
+    },
+    xaxis: {
+        categories:labels2,
+        axisBorder: {
+            show: false,
+        },
+
+    },
+    noData: {
+      text: 'Loading...'
+    }
+  }
+  
+  var chart = new ApexCharts(
+    document.querySelector("#chart"),
+    options
+  );
+  
+  chart.render();
+  
+  }
+    })
+
+
+
+
+
+         
+$.ajax({
+       
+    dataType: 'json',
+    type: 'POST',
+    url: "/records/classChart",
+    success: function(data) {
+console.log(data,'data')
+let labels1 =[]
+let labels2=[]
+for (var i = 0;i<data.length;i++){
+        labels2.push(data[i].class1)
+        labels1.push(data[i].classNo)
+     }
+    
+     console.log('numbers',labels1)
+
+   
+     var options = {
+        series: labels1,
+        chart: {
+        width: 380,
+        type: 'polarArea'
+      },
+      labels: labels2,
+      fill: {
+        opacity: 1
+      },
+      stroke: {
+        width: 1,
+        colors: undefined
+      },
+      yaxis: {
+        show: false
+      },
+      legend: {
+        position: 'bottom'
+      },
+      plotOptions: {
+        polarArea: {
+          rings: {
+            strokeWidth: 0
+          },
+          spokes: {
+            strokeWidth: 0
+          },
+        }
+      },
+      theme: {
+        monochrome: {
+          enabled: true,
+          shadeTo: 'light',
+          shadeIntensity: 0.6
+        }
+      }
+      };
+
+      var chart = new ApexCharts(document.querySelector("#chart2"), options);
+      chart.render();
+    
+    
+    }
+   
+});
+
+
+/////
+
+
+         
+$.ajax({
+       
+    dataType: 'json',
+    type: 'POST',
+    url: "/records/classGenderChartX",
+    success: function(data) {
+console.log(data,'nafukwa')
+let labels1 =[]
+let labels2=[]
+let labels3 = []
+for (var i = 0;i<data.length;i++){
+        labels2.push(data[i].class1)
+        labels1.push(data[i].male)
+        labels3.push(data[i].female)
+     }
+    
+
+var optionsBar = {
+    chart: {
+      type: 'bar',
+      height: 380,
+      width: '100%',
+      stacked: true,
+    },
+    plotOptions: {
+      bar: {
+        columnWidth: '45%',
+      }
+    },
+    colors: colorPalette,
+    series: [{
+      name: "Boys",
+      data: labels1,
+    }, {
+      name: "Girls",
+      data: labels3,
+    }],
+    labels: labels2,
+    xaxis: {
+        categories:labels2,
+        axisBorder: {
+            show: false,
+        },
+
+    },
+    yaxis: {
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      },
+      labels: {
+        style: {
+          colors: '#78909c'
+        }
+      }
+    },
+    title: {
+      text: 'Class Analysis',
+      align: 'left',
+      style: {
+        fontSize: '18px'
+      }
+    }
+  
+  }
+  
+  var chartBar = new ApexCharts(document.querySelector('#bar'), optionsBar);
+  chartBar.render();
+
+    }
+})
+//registration stats
+
+var options = {
+    series: [
+    {
+      name: "2022",
+      data: [28, 29, 33, 36, 32, 32, 33]
+    },
+    {
+      name: "2023",
+      data: [12, 11, 14, 18, 17, 13, 13]
+    }
+  ],
+    chart: {
+    height: 350,
+    type: 'line',
+    dropShadow: {
+      enabled: true,
+      color: '#000',
+      top: 18,
+      left: 7,
+      blur: 10,
+      opacity: 0.2
+    },
+    toolbar: {
+      show: false
+    }
+  },
+  colors: ['#77B6EA', '#545454'],
+  dataLabels: {
+    enabled: true,
+  },
+  stroke: {
+    curve: 'smooth'
+  },
+  title: {
+    text: 'Registration Stats',
+    align: 'left'
+  },
+  grid: {
+    borderColor: '#e7e7e7',
+    row: {
+      colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+      opacity: 0.5
+    },
+  },
+  markers: {
+    size: 1
+  },
+  xaxis: {
+    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+    title: {
+      text: 'Month'
+    }
+  },
+  yaxis: {
+    title: {
+      text: 'Student Registration'
+    },
+    min: 5,
+    max: 40
+  },
+  legend: {
+    position: 'top',
+    horizontalAlign: 'right',
+    floating: true,
+    offsetY: -25,
+    offsetX: -5
+  }
+  };
+
+  var chart = new ApexCharts(document.querySelector("#chart04"), options);
+  chart.render();
+
 
 
 

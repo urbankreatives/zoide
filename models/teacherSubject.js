@@ -9,8 +9,9 @@ teacherId:{type:String, required:true},
 subjectCode:{type:String, required:true},
 subjectName:{type:String, required:true},
 grade:{type:Number, required:true},
-
 dept:{type:String, required:true},
+icon:{type:String, required:true},
+photo:{type:String, required:true},
 companyId:{type:String, required:true},
 
 

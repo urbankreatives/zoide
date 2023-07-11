@@ -896,6 +896,914 @@ User.find({companyId:companyId,role:"student"},function(err,docs){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            router.get('/msgX',isLoggedIn,function(req,res){
+              var id = req.user.id
+              var list = []
+              var num
+          Recepient.find({recepientId :id},function(err,nocs){
+          
+          for(var i = 0 ; i<nocs.length;i++){
+          
+          let recId = nocs[i].msgId
+          
+              Message.find({status:'reply',msgId:recId},function(err,docs){
+                for(var i = 0; i<docs.length;i++){
+                  let date = docs[i].date
+                  let Vid = docs[i]._id
+                  let timeX = moment(date)
+                  let timeX2 =timeX.fromNow()
+                  let timeX3 =timeX.format("LLL")
+                  console.log(timeX2,'timex2')
+          
+            
+                  Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+            
+                  
+                  
+                 // Format relative time using negative value (-1).
+            
+                   
+                 })
+                }
+          
+              
+              })
+            }
+            
+          res.redirect('/msg')
+          })
+          
+          })
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          router.get('/msg',isLoggedIn,function(req,res){
+          var id = req.user.id
+          const list2 =[]
+          const list = []
+          var num
+           
+          Recepient.find({recepientId :id, status:'active', statusXX:'null'},function(err,klocs){
+          
+          //var recFilter =Recepient.find({recepientId :id}).sort({"numDate":-1});
+          //recFilter.exec(function(err,klocs){
+            for(var c = 0 ; c <klocs.length;c++){
+          
+            let recIdX = klocs[c].msgId
+          
+                  Message.find({status:'reply',msgId:recIdX},function(err,  docs){
+          
+                   // var bookFilter =Message.find({status:'reply',msgId:recIdX}).sort({"numDate":-1});
+          
+          
+          // bookFilter.exec(function(err,docs){
+          
+          console.log(docs.length,'mainstream')
+          
+          let x = docs.length - 1
+          for(var i = x ;i>=0; i--){
+          console.log(i,'b')
+          if(docs[i].senderId !=id){
+          //console.log(docs[i],'black skinhead')
+          
+          list.push(docs[i])
+          list.sort((x, y) =>  y.numDate - x.numDate)
+          console.log(list,'list yacho')
+          
+          
+          }
+          
+          num  = docs.length
+          }
+          })  
+          
+          //})
+          
+          }
+          res.render('clerkMess/inbox',{list:list, num:num})
+          })
+          
+          })
+          
+          
+          
+          
+          
+          //on click dashboard icon & msg redirect
+          router.post('/msg/:id',function(req,res){
+            var m = moment()
+            var date = m.toString()
+          
+          var id = req.params.id
+            Recepient.find({recepientId:id},function(err,docs){
+              for(var i = 0; i<docs.length; i++){
+                let nId = docs[i]._id
+          
+                Recepient.findByIdAndUpdate(nId,{$set:{statusCheck:'viewed'}},function(err,locs){
+          
+                  
+                })
+              }
+          
+              res.send('success')
+            })
+          })
+          
+          
+          router.get('/sentXX',isLoggedIn,function(req,res){
+          var id = req.user.id
+          var list = []
+          var num
+          
+          
+          Message.find({senderId:id},function(err,docs){
+            for(var i = 0; i<docs.length;i++){
+              let date = docs[i].date
+              let Vid = docs[i]._id
+              let timeX = moment(date)
+              let timeX2 =timeX.fromNow()
+              let timeX3 =timeX.format("LLL")
+              console.log(timeX2,'timex2')
+          
+          
+              Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+          
+          
+          
+               
+             })
+            }
+          res.redirect('/sent')
+          })
+          
+          })
+          
+          
+          
+          
+          
+          router.get('/sent',isLoggedIn,function(req,res){
+          var id = req.user.id
+          const list2 =[]
+          const list = []
+          var num
+           
+          Message.find({senderId :id},function(err,docs){
+          
+          
+          
+          console.log(docs.length,'mainstream')
+          if(docs.length > 1){
+          
+          let x = docs.length - 1
+          for(var i = x ;i>=0; i--){
+          console.log(i,'b')
+          
+          //console.log(docs[i],'black skinhead')
+          
+          list.push(docs[i])
+          list.sort((x, y) =>  y.numDate - x.numDate)
+          console.log(list,'list yacho')
+          
+          
+          
+          
+          
+          num  = docs.length
+          }
+          
+          }else if(docs.length == 1){
+          
+          list.push(docs[0])
+          console.log(list,'list')
+          }else{
+          console.log('inquisition')
+          }
+          //})
+          
+          
+          res.render('clerkMess/sent',{list:list, num:num})
+          })
+          
+          })
+          
+          
+          
+          router.get('/archiveXX',isLoggedIn,function(req,res){
+          var id = req.user.id
+          var list = []
+          var num
+          
+          Recepient.find({recepientId :id, status:'active', statusXX:'yes', archive:'yes'},function(err,klocs){
+          
+            for(var c = 0 ; c <klocs.length;c++){
+            
+              let recIdX = klocs[c].msgId
+            
+                    Message.find({msgId:recIdX},function(err,  docs){
+            for(var i = 0; i<docs.length;i++){
+              let date = docs[i].date
+              let Vid = docs[i]._id
+              let timeX = moment(date)
+              let timeX2 =timeX.fromNow()
+              let timeX3 =timeX.format("LLL")
+              console.log(timeX2,'timex2')
+          
+          
+              Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+          
+              
+              
+             // Format relative time using negative value (-1).
+          
+               
+             })
+            }
+          })
+          }
+          res.redirect('/archive')
+          
+          })
+          
+          })
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          router.get('/archive',isLoggedIn,function(req,res){
+          var id = req.user.id
+          const list2 =[]
+          const list = []
+          var num
+          
+          Recepient.find({recepientId :id, status:'active', statusXX:'yes', archive:'yes'},function(err,klocs){
+          
+          for(var c = 0 ; c <klocs.length;c++){
+          
+            let recIdX = klocs[c].msgId
+          
+                  Message.find({msgId:recIdX},function(err,  docs){
+          
+          console.log(docs.length,'mainstream')
+          if(docs.length > 1){
+          
+          let x = docs.length - 1
+          for(var i = x ;i>=0; i--){
+          console.log(i,'b')
+          
+          //console.log(docs[i],'black skinhead')
+          
+          list.push(docs[i])
+          list.sort((x, y) =>  y.numDate - x.numDate)
+          console.log(list,'list yacho')
+          
+          
+          
+          
+          
+          num  = docs.length
+          }
+          
+          }else{
+          
+          list.push(docs[0])
+          console.log(list,'list')
+          }
+          //})
+          })
+          }      
+          
+          res.render('clerkMess/sent',{list:list, num:num})
+                 
+          })
+          
+          })
+          
+          
+          
+          
+          router.post('/marked',isLoggedIn,function(req,res){
+          let code = req.body.code
+          console.log(code,'code')
+          let id = req.user.id
+          Recepient.find({ msgId:code, recepientId:id },function(err,docs){
+          let nId = docs[0]._id
+          if(docs[0].statusX == 'unmarked'){
+          Recepient.findByIdAndUpdate(nId,{$set:{statusX:'marked'}},function(err,nocs){
+          
+          })
+          }else{
+          Recepient.findByIdAndUpdate(nId,{$set:{statusX:'unmarked'}},function(err,nocs){
+          
+          })
+          
+          }
+          
+          })
+          })
+          
+          router.post('/archiveX',isLoggedIn,function(req,res){
+          
+          let id = req.user.id
+          Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+          
+          for(var i = 0; i<docs.length;i++){
+          
+          
+          Recepient.findByIdAndUpdate(docs[i]._id,{$set:{archive:'yes',statusXX:'yes'}},function(err,nocs){
+          
+          })
+          
+          }
+          
+          res.send(docs)
+          })
+          })
+          
+          
+          
+          router.post('/readX',isLoggedIn,function(req,res){
+          
+          let id = req.user.id
+          Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+          
+          for(var i = 0; i<docs.length;i++){
+          
+          
+          Recepient.findByIdAndUpdate(docs[i]._id,{$set:{read:'yes',statusXX:'yes'}},function(err,nocs){
+          
+          })
+          
+          }
+          
+          res.send(docs)
+          })
+          })
+          
+          
+          
+          
+          
+          
+          
+          
+          router.post('/delete',isLoggedIn,function(req,res){
+          
+          let id = req.user.id
+          Recepient.find({ statusX:'marked', recepientId:id },function(err,docs){
+          
+          for(var i = 0; i<docs.length;i++){
+          
+          
+          Recepient.findByIdAndUpdate(docs[i]._id,{$set:{status:'deleted',statusXX:'yes'}},function(err,nocs){
+          
+          })
+          
+          }
+          
+          res.send(docs)
+          })
+          })
+          
+          
+            router.get('/comp',isLoggedIn,  function(req,res){
+              res.render('clerkMess/compose')
+            })
+          
+           
+            router.post('/userX',isLoggedIn,function(req,res){
+              var id =req.user.id
+              var arr = []
+              User.find({},function(err,docs){
+                console.log(docs.length,'length')
+                for(var i = 0; i< docs.length;i++){
+          if(docs[i]._id != id){
+          console.log(docs[i]._id,'success')
+          arr.push(docs[i])
+          }else
+          console.log(docs[i]._id,'failed')
+          
+                }
+                res.send(arr)
+              })
+            })
+          
+          
+          
+          router.post('/dataX',isLoggedIn,function(req,res){
+          var m = moment()
+          var year = m.format('YYYY')
+          var numDate = m.valueOf()
+          var date = m.toString()
+          var senderId = req.user._id
+          var senderName = req.user.fullname
+          var senderPhoto = req.user.photo
+          var senderEmail = req.user.email
+          
+          var uid = req.user._id
+          
+          
+          
+          console.log(req.body['code[]'])
+          let code = req.body['code[]']
+          var sub = req.body.code1
+          let msg = req.body.code2
+          
+          
+          
+          var ms = new Message()
+          
+          ms.senderId = senderId
+          ms.senderName = senderName
+          ms.senderPhoto = senderPhoto
+          ms.senderEmail = senderEmail
+          ms.msgId = 'null'
+          ms.msg = msg
+          ms.status = 'reply'
+          ms.status4 = 'null'
+          ms.status5 = 'null'
+          
+          ms.type = 'original'
+          ms.subject = sub
+          ms.numDate = numDate
+          ms.date = date
+          
+          ms.save().then(ms=>{
+          
+            Message.findByIdAndUpdate(ms._id,{$set:{msgId:ms._id}},function(err,nocs){
+          
+            })
+            for(var i = 0;i<code.length - 1;i++){
+              User.findById(code[i],function(err,doc){
+             
+              let recepientName = doc.fullname
+              let recepientId = doc._id
+              let recepientEmail = doc.email
+              let msgId = ms._id
+              Recepient.find({msgId:ms._id,recepientId:recepientId},function(err,tocs){
+                let size = tocs.length
+             
+           
+                if(tocs.length == 0){
+                  let rec = new Recepient()
+          
+                
+                 
+                  rec.msgId = msgId
+                  rec.recepientName = recepientName
+                  rec.recepientId= recepientId
+                  rec.numDate = numDate
+                  rec.status = 'active'
+                  rec.statusX = 'unmarked'
+                  rec.statusXX ='null'
+                  rec.statusCheck = 'not viewed'
+                  rec.read = 'null'
+                  rec.archive = 'null'
+                  rec.recepientEmail = recepientEmail
+                  rec.save()
+          
+                }
+               
+          
+              })
+            })
+          }
+          res.redirect('/sentX')
+          })
+          
+          
+          
+          
+          
+          })
+          
+          router.get('/reply/:id', isLoggedIn, function(req,res){
+          var id = req.params.id
+          var uid = req.user._id
+          console.log(id,'id')
+          var arr = []
+          Message.find({msgId:id,status:'sent'},function(err,tocs){
+          arr.push(tocs[0].senderEmail)
+          let sub = tocs[0].subject
+          Message.find({msgId:id,status:'reply',recepientId:uid},function(err,docs){
+          Recepient.find({msgId:id},function(err,nocs){
+          for(var i = 0; i<nocs.length;i++){
+          console.log(nocs[i].recepientEmail,'email')
+          arr.push(nocs[i].recepientEmail)
+          
+          
+          let date = nocs[i].date
+          let Vid = nocs[i]._id
+          let timeX = moment(date)
+          let timeX2 =timeX.fromNow()
+          let timeX3 =timeX.format("LLL")
+          console.log(timeX2,'timex2')
+          
+          
+          Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+          
+          
+          
+          // Format relative time using negative value (-1).
+          
+          
+          })
+          
+          }
+          console.log(arr,'arr')
+          
+          res.render('messages/reply',{list:docs,id:id, arr:arr, subject:sub})
+          })
+          
+          })
+          })
+          })
+          
+          
+          
+          router.post('/reply/:id', isLoggedIn, function(req,res){
+          var m = moment()
+          var year = m.format('YYYY')
+          var numDate = m.valueOf()
+          var id = req.params.id
+          var senderId = req.user._id
+          var senderName = req.user.fullname
+          var senderEmail = req.user.email
+          var sub = req.body.compose_subject
+          let msg = 'vocal tone'
+          
+          Message.findById({msgId:id, status:'sent'},function(err,docs){
+          
+          
+          
+          
+          
+          
+          var ms = new Message()
+          
+          ms.senderId = senderId
+          ms.senderName = senderName
+          ms.senderEmail = senderEmail
+          ms.msgId = id
+          ms.msg = msg
+          ms.status = 'reply'
+          ms.status4 = 'null'
+          ms.status5 = 'null'
+          ms.type = 'reply'
+          ms.numDate = numDate
+          ms.subject = sub
+          ms.date = date
+          
+          ms.save().then(ms=>{
+          console.log(ms._id,'msgId')
+          
+          
+          
+          let date = ms.date
+          let Vid = ms._id
+          let timeX = moment(date)
+          let timeX2 =timeX.fromNow()
+          let timeX3 =timeX.format("LLL")
+          console.log(timeX2,'timex2')
+          
+          
+          Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+          
+          
+          
+          // Format relative time using negative value (-1).
+          
+          
+          })
+          
+          })
+          
+          
+          
+          })
+          
+          
+          
+          
+          
+          })
+          
+          
+          
+          
+          router.post('/replyX/:id',isLoggedIn,function(req,res){
+          console.log(req.body.code1,'code1')
+          console.log(req.body['compose_to[]'],'compose_to')
+          let code = req.body.code1
+          var sub = req.body.code1
+          let id = req.params.id
+          var arr = []
+          Message.find({msgId:id,status:'sent'},function(err,tocs){
+          console.log(tocs)
+          arr.push(tocs[0].senderId)
+          
+          Recepient.find({msgId:id},function(err,nocs){
+          for(var i = 0; i<nocs.length;i++){
+          console.log(nocs[i].recepientId,'email')
+          arr.push(nocs[i].recepientId)
+          
+          }
+          
+          
+          res.send(arr)
+          })
+          
+          })
+          
+          })
+          
+          
+          router.post('/replyX2/:id',isLoggedIn,function(req,res){
+          var m = moment()
+          var year = m.format('YYYY')
+          var numDate = m.valueOf()
+          var date = m.toString()
+          var msgId = req.params.id
+          var senderId = req.user._id
+          var senderName = req.user.fullname
+          var senderPhoto = req.user.photo
+          var senderEmail = req.user.email
+          
+          var uid = req.user._id
+          
+          
+          
+          console.log(req.body['code[]'])
+          let code = req.body['code[]']
+          var sub = req.body.code1
+          let msg = req.body.code2
+          
+          
+          
+          var ms = new Message()
+          
+          ms.senderId = senderId
+          ms.senderName = senderName
+          ms.senderPhoto = senderPhoto
+          ms.senderEmail = senderEmail
+          ms.msgId = msgId
+          ms.msg = msg
+          ms.status = 'reply'
+          ms.status4 = 'null'
+          ms.status5 = 'null'
+          ms.type = 'reply'
+          ms.numDate = numDate
+          ms.subject = sub
+          ms.date = date
+          
+          ms.save().then(ms=>{
+          
+          
+            for(var i = 0;i<code.length - 1;i++){
+              User.findById(code[i],function(err,doc){
+             
+              let recepientName = doc.fullname
+              let recepientId = doc._id
+              let recepientEmail = doc.email
+              
+              Recepient.find({msgId:msgId,recepientId:recepientId},function(err,tocs){
+                let size = tocs.length
+             
+           
+                if(tocs.length == 0){
+                  let rec = new Recepient()
+          
+                
+                 
+                  rec.msgId = msgId
+                  rec.recepientName = recepientName
+                  rec.recepientId= recepientId
+                  rec.numDate = numDate
+                  rec.status = 'active'
+                  rec.statusX = 'unmarked'
+                  rec.read = 'null'
+                  rec.statusCheck = 'not viewed'
+                  rec.archive = 'null'
+                  rec.recepientEmail = recepientEmail
+                  rec.save()
+                }else{
+                  Recepient.findByIdAndUpdate(tocs[0]._id,{$set:{statusCheck:"not viewed"}},function(err,locs){
+          
+          
+          
+                    // Format relative time using negative value (-1).
+                    
+                     
+                    })
+          
+                }
+               
+          
+              })
+            })
+          }
+          
+          let date = ms.date
+          let Vid = ms._id
+          let timeX = moment(date)
+          let timeX2 =timeX.fromNow()
+          let timeX3 =timeX.format("LLL")
+          console.log(timeX2,'timex2')
+          
+          
+          Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+          
+          
+          
+          // Format relative time using negative value (-1).
+          
+          
+          })
+          
+          })
+          
+          
+          })
+          
+          
+          
+          router.post('/replyX3/:id',isLoggedIn,function(req,res){
+          var m = moment()
+          var year = m.format('YYYY')
+          var numDate = m.valueOf()
+          var date = m.toString()
+          var msgId = req.params.id
+          var senderId = req.user._id
+          var senderName = req.user.fullname
+          var senderPhoto = req.user.photo
+          var senderEmail = req.user.email
+          
+          var uid = req.user._id
+          
+          
+          
+          console.log(req.body['code[]'])
+          let code = req.body['code[]']
+          var sub = req.body.code1
+          let msg = req.body.code2
+          
+          
+          
+          var ms = new Message()
+          
+          ms.senderId = senderId
+          ms.senderName = senderName
+          ms.senderPhoto = senderPhoto
+          ms.senderEmail = senderEmail
+          ms.msgId = msgId
+          ms.msg = msg
+          ms.status = 'reply'
+          ms.status4 = 'null'
+          ms.status5 = 'null'
+          ms.type = 'reply'
+          ms.numDate = numDate
+          ms.subject = sub
+          ms.date = date
+          
+          ms.save().then(ms=>{
+          
+          
+            for(var i = 0;i<code.length - 1;i++){
+              User.findById(code[i],function(err,doc){
+             
+              let recepientName = doc.fullname
+              let recepientId = doc._id
+              let recepientEmail = doc.email
+            
+              Recepient.find({msgId:msgId,recepientId:recepientId},function(err,tocs){
+                let size = tocs.length
+             
+           
+                if(tocs.length == 0){
+                  let rec = new Recepient()
+          
+                
+                 
+                  rec.msgId = msgId
+                  rec.recepientName = recepientName
+                  rec.recepientId= recepientId
+                  rec.numDate = numDate
+                  rec.status = 'active'
+                  rec.statusX = 'unmarked'
+                  rec.statusCheck = 'not viewed'
+                  rec.read = 'null'
+                  rec.archive = 'null'
+                  rec.recepientEmail = recepientEmail
+                  rec.save()
+          
+                } else{
+          
+                Recepient.findByIdAndUpdate(tocs[0]._id,{$set:{statusCheck:"not viewed"}},function(err,locs){
+          
+          
+          
+                  // Format relative time using negative value (-1).
+                  
+                   
+                  })
+                }
+               
+          
+              })
+            })
+          }
+          
+          let date = ms.date
+          let Vid = ms._id
+          let timeX = moment(date)
+          let timeX2 =timeX.fromNow()
+          let timeX3 =timeX.format("LLL")
+          console.log(timeX2,'timex2')
+          
+          
+          Message.findByIdAndUpdate(Vid,{$set:{status4:timeX2,status5:timeX3}},function(err,locs){
+          
+          
+          
+          // Format relative time using negative value (-1).
+          
+          
+          })
+          
+          
+          })
+          })
+          
+          
+          
+          
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   //profile
   router.get('/profile',isLoggedIn ,function(req,res){
     var pro = req.user

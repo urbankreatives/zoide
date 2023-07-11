@@ -60,6 +60,7 @@ var userSchema = new mongoose.Schema({
     idNumber:{type:Number, required:true},
     email:{type:String, required:true},
     topic:{type:String, required:true},
+    testId:{type:String, required:true},
     status3:{type:String, required:true},
     status4:{type:String, required:true},
     pollCount:{type:Number, required:true},
@@ -70,6 +71,13 @@ var userSchema = new mongoose.Schema({
     startYear:{type:Number, required:true},
     stdYearCount:{type:Number,required:true},
     currentYearCount:{type:Number, required:true},
+    quizId:{type:String, required:true},
+    quizBatch:{type:Number, required:true},
+    quizNo:{type:Number, required:true},
+    inboxNo:{type:Number, required:true},
+    quizDuration:{type:Number, required:true},
+    subjectNo:{type:Number, required:true},
+    icon:{type:String, required:true},
     companyId:{type:String, required:true},
     
    
